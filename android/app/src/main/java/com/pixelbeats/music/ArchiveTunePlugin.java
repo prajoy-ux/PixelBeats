@@ -1202,6 +1202,52 @@ public class ArchiveTunePlugin extends Plugin {
         }
     }
 
+    /**
+     * Direct 5-band Graphic Equalizer control operating on Android audio DSP hardware.
+     */
+    @PluginMethod
+    public void setEqualizerBands(PluginCall call) {
+        initNativeAudioEffects();
+        try {
+            JSArray bands = call.getArray("bands");
+            if (bands != null && nativeEqualizer != null) {
+                nativeEqualizer.setEnabled(true);
+                short numBands = nativeEqualizer.getNumberOfBands();
+                short[] range = nativeEqualizer.getBandLevelRange();
+                short minLevel = (range != null && range.length >= 1) ? range[0] : (short) -1500;
+                short maxLevel = (range != null && range.length >= 2) ? range[1] : (short) 1500;
+
+                for (short b = 0; b < numBands && b < bands.length(); b++) {
+                    double db = bands.getDouble(b);
+                    short targetMb = (short) Math.round(db * 100);
+                    targetMb = (short) Math.max(minLevel, Math.min(maxLevel, targetMb));
+                    nativeEqualizer.setBandLevel(b, targetMb);
+                }
+            }
+
+            if (bands != null && bands.length() > 0 && nativeBassBoost != null) {
+                double subBassDb = bands.getDouble(0);
+                if (subBassDb > 0) {
+                    short boostStrength = (short) Math.min(1000, Math.round((subBassDb / 12.0) * 1000));
+                    nativeBassBoost.setEnabled(true);
+                    nativeBassBoost.setStrength(boostStrength);
+                } else {
+                    nativeBassBoost.setStrength((short) 0);
+                }
+            }
+
+            JSObject res = new JSObject();
+            res.put("success", true);
+            call.resolve(res);
+        } catch (Exception e) {
+            android.util.Log.e("ArchiveTune", "Failed setting native EQ bands", e);
+            JSObject res = new JSObject();
+            res.put("success", false);
+            res.put("error", e.getMessage());
+            call.resolve(res);
+        }
+    }
+
     public static Notification getLastNotification() {
         return lastNotification;
     }
