@@ -1648,32 +1648,71 @@
       <section id="tab-settings" data-view="config" class="tab-panel">
         <div class="settings-scroll-container">
           
-          <!-- Autonomous Standalone Engine Card -->
-          <div class="m3-settings-card">
+          <!-- Developer & Project Info Card -->
+          <div class="m3-settings-card creator-profile-card">
             <div class="card-header-row">
-              <span class="material-symbols-rounded card-icon" style="color: #64B5F6;">bolt</span>
-              <h4>Autonomous Engine Mode</h4>
+              <span class="material-symbols-rounded card-icon" style="color: var(--primary-pill, #C8D394);">person</span>
+              <h4>About & Developer</h4>
             </div>
 
-            <div class="standalone-badge-box" style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08);">
-              <span class="material-symbols-rounded" style="color: #4CAF50; font-size: 24px;">verified</span>
-              <div>
-                <div style="font-weight: 600; font-size: 0.9rem; color: #fff;">ArchiveTune Standalone Engine</div>
-                <div style="font-size: 0.75rem; opacity: 0.75;">Runs 100% independently on device. No PC server or Wi-Fi pairing required.</div>
+            <div class="creator-badge-box">
+              <div class="creator-avatar">P</div>
+              <div class="creator-info">
+                <div class="creator-name">Prajoy Sarkar</div>
+                <div class="creator-role">Creator & Lead Developer</div>
+                <div class="creator-bio">Crafted with passion for pure, uncompromised music streaming.</div>
               </div>
             </div>
 
-            <div class="setting-field">
-              <label for="setting-backend-url">Custom Remote Proxy (Optional):</label>
-              <div class="input-with-button">
-                <input type="text" id="setting-backend-url" class="m3-text-input" placeholder="Standalone (No server needed)">
-                <button id="btn-test-backend" class="m3-accent-pill-btn">Test</button>
-              </div>
-              <p class="field-hint">Leave blank for the on-device engine. Works anywhere on mobile data or any Wi-Fi.</p>
+            <div class="creator-links-container">
+              <!-- GitHub Profile Link -->
+              <a href="https://github.com/prajoy-ux" target="_blank" rel="noopener noreferrer" class="creator-link-pill">
+                <div class="creator-link-left">
+                  <span class="creator-link-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                    </svg>
+                  </span>
+                  <div class="creator-link-text">
+                    <span class="creator-link-title">GitHub Profile</span>
+                    <span class="creator-link-handle">@prajoy-ux</span>
+                  </div>
+                </div>
+                <span class="material-symbols-rounded creator-link-arrow">open_in_new</span>
+              </a>
+
+              <!-- GitHub Repository Link -->
+              <a href="https://github.com/prajoy-ux/PixelBeats" target="_blank" rel="noopener noreferrer" class="creator-link-pill">
+                <div class="creator-link-left">
+                  <span class="creator-link-icon">
+                    <span class="material-symbols-rounded">folder_code</span>
+                  </span>
+                  <div class="creator-link-text">
+                    <span class="creator-link-title">Source Repository</span>
+                    <span class="creator-link-handle">PixelBeats • Open Source</span>
+                  </div>
+                </div>
+                <span class="material-symbols-rounded creator-link-arrow">open_in_new</span>
+              </a>
+
+              <!-- GitHub Releases Link -->
+              <a href="https://github.com/prajoy-ux/PixelBeats/releases/latest" target="_blank" rel="noopener noreferrer" class="creator-link-pill">
+                <div class="creator-link-left">
+                  <span class="creator-link-icon">
+                    <span class="material-symbols-rounded">download</span>
+                  </span>
+                  <div class="creator-link-text">
+                    <span class="creator-link-title">Releases & Updates</span>
+                    <span class="creator-link-handle">PixelBeats v1.1.0 APK</span>
+                  </div>
+                </div>
+                <span class="material-symbols-rounded creator-link-arrow">open_in_new</span>
+              </a>
             </div>
 
-            <div id="backend-test-result" class="test-result-box hidden">
-              <span id="backend-test-status">Testing connection...</span>
+            <div class="app-version-badge-box">
+              <span class="material-symbols-rounded" style="font-size: 16px; color: var(--primary-pill, #C8D394);">favorite</span>
+              <span>Made by Prajoy Sarkar • GNU GPL-3.0</span>
             </div>
           </div>
 

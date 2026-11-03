@@ -3402,3 +3402,149 @@ html, body {
   color: #363D17 !important;
 }
 
+/* Creator & About Developer Profile Card */
+.creator-badge-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.creator-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #C8D394, #576028);
+  color: #1A1F05;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-brand, 'Plus Jakarta Sans', sans-serif);
+  font-weight: 800;
+  font-size: 20px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.creator-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.creator-name {
+  font-family: var(--font-brand, 'Plus Jakarta Sans', sans-serif);
+  font-weight: 700;
+  font-size: 1rem;
+  color: #FFFFFF;
+  letter-spacing: -0.01em;
+}
+
+.creator-role {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #C8D394;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.creator-bio {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.65);
+  margin-top: 2px;
+  line-height: 1.35;
+}
+
+.creator-links-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.creator-link-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.creator-link-pill:hover,
+.creator-link-pill:active {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #C8D394;
+  transform: translateY(-1px);
+}
+
+.creator-link-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.creator-link-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  flex-shrink: 0;
+}
+
+.creator-link-icon svg {
+  fill: #FFFFFF;
+}
+
+.creator-link-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.creator-link-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.creator-link-handle {
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.creator-link-arrow {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.creator-link-pill:hover .creator-link-arrow {
+  color: #C8D394;
+}
+
+.app-version-badge-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+  margin-top: 4px;
+}
+

@@ -4787,26 +4787,28 @@ function setupEventListeners() {
     }
   });
 
-  // Settings: Backend Test
-  elements.btnTestBackend.addEventListener('click', async () => {
-    playHapticSfx('click');
-    const url = elements.settingBackendUrl.value.trim();
-    elements.backendTestResult.classList.remove('hidden');
-    elements.backendTestStatus.textContent = 'Testing connection...';
-    elements.backendTestResult.className = 'test-result-box';
+  // Settings: Backend Test (if present)
+  if (elements.btnTestBackend && elements.settingBackendUrl) {
+    elements.btnTestBackend.addEventListener('click', async () => {
+      playHapticSfx('click');
+      const url = elements.settingBackendUrl.value.trim();
+      if (elements.backendTestResult) elements.backendTestResult.classList.remove('hidden');
+      if (elements.backendTestStatus) elements.backendTestStatus.textContent = 'Testing connection...';
+      if (elements.backendTestResult) elements.backendTestResult.className = 'test-result-box';
 
-    const ok = await testBackendHealth(url);
-    if (ok) {
-      STATE.backendUrl = url;
-      localStorage.setItem('pixelbeats_backend_url', url);
-      elements.backendTestStatus.textContent = '✓ Connected: 100% Operational';
-      elements.backendTestResult.classList.add('success');
-      showToast('Backend Connected', 'cloud_done');
-    } else {
-      elements.backendTestStatus.textContent = '✖ Unreachable: Check IP or server';
-      elements.backendTestResult.classList.add('error');
-    }
-  });
+      const ok = await testBackendHealth(url);
+      if (ok) {
+        STATE.backendUrl = url;
+        localStorage.setItem('pixelbeats_backend_url', url);
+        if (elements.backendTestStatus) elements.backendTestStatus.textContent = '✓ Connected: 100% Operational';
+        if (elements.backendTestResult) elements.backendTestResult.classList.add('success');
+        showToast('Backend Connected', 'cloud_done');
+      } else {
+        if (elements.backendTestStatus) elements.backendTestStatus.textContent = '✖ Unreachable: Check IP or server';
+        if (elements.backendTestResult) elements.backendTestResult.classList.add('error');
+      }
+    });
+  }
 
   // Settings: Fallback Switch
   if (elements.settingAutoFallback) {
