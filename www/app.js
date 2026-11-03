@@ -2561,19 +2561,23 @@ function initAlbumCoverGestures() {
 
 // ================= CRISP FULL-HD ALBUM COVER LOADER =================
 function loadHdCover(imageUrl, videoId) {
-  let targetUrl = imageUrl;
-  if (!targetUrl && videoId) {
-    targetUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-  }
-  if (!targetUrl) {
-    elements.playerCoverArt.src = 'idle-cover.jpg';
-    return;
+  const fallbackThumb = videoId ? `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg` : 'idle-cover.jpg';
+  const targetUrl = imageUrl || fallbackThumb;
+
+  // 1. Immediately update mini player thumbnail with zero delay
+  if (elements.miniThumb) {
+    elements.miniThumb.src = targetUrl;
   }
 
-  elements.artLoading.classList.remove('hidden');
-
-  elements.playerCoverArt.onload = () => {
+  // 2. Hide art loading spinner so poster is never veiled behind a dark blur spinner
+  if (elements.artLoading) {
     elements.artLoading.classList.add('hidden');
+  }
+
+  if (!elements.playerCoverArt) return;
+
+  // 3. Immediately display the cover art
+  elements.playerCoverArt.onload = () => {
     if (elements.miniThumb) elements.miniThumb.src = elements.playerCoverArt.src;
     if (STATE.currentTheme === 'monet') {
       extractMonetPalette(elements.playerCoverArt);
@@ -2581,9 +2585,10 @@ function loadHdCover(imageUrl, videoId) {
   };
 
   elements.playerCoverArt.onerror = () => {
-    elements.artLoading.classList.add('hidden');
-    if (STATE.isBackendAlive && !elements.playerCoverArt.src.includes('/api/image_proxy')) {
-      elements.playerCoverArt.src = `${STATE.backendUrl}/api/image_proxy?url=${encodeURIComponent(targetUrl)}`;
+    if (videoId && !elements.playerCoverArt.src.includes(`/${videoId}/`)) {
+      elements.playerCoverArt.src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+    } else if (videoId && !elements.playerCoverArt.src.includes('/mqdefault.jpg')) {
+      elements.playerCoverArt.src = `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
     } else {
       elements.playerCoverArt.src = 'idle-cover.jpg';
     }
@@ -2591,6 +2596,20 @@ function loadHdCover(imageUrl, videoId) {
   };
 
   elements.playerCoverArt.src = targetUrl;
+
+  // 4. Background HD enhancement without blocking UI
+  if (videoId && !targetUrl.includes('/hqdefault.jpg') && !targetUrl.includes('/maxresdefault.jpg')) {
+    const hdImg = new Image();
+    hdImg.onload = () => {
+      if (STATE.queue[STATE.currentIndex]?.videoId === videoId) {
+        elements.playerCoverArt.src = hdImg.src;
+        if (STATE.currentTheme === 'monet') {
+          extractMonetPalette(elements.playerCoverArt);
+        }
+      }
+    };
+    hdImg.src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+  }
 }
 
 // ================= OFFLINE VAULT (INDEXEDDB STORAGE) =================
@@ -3659,14 +3678,19 @@ async function resolveStreamUrl(videoId) {
     if (ArchiveTuneBridge.isNative()) {
       try {
         const nativeRes = await ArchiveTuneBridge.resolveStream(videoId);
-        if (nativeRes && nativeRes.streamUrl) {
+        if (nativeRes && (nativeRes.streamUrl || nativeRes.rawUrl)) {
+          const chosenUrl = nativeRes.streamUrl || nativeRes.rawUrl;
           if (elements.sourceIndicator) {
             elements.sourceIndicator.innerHTML = '<span class="material-symbols-rounded">bolt</span>ARCHIVETUNE NATIVE';
           }
-          console.log(`[ArchiveTune Native] Direct stream resolved (${nativeRes.bitrate} bps)`);
-          STATE.prefetchedStreams.set(videoId, nativeRes.streamUrl);
-          warmUpAudioUrl(nativeRes.streamUrl);
-          return nativeRes.streamUrl;
+          console.log(`[ArchiveTune Native] Direct stream resolved (${nativeRes.bitrate || 128000} bps)`);
+          STATE.prefetchedStreams.set(videoId, chosenUrl);
+          if (nativeRes.rawUrl) {
+            STATE.rawStreams = STATE.rawStreams || new Map();
+            STATE.rawStreams.set(videoId, nativeRes.rawUrl);
+          }
+          warmUpAudioUrl(chosenUrl);
+          return chosenUrl;
         }
       } catch (nativeErr) {
         console.warn('[ArchiveTune Native] Stream resolve error:', nativeErr);
@@ -3701,17 +3725,16 @@ async function resolveStreamUrl(videoId) {
     }
 
 
-    // 5. High-Speed Standalone Public Mirrors (Piped / Invidious)
+    // 5. High-Speed Standalone Public Mirrors
     const pipedEndpoints = [
-      'https://pipedapi.kavin.rocks',
-      'https://api.piped.private.coffee',
-      'https://pipedapi.in.projectsegfau.lt'
+      'https://pipedapi.in.projectsegfau.lt',
+      'https://api.piped.private.coffee'
     ];
 
     for (const base of pipedEndpoints) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3500);
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
         const resp = await fetch(`${base}/streams/${videoId}`, { signal: controller.signal });
         clearTimeout(timeoutId);
         if (resp.ok) {
@@ -3910,8 +3933,12 @@ async function playTrackAtIndex(index) {
       ensureWebAudioActive();
       await elements.audio.play();
     } catch (playErr) {
-      console.warn('[Playback] Direct stream retry with proxy...', playErr);
-      if (STATE.backendUrl && !streamUrl.includes('/api/proxy') && !streamUrl.startsWith('blob:')) {
+      console.warn('[Playback] Direct stream retry with fallback...', playErr);
+      const rawUrl = STATE.rawStreams && STATE.rawStreams.get(song.videoId);
+      if (rawUrl && elements.audio.src !== rawUrl) {
+        elements.audio.src = rawUrl;
+        await elements.audio.play();
+      } else if (STATE.backendUrl && !streamUrl.includes('/api/proxy') && !streamUrl.startsWith('blob:')) {
         elements.audio.src = `${STATE.backendUrl}/api/proxy?url=${encodeURIComponent(streamUrl)}`;
         ensureWebAudioActive();
         await elements.audio.play();
@@ -5551,7 +5578,14 @@ function setupEventListeners() {
   elements.audio.addEventListener('error', (e) => {
     console.warn('[Audio] HTML5 audio error event triggered:', elements.audio.src, e);
     const curSrc = elements.audio.src;
-    if (STATE.backendUrl && curSrc && !curSrc.includes('/api/proxy') && !curSrc.startsWith('blob:')) {
+    const currentTrack = STATE.queue[STATE.currentIndex];
+    const rawUrl = currentTrack && STATE.rawStreams && STATE.rawStreams.get(currentTrack.videoId);
+    if (rawUrl && curSrc !== rawUrl) {
+      console.log('[Audio] Retrying playback with raw direct stream URL...');
+      elements.audio.src = rawUrl;
+      elements.audio.load();
+      elements.audio.play().catch(err => console.warn('[Audio] rawUrl play error:', err));
+    } else if (STATE.backendUrl && curSrc && !curSrc.includes('/api/proxy') && !curSrc.startsWith('blob:')) {
       console.log('[Audio] Retrying playback through backend proxy...');
       elements.audio.src = `${STATE.backendUrl}/api/proxy?url=${encodeURIComponent(curSrc)}`;
       elements.audio.load();
