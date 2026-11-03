@@ -2051,5 +2051,36 @@ public class ArchiveTunePlugin extends Plugin {
             }
         }
     }
+
+    @PluginMethod
+    public void openExternalUrl(PluginCall call) {
+        String url = call.getString("url");
+        if (url == null || url.trim().isEmpty()) {
+            call.reject("URL is required");
+            return;
+        }
+
+        try {
+            Uri uri = Uri.parse(url.trim());
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            // Specifically target Google Chrome first so it opens in Chrome
+            try {
+                intent.setPackage("com.android.chrome");
+                getContext().startActivity(intent);
+                call.resolve();
+                return;
+            } catch (Exception chromeMissing) {
+                // If Chrome is not installed, fallback to the default web browser
+                intent.setPackage(null);
+            }
+
+            getContext().startActivity(intent);
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("Failed to launch external browser: " + e.getMessage());
+        }
+    }
 }
 

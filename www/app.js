@@ -11,6 +11,18 @@ const ArchiveTuneBridge = {
   isNative() {
     return !!(typeof window !== 'undefined' && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ArchiveTune);
   },
+  async openExternalUrl(url) {
+    if (!url) return;
+    if (this.isNative() && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ArchiveTune && window.Capacitor.Plugins.ArchiveTune.openExternalUrl) {
+      try {
+        await window.Capacitor.Plugins.ArchiveTune.openExternalUrl({ url });
+        return;
+      } catch (err) {
+        console.warn('[ArchiveTuneBridge] Native openExternalUrl error:', err);
+      }
+    }
+    window.open(url, '_blank');
+  },
   async resolveStream(videoId) {
     if (this.isNative()) {
       try {
@@ -6312,3 +6324,14 @@ if (document.readyState === 'loading') {
   initApp();
 }
 
+
+
+// Global external link interceptor: routes all http/https links to external Chrome browser
+document.addEventListener('click', (e) => {
+  const link = e.target.closest('a[href^="http://"], a[href^="https://"]');
+  if (link && link.href) {
+    e.preventDefault();
+    e.stopPropagation();
+    ArchiveTuneBridge.openExternalUrl(link.href);
+  }
+}, true);
