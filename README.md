@@ -53,7 +53,7 @@
       <br /><sub><b>Live Synced Lyrics</b></sub>
     </td>
     <td align="center" width="25%" style="border: none;">
-      <img src="assets/screenshots/screenshot_library.jpg" alt="Offline Music Vault" width="100%" style="border-radius: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.25);" />
+      <img src="assets/screenshots/screenshot_vault.jpg" alt="Offline Music Vault" width="100%" style="border-radius: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.25);" />
       <br /><sub><b>Offline Music Vault</b></sub>
     </td>
     <td align="center" width="25%" style="border: none;">
