@@ -12,12 +12,17 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import android.net.Uri;
+import android.provider.Settings;
+import androidx.core.content.FileProvider;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1559,6 +1564,124 @@ public class ArchiveTunePlugin extends Plugin {
         JSObject ret = new JSObject();
         ret.put("success", true);
         call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void downloadAndInstallUpdate(PluginCall call) {
+        String apkUrl = call.getString("url");
+        if (apkUrl == null || apkUrl.isEmpty()) {
+            call.reject("Missing APK download URL");
+            return;
+        }
+
+        new Thread(() -> {
+            HttpURLConnection conn = null;
+            InputStream in = null;
+            FileOutputStream out = null;
+            try {
+                // Follow redirects (GitHub releases redirect to AWS S3 CDN)
+                String currentUrl = apkUrl;
+                int redirects = 0;
+                while (redirects < 6) {
+                    URL u = new URL(currentUrl);
+                    conn = (HttpURLConnection) u.openConnection();
+                    conn.setInstanceFollowRedirects(true);
+                    conn.setRequestProperty("User-Agent", "PixelBeats-Updater/1.0");
+                    conn.setConnectTimeout(15000);
+                    conn.setReadTimeout(30000);
+                    int code = conn.getResponseCode();
+                    if (code == HttpURLConnection.HTTP_MOVED_PERM || code == HttpURLConnection.HTTP_MOVED_TEMP || code == 307 || code == 308) {
+                        currentUrl = conn.getHeaderField("Location");
+                        redirects++;
+                        conn.disconnect();
+                    } else {
+                        break;
+                    }
+                }
+
+                if (conn.getResponseCode() != 200) {
+                    call.reject("HTTP download error: " + conn.getResponseCode());
+                    return;
+                }
+
+                long totalBytes = conn.getContentLengthLong();
+                File cacheDir = getContext().getExternalCacheDir();
+                if (cacheDir == null) {
+                    cacheDir = getContext().getCacheDir();
+                }
+                File apkFile = new File(cacheDir, "PixelBeats_Update.apk");
+                if (apkFile.exists()) {
+                    apkFile.delete();
+                }
+
+                in = conn.getInputStream();
+                out = new FileOutputStream(apkFile);
+                byte[] buffer = new byte[32768];
+                long downloaded = 0;
+                int read;
+                long lastNotifyTime = 0;
+
+                while ((read = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, read);
+                    downloaded += read;
+                    long now = SystemClock.elapsedRealtime();
+                    if (now - lastNotifyTime > 120 || downloaded == totalBytes) {
+                        lastNotifyTime = now;
+                        int percent = totalBytes > 0 ? (int) ((downloaded * 100) / totalBytes) : -1;
+                        JSObject progress = new JSObject();
+                        progress.put("percent", percent);
+                        progress.put("downloaded", downloaded);
+                        progress.put("total", totalBytes);
+                        notifyListeners("updateDownloadProgress", progress);
+                    }
+                }
+                out.flush();
+
+                // APK downloaded successfully, trigger system package installer
+                boolean launched = launchApkInstaller(apkFile);
+
+                JSObject ret = new JSObject();
+                ret.put("success", true);
+                ret.put("launched", launched);
+                call.resolve(ret);
+
+            } catch (Exception e) {
+                call.reject("Failed to download and install update: " + e.getMessage());
+            } finally {
+                try { if (in != null) in.close(); } catch (Exception ignored) {}
+                try { if (out != null) out.close(); } catch (Exception ignored) {}
+                try { if (conn != null) conn.disconnect(); } catch (Exception ignored) {}
+            }
+        }).start();
+    }
+
+    private boolean launchApkInstaller(File apkFile) {
+        try {
+            Context ctx = getContext();
+            Uri contentUri = FileProvider.getUriForFile(
+                ctx,
+                ctx.getPackageName() + ".fileprovider",
+                apkFile
+            );
+
+            Intent installIntent = new Intent(Intent.ACTION_VIEW);
+            installIntent.setDataAndType(contentUri, "application/vnd.android.package-archive");
+            installIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            // On Android 8.0+ (Oreo), verify unknown sources permission
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (!ctx.getPackageManager().canRequestPackageInstalls()) {
+                    Intent permIntent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + ctx.getPackageName()));
+                    permIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    ctx.startActivity(permIntent);
+                }
+            }
+
+            ctx.startActivity(installIntent);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
 

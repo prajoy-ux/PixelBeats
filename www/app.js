@@ -95,6 +95,27 @@ const ArchiveTuneBridge = {
       } catch (e) {}
     }
     return null;
+  },
+  async downloadAndInstallUpdate(apkUrl, onProgress) {
+    if (this.isNative()) {
+      let listenerHandle = null;
+      if (typeof onProgress === 'function') {
+        try {
+          listenerHandle = await window.Capacitor.Plugins.ArchiveTune.addListener('updateDownloadProgress', onProgress);
+        } catch (le) {}
+      }
+      try {
+        return await window.Capacitor.Plugins.ArchiveTune.downloadAndInstallUpdate({ url: apkUrl });
+      } catch (e) {
+        console.warn('[ArchiveTune Native] Update install error:', e);
+        throw e;
+      } finally {
+        if (listenerHandle && listenerHandle.remove) {
+          try { listenerHandle.remove(); } catch (re) {}
+        }
+      }
+    }
+    return null;
   }
 };
 
@@ -392,7 +413,24 @@ const elements = {
   btnClosePickerModal: document.getElementById('btn-close-picker-modal'),
   pickerTrackLabel: document.getElementById('picker-track-label'),
   btnPickerCreateNew: document.getElementById('btn-picker-create-new'),
-  pickerPlaylistsList: document.getElementById('picker-playlists-list')
+  pickerPlaylistsList: document.getElementById('picker-playlists-list'),
+
+  // In-App Self Updater
+  modalUpdate: document.getElementById('modal-update'),
+  btnCloseUpdate: document.getElementById('btn-close-update'),
+  updateBadgeVer: document.getElementById('update-badge-ver'),
+  updateReleaseTitle: document.getElementById('update-release-title'),
+  updateNotesContent: document.getElementById('update-notes-content'),
+  updateMetaSize: document.getElementById('update-meta-size'),
+  updateProgressWrap: document.getElementById('update-progress-wrap'),
+  updateProgressBar: document.getElementById('update-progress-bar'),
+  updateProgressStatus: document.getElementById('update-progress-status'),
+  updateProgressPct: document.getElementById('update-progress-pct'),
+  btnInstallUpdate: document.getElementById('btn-install-update'),
+  btnInstallText: document.getElementById('btn-install-text'),
+  btnDismissUpdate: document.getElementById('btn-dismiss-update'),
+  btnCheckUpdates: document.getElementById('btn-check-updates'),
+  btnCheckUpdatesText: document.getElementById('btn-check-updates-text')
 };
 
 // ================= MATERIAL FLOATING TOAST =================
@@ -5050,6 +5088,72 @@ function setupEventListeners() {
   document.addEventListener('click', unlockAudioContext);
   document.addEventListener('touchstart', unlockAudioContext);
   document.addEventListener('keydown', unlockAudioContext);
+
+  // In-App Self Updater Event Listeners
+  if (elements.btnCheckUpdates) {
+    elements.btnCheckUpdates.addEventListener('click', () => {
+      playHapticSfx('click');
+      checkForAppUpdates(true);
+    });
+  }
+
+  const closeUpdateModal = () => {
+    if (elements.modalUpdate && !isUpdating) {
+      elements.modalUpdate.classList.add('hidden');
+    }
+  };
+
+  if (elements.btnCloseUpdate) elements.btnCloseUpdate.addEventListener('click', closeUpdateModal);
+  if (elements.btnDismissUpdate) elements.btnDismissUpdate.addEventListener('click', closeUpdateModal);
+
+  if (elements.btnInstallUpdate) {
+    elements.btnInstallUpdate.addEventListener('click', async () => {
+      if (!pendingUpdateApkUrl) return;
+      playHapticSfx('play');
+
+      if (!ArchiveTuneBridge.isNative()) {
+        window.open(pendingUpdateApkUrl, '_blank');
+        showToast('Downloading update in browser...', 'download');
+        closeUpdateModal();
+        return;
+      }
+
+      try {
+        isUpdating = true;
+        elements.btnInstallUpdate.disabled = true;
+        if (elements.btnInstallText) elements.btnInstallText.textContent = 'Downloading...';
+        if (elements.updateProgressWrap) elements.updateProgressWrap.classList.remove('hidden');
+
+        await ArchiveTuneBridge.downloadAndInstallUpdate(pendingUpdateApkUrl, (progress) => {
+          if (progress && progress.percent >= 0) {
+            const pct = Math.min(100, Math.max(0, progress.percent));
+            if (elements.updateProgressBar) elements.updateProgressBar.style.width = `${pct}%`;
+            if (elements.updateProgressPct) elements.updateProgressPct.textContent = `${pct}%`;
+            if (elements.updateProgressStatus) {
+              if (pct < 100) {
+                elements.updateProgressStatus.textContent = `Downloading update... ${pct}%`;
+              } else {
+                elements.updateProgressStatus.textContent = 'Launching Android installer...';
+              }
+            }
+          }
+        });
+
+        if (elements.updateProgressStatus) {
+          elements.updateProgressStatus.textContent = 'Tap "Update" on the system prompt to finish';
+        }
+        showToast('Launching system updater...', 'system_update', 4000);
+
+      } catch (err) {
+        console.error('[Update] Install error:', err);
+        showToast('Update download failed. Please try again.', 'error', 3000);
+        if (elements.btnInstallUpdate) elements.btnInstallUpdate.disabled = false;
+        if (elements.btnInstallText) elements.btnInstallText.textContent = 'Retry Download';
+      } finally {
+        isUpdating = false;
+      }
+    });
+  }
 }
 
 /**
@@ -5115,6 +5219,98 @@ function syncCreatorAvatarFromGitHub() {
     };
     imgLoader.src = liveAvatarUrl;
   } catch (e) {}
+}
+
+// ================= IN-APP SELF UPDATER =================
+const APP_VERSION = '1.1.0';
+const GITHUB_REPO = 'prajoy-ux/PixelBeats';
+let pendingUpdateApkUrl = null;
+let isUpdating = false;
+
+function parseVersion(verStr) {
+  if (!verStr) return [0, 0, 0];
+  const clean = String(verStr).replace(/^v/i, '').split('-')[0].trim();
+  return clean.split('.').map(n => parseInt(n, 10) || 0);
+}
+
+function isNewerVersion(remoteVer, currentVer) {
+  const r = parseVersion(remoteVer);
+  const c = parseVersion(currentVer);
+  for (let i = 0; i < Math.max(r.length, c.length); i++) {
+    const rv = r[i] || 0;
+    const cv = c[i] || 0;
+    if (rv > cv) return true;
+    if (rv < cv) return false;
+  }
+  return false;
+}
+
+async function checkForAppUpdates(isManual = false) {
+  if (isUpdating) return;
+  if (isManual && elements.btnCheckUpdatesText) {
+    elements.btnCheckUpdatesText.textContent = 'Checking...';
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const resp = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`, {
+      headers: { 'Accept': 'application/vnd.github.v3+json' },
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (!resp.ok) {
+      if (isManual) {
+        showToast('Could not reach update server', 'cloud_off');
+      }
+      return;
+    }
+
+    const release = await resp.json();
+    const remoteTag = release.tag_name || '';
+
+    if (isNewerVersion(remoteTag, APP_VERSION)) {
+      let apkAsset = null;
+      if (Array.isArray(release.assets)) {
+        apkAsset = release.assets.find(a => a.name && a.name.endsWith('.apk'));
+      }
+      pendingUpdateApkUrl = apkAsset ? apkAsset.browser_download_url : `https://github.com/${GITHUB_REPO}/releases/download/${remoteTag}/PixelBeats.apk`;
+
+      let sizeStr = '~5.3 MB';
+      if (apkAsset && apkAsset.size) {
+        sizeStr = (apkAsset.size / (1024 * 1024)).toFixed(1) + ' MB';
+      }
+
+      if (elements.updateBadgeVer) elements.updateBadgeVer.textContent = `${remoteTag} Available`;
+      if (elements.updateReleaseTitle) elements.updateReleaseTitle.textContent = release.name || `PixelBeats ${remoteTag} is ready to install!`;
+      if (elements.updateNotesContent) {
+        elements.updateNotesContent.textContent = release.body && release.body.trim().length > 0
+          ? release.body.trim()
+          : '• Performance enhancements\n• Bug fixes and UI refinements\n• Ultra-fast lyrics loading';
+      }
+      if (elements.updateMetaSize) elements.updateMetaSize.textContent = sizeStr;
+
+      if (elements.updateProgressWrap) elements.updateProgressWrap.classList.add('hidden');
+      if (elements.updateProgressBar) elements.updateProgressBar.style.width = '0%';
+      if (elements.btnInstallUpdate) elements.btnInstallUpdate.disabled = false;
+      if (elements.btnInstallText) elements.btnInstallText.textContent = 'Download & Install';
+
+      if (elements.modalUpdate) elements.modalUpdate.classList.remove('hidden');
+    } else {
+      if (isManual) {
+        showToast(`PixelBeats is up to date (${APP_VERSION})`, 'check_circle', 2500);
+      }
+    }
+  } catch (err) {
+    if (isManual) {
+      showToast('Could not check for updates', 'cloud_off');
+    }
+  } finally {
+    if (isManual && elements.btnCheckUpdatesText) {
+      elements.btnCheckUpdatesText.textContent = 'Check for Updates';
+    }
+  }
 }
 
 // ================= APP INITIALIZATION =================
@@ -5220,6 +5416,11 @@ async function initApp() {
       await loadTrendingTracks();
     } catch (e) {}
   })();
+
+  // 12. Automatic In-App Self-Update Check on Startup
+  setTimeout(() => {
+    checkForAppUpdates(false);
+  }, 2200);
 }
 
 // Window resize & orientation handlers to keep spring indicator snapped

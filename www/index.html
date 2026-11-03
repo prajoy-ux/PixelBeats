@@ -1783,7 +1783,13 @@
               <span class="info-label">Interface:</span><span class="info-val">Material Design 3</span>
               <span class="info-label">Platform:</span><span id="cap-status" class="info-val">Web Mode</span>
               <span class="info-label">Storage:</span><span class="info-val">IndexedDB Offline Vault</span>
-              <span class="info-label">Version:</span><span class="info-val">2.0.0 Material You</span>
+              <span class="info-label">Version:</span><span id="system-app-version" class="info-val">v1.1.0</span>
+            </div>
+            <div style="margin-top: 14px;">
+              <button type="button" id="btn-check-updates" class="m3-accent-pill-btn w-full" style="justify-content: center; gap: 8px;">
+                <span class="material-symbols-rounded">system_update</span>
+                <span id="btn-check-updates-text">Check for Updates</span>
+              </button>
             </div>
           </div>
         </div>
@@ -1931,6 +1937,65 @@
         </div>
         <div id="picker-playlists-list" class="picker-list">
           <!-- Playlists rendered here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: IN-APP UPDATE AVAILABLE POPUP ================= -->
+  <div id="modal-update" class="m3-modal-backdrop m3-update-backdrop hidden">
+    <div class="m3-update-dialog">
+      <div class="update-dialog-header">
+        <div class="update-icon-circle">
+          <span class="material-symbols-rounded">rocket_launch</span>
+        </div>
+        <div class="update-header-info">
+          <span class="update-badge" id="update-badge-ver">v1.2.0 Available</span>
+          <h3 class="update-dialog-title">Update Available</h3>
+        </div>
+        <button type="button" id="btn-close-update" class="m3-icon-btn update-close-btn" title="Dismiss">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+
+      <div class="update-dialog-body">
+        <p class="update-desc" id="update-release-title">A brand new update of PixelBeats is ready to install.</p>
+        
+        <div class="update-notes-box" id="update-changelog-box">
+          <div class="update-notes-title">What's New:</div>
+          <div id="update-notes-content" class="update-notes-text">Loading release details...</div>
+        </div>
+
+        <div class="update-meta-pills">
+          <span class="update-pill-meta">
+            <span class="material-symbols-rounded" style="font-size: 15px;">folder_zip</span>
+            <span id="update-meta-size">~5.3 MB</span>
+          </span>
+          <span class="update-pill-meta">
+            <span class="material-symbols-rounded" style="font-size: 15px;">verified</span>
+            <span>Official GitHub Release</span>
+          </span>
+        </div>
+
+        <!-- Download Progress Bar (shown when downloading) -->
+        <div id="update-progress-wrap" class="update-progress-wrap hidden">
+          <div class="update-progress-track">
+            <div id="update-progress-bar" class="update-progress-bar" style="width: 0%;"></div>
+          </div>
+          <div class="update-progress-labels">
+            <span id="update-progress-status">Downloading update...</span>
+            <span id="update-progress-pct">0%</span>
+          </div>
+        </div>
+
+        <div class="update-actions" id="update-actions">
+          <button type="button" id="btn-install-update" class="m3-accent-pill-btn flex-1" style="justify-content: center;">
+            <span class="material-symbols-rounded">download</span>
+            <span id="btn-install-text">Download &amp; Install</span>
+          </button>
+          <button type="button" id="btn-dismiss-update" class="m3-tonal-pill-btn">
+            <span>Later</span>
+          </button>
         </div>
       </div>
     </div>

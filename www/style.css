@@ -3553,3 +3553,194 @@ html, body {
   margin-top: 4px;
 }
 
+/* ================= MATERIAL YOU UPDATE DIALOG ================= */
+.m3-update-backdrop {
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20px;
+  z-index: 10000 !important;
+}
+
+.m3-update-dialog {
+  width: 100%;
+  max-width: 420px;
+  background: #1B2117;
+  border: 1px solid rgba(200, 211, 148, 0.22);
+  border-radius: 28px;
+  padding: 24px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.75), 0 0 36px rgba(200, 211, 148, 0.14);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: updatePopIn 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes updatePopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.88) translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.update-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+}
+
+.update-icon-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #C8D394 0%, #768541 100%);
+  color: #141A02;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(200, 211, 148, 0.35);
+}
+
+.update-icon-circle .material-symbols-rounded {
+  font-size: 26px;
+}
+
+.update-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.update-badge {
+  display: inline-block;
+  background: rgba(200, 211, 148, 0.18);
+  color: #C8D394;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 2px;
+}
+
+.update-dialog-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.update-close-btn {
+  margin-left: auto;
+  align-self: flex-start;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.update-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.update-desc {
+  margin: 0;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.4;
+}
+
+.update-notes-box {
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  padding: 12px 14px;
+  max-height: 140px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.update-notes-title {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #C8D394;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.update-notes-text {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.update-meta-pills {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.update-pill-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.update-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  background: rgba(200, 211, 148, 0.08);
+  border-radius: 16px;
+  border: 1px solid rgba(200, 211, 148, 0.16);
+}
+
+.update-progress-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.update-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #768541 0%, #C8D394 100%);
+  border-radius: 999px;
+  transition: width 0.15s ease-out;
+}
+
+.update-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.76rem;
+  color: #C8D394;
+  font-weight: 600;
+}
+
+.update-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+
