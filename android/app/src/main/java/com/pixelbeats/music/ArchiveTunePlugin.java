@@ -28,12 +28,47 @@ import java.util.concurrent.ConcurrentHashMap;
 import android.media.audiofx.Equalizer;
 import android.media.audiofx.BassBoost;
 
+import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Build;
+import android.os.SystemClock;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+
 /**
  * ArchiveTune Native Engine Plugin for PixelBeats.
  * Runs 100% on-device inside the Android app without needing any PC server or local Wi-Fi!
  */
 @CapacitorPlugin(name = "ArchiveTune")
 public class ArchiveTunePlugin extends Plugin {
+
+    public static final String NOTIFICATION_CHANNEL_ID = "pixelbeats_playback_channel";
+    public static final int NOTIFICATION_ID = 4040;
+
+    private static ArchiveTunePlugin activeInstance = null;
+    private static Notification lastNotification = null;
+
+    private MediaSessionCompat mediaSession = null;
+    private String currentTitle = "PixelBeats";
+    private String currentArtist = "PixelBeats Music";
+    private String currentAlbum = "PixelBeats";
+    private double currentDuration = 0.0;
+    private double currentPosition = 0.0;
+    private boolean currentIsPlaying = false;
+    private String currentThumbnailUrl = null;
+    private Bitmap currentArtworkBitmap = null;
 
     private static final String IOS_UA = "com.google.ios.youtube/20.10.4 (iPhone16,2; U; CPU iOS 18_3_2 like Mac OS X;)";
     private static final String DESKTOP_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
@@ -64,8 +99,22 @@ public class ArchiveTunePlugin extends Plugin {
     @Override
     public void load() {
         super.load();
+        activeInstance = this;
         ensureProxyServerStarted();
         initNativeAudioEffects();
+        initMediaSession();
+    }
+
+    @Override
+    protected void handleOnDestroy() {
+        if (mediaSession != null) {
+            try {
+                mediaSession.setActive(false);
+                mediaSession.release();
+            } catch (Throwable ignored) {}
+        }
+        activeInstance = null;
+        super.handleOnDestroy();
     }
 
     private synchronized void ensureProxyServerStarted() {
@@ -1146,6 +1195,370 @@ public class ArchiveTunePlugin extends Plugin {
             res.put("error", e.getMessage());
             call.resolve(res);
         }
+    }
+
+    public static Notification getLastNotification() {
+        return lastNotification;
+    }
+
+    public static void dispatchMediaAction(String action, double position) {
+        if (activeInstance != null) {
+            activeInstance.handleMediaActionInternal(action, position);
+        }
+    }
+
+    private void handleMediaActionInternal(String action, double position) {
+        if ("play".equals(action)) {
+            currentIsPlaying = true;
+            updateNativePlaybackStateOnly(true, currentPosition);
+            rebuildNotification();
+        } else if ("pause".equals(action)) {
+            currentIsPlaying = false;
+            updateNativePlaybackStateOnly(false, currentPosition);
+            rebuildNotification();
+        } else if ("toggle".equals(action)) {
+            currentIsPlaying = !currentIsPlaying;
+            updateNativePlaybackStateOnly(currentIsPlaying, currentPosition);
+            rebuildNotification();
+            action = currentIsPlaying ? "play" : "pause";
+        }
+
+        JSObject data = new JSObject();
+        data.put("action", action);
+        if (position >= 0) {
+            data.put("position", position);
+        }
+        notifyListeners("mediaAction", data);
+    }
+
+    private synchronized void initMediaSession() {
+        Context ctx = getContext();
+        if (ctx == null) return;
+
+        createNotificationChannel();
+
+        if (mediaSession == null) {
+            mediaSession = new MediaSessionCompat(ctx, "PixelBeatsMediaSession");
+            mediaSession.setFlags(
+                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
+                MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
+            );
+
+            mediaSession.setCallback(new MediaSessionCompat.Callback() {
+                @Override
+                public void onPlay() {
+                    dispatchMediaAction("play", -1);
+                }
+
+                @Override
+                public void onPause() {
+                    dispatchMediaAction("pause", -1);
+                }
+
+                @Override
+                public void onSkipToNext() {
+                    dispatchMediaAction("next", -1);
+                }
+
+                @Override
+                public void onSkipToPrevious() {
+                    dispatchMediaAction("previous", -1);
+                }
+
+                @Override
+                public void onSeekTo(long posMs) {
+                    double posSec = Math.max(0, posMs / 1000.0);
+                    currentPosition = posSec;
+                    updateNativePlaybackStateOnly(currentIsPlaying, currentPosition);
+                    dispatchMediaAction("seek", posSec);
+                }
+
+                @Override
+                public void onStop() {
+                    dispatchMediaAction("stop", -1);
+                }
+            });
+
+            mediaSession.setActive(true);
+        }
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                NOTIFICATION_CHANNEL_ID,
+                "Playback Controls",
+                NotificationManager.IMPORTANCE_LOW
+            );
+            channel.setDescription("PixelBeats background playback and lockscreen media controls");
+            channel.setShowBadge(false);
+            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            NotificationManager nm = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null) {
+                nm.createNotificationChannel(channel);
+            }
+        }
+    }
+
+    private void updateNativePlaybackStateOnly(boolean isPlaying, double positionSec) {
+        if (mediaSession == null) return;
+        long actions = PlaybackStateCompat.ACTION_PLAY |
+                       PlaybackStateCompat.ACTION_PAUSE |
+                       PlaybackStateCompat.ACTION_PLAY_PAUSE |
+                       PlaybackStateCompat.ACTION_SKIP_TO_NEXT |
+                       PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS |
+                       PlaybackStateCompat.ACTION_SEEK_TO |
+                       PlaybackStateCompat.ACTION_STOP;
+
+        int state = isPlaying ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
+        float speed = isPlaying ? 1.0f : 0.0f;
+        long posMs = (long) Math.max(0, positionSec * 1000.0);
+
+        PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder()
+            .setActions(actions)
+            .setState(state, posMs, speed, SystemClock.elapsedRealtime());
+
+        mediaSession.setPlaybackState(stateBuilder.build());
+    }
+
+    private void updateNativeMetadata(String title, String artist, String album, double durationSec, Bitmap art) {
+        if (mediaSession == null) return;
+        MediaMetadataCompat.Builder metaBuilder = new MediaMetadataCompat.Builder();
+        metaBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, title);
+        metaBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artist);
+        metaBuilder.putString(MediaMetadataCompat.METADATA_KEY_ALBUM, album != null ? album : "PixelBeats");
+        metaBuilder.putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ARTIST, artist);
+        long durMs = (long) Math.max(0, durationSec * 1000.0);
+        metaBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, durMs);
+
+        if (art != null) {
+            metaBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, art);
+            metaBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, art);
+        }
+        mediaSession.setMetadata(metaBuilder.build());
+    }
+
+    public synchronized Notification buildNotification() {
+        Context ctx = getContext();
+        if (ctx == null || mediaSession == null) return null;
+
+        Intent openAppIntent = new Intent(ctx, MainActivity.class);
+        openAppIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent contentIntent = PendingIntent.getActivity(
+            ctx, 0, openAppIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0)
+        );
+
+        Intent prevIntent = new Intent(ctx, PixelBeatsMediaReceiver.class).setAction(PixelBeatsMediaReceiver.ACTION_PREV);
+        PendingIntent prevPI = PendingIntent.getBroadcast(
+            ctx, 10, prevIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0)
+        );
+
+        Intent toggleIntent = new Intent(ctx, PixelBeatsMediaReceiver.class).setAction(PixelBeatsMediaReceiver.ACTION_TOGGLE);
+        PendingIntent togglePI = PendingIntent.getBroadcast(
+            ctx, 11, toggleIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0)
+        );
+
+        Intent nextIntent = new Intent(ctx, PixelBeatsMediaReceiver.class).setAction(PixelBeatsMediaReceiver.ACTION_NEXT);
+        PendingIntent nextPI = PendingIntent.getBroadcast(
+            ctx, 12, nextIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0)
+        );
+
+        androidx.media.app.NotificationCompat.MediaStyle mediaStyle = new androidx.media.app.NotificationCompat.MediaStyle()
+            .setMediaSession(mediaSession.getSessionToken())
+            .setShowActionsInCompactView(0, 1, 2);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(ctx, NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_pixelbeats_notification)
+            .setContentTitle(currentTitle != null && !currentTitle.isEmpty() ? currentTitle : "PixelBeats")
+            .setContentText(currentArtist != null && !currentArtist.isEmpty() ? currentArtist : "Now Playing")
+            .setSubText(currentAlbum != null && !currentAlbum.isEmpty() ? currentAlbum : "PixelBeats")
+            .setContentIntent(contentIntent)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setOngoing(currentIsPlaying)
+            .setOnlyAlertOnce(true)
+            .addAction(R.drawable.ic_skip_previous, "Previous", prevPI)
+            .addAction(currentIsPlaying ? R.drawable.ic_pause : R.drawable.ic_play_arrow, currentIsPlaying ? "Pause" : "Play", togglePI)
+            .addAction(R.drawable.ic_skip_next, "Next", nextPI)
+            .setStyle(mediaStyle);
+
+        if (currentArtworkBitmap != null) {
+            builder.setLargeIcon(currentArtworkBitmap);
+        } else {
+            try {
+                Bitmap fallback = BitmapFactory.decodeResource(ctx.getResources(), R.mipmap.ic_launcher);
+                if (fallback != null) builder.setLargeIcon(fallback);
+            } catch (Throwable ignored) {}
+        }
+
+        Notification notif = builder.build();
+        lastNotification = notif;
+        return notif;
+    }
+
+    public synchronized void rebuildNotification() {
+        Context ctx = getContext();
+        if (ctx == null) return;
+
+        Notification notif = buildNotification();
+        if (notif == null) return;
+
+        try {
+            NotificationManagerCompat.from(ctx).notify(NOTIFICATION_ID, notif);
+        } catch (Throwable t) {
+            android.util.Log.w("ArchiveTune", "notify notice: " + t.getMessage());
+        }
+
+        try {
+            if (currentIsPlaying) {
+                Intent sIntent = new Intent(ctx, PixelBeatsMediaService.class);
+                sIntent.setAction(PixelBeatsMediaService.ACTION_START_FOREGROUND);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    ctx.startForegroundService(sIntent);
+                } else {
+                    ctx.startService(sIntent);
+                }
+            } else {
+                Intent sIntent = new Intent(ctx, PixelBeatsMediaService.class);
+                sIntent.setAction(PixelBeatsMediaService.ACTION_STOP_FOREGROUND);
+                ctx.startService(sIntent);
+            }
+        } catch (Throwable t) {
+            android.util.Log.w("ArchiveTune", "Service notice: " + t.getMessage());
+        }
+    }
+
+    private Bitmap loadBitmap(String urlStr) {
+        if (urlStr == null || urlStr.trim().isEmpty()) return null;
+        try {
+            if (urlStr.startsWith("data:image")) {
+                int commaIdx = urlStr.indexOf(',');
+                if (commaIdx >= 0) {
+                    byte[] decoded = android.util.Base64.decode(urlStr.substring(commaIdx + 1), android.util.Base64.DEFAULT);
+                    Bitmap bmp = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
+                    if (bmp != null) {
+                        return Bitmap.createScaledBitmap(bmp, 512, 512, true);
+                    }
+                }
+            } else if (urlStr.startsWith("http://") || urlStr.startsWith("https://")) {
+                URL url = new URL(urlStr);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestProperty("User-Agent", DESKTOP_UA);
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+                conn.setDoInput(true);
+                conn.connect();
+                InputStream in = conn.getInputStream();
+                Bitmap bmp = BitmapFactory.decodeStream(in);
+                in.close();
+                if (bmp != null) {
+                    return Bitmap.createScaledBitmap(bmp, 512, 512, true);
+                }
+            }
+        } catch (Throwable t) {
+            android.util.Log.w("ArchiveTune", "Artwork decode notice: " + t.getMessage());
+        }
+        return null;
+    }
+
+    @PluginMethod
+    public void updateMediaSession(PluginCall call) {
+        initMediaSession();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && getActivity() != null) {
+            try {
+                if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        String title = call.getString("title", "PixelBeats");
+        String artist = call.getString("artist", "PixelBeats Music");
+        String album = call.getString("album", "PixelBeats");
+        Double duration = call.getDouble("duration", 0.0);
+        Double position = call.getDouble("position", 0.0);
+        Boolean isPlaying = call.getBoolean("isPlaying", true);
+        String thumbnail = call.getString("thumbnail", "");
+
+        currentTitle = title;
+        currentArtist = artist;
+        currentAlbum = album;
+        currentDuration = duration != null ? duration : 0.0;
+        currentPosition = position != null ? position : 0.0;
+        currentIsPlaying = isPlaying != null ? isPlaying : false;
+
+        if (thumbnail != null && !thumbnail.isEmpty() && !thumbnail.equals(currentThumbnailUrl)) {
+            currentThumbnailUrl = thumbnail;
+            new Thread(() -> {
+                Bitmap bmp = loadBitmap(thumbnail);
+                if (bmp != null) {
+                    currentArtworkBitmap = bmp;
+                }
+                updateNativeMetadata(currentTitle, currentArtist, currentAlbum, currentDuration, currentArtworkBitmap);
+                updateNativePlaybackStateOnly(currentIsPlaying, currentPosition);
+                rebuildNotification();
+            }, "ArtworkLoader").start();
+        } else {
+            updateNativeMetadata(currentTitle, currentArtist, currentAlbum, currentDuration, currentArtworkBitmap);
+            updateNativePlaybackStateOnly(currentIsPlaying, currentPosition);
+            rebuildNotification();
+        }
+
+        JSObject ret = new JSObject();
+        ret.put("success", true);
+        call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void updatePlaybackState(PluginCall call) {
+        Boolean isPlaying = call.getBoolean("isPlaying");
+        Double position = call.getDouble("position");
+        Double duration = call.getDouble("duration");
+
+        boolean stateChanged = false;
+        if (isPlaying != null && isPlaying != currentIsPlaying) {
+            currentIsPlaying = isPlaying;
+            stateChanged = true;
+        }
+        if (position != null) {
+            currentPosition = position;
+        }
+        if (duration != null && duration > 0 && Math.abs(duration - currentDuration) > 1.0) {
+            currentDuration = duration;
+            updateNativeMetadata(currentTitle, currentArtist, currentAlbum, currentDuration, currentArtworkBitmap);
+        }
+
+        updateNativePlaybackStateOnly(currentIsPlaying, currentPosition);
+
+        if (stateChanged) {
+            rebuildNotification();
+        }
+
+        JSObject ret = new JSObject();
+        ret.put("success", true);
+        call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void hideMediaNotification(PluginCall call) {
+        currentIsPlaying = false;
+        updateNativePlaybackStateOnly(false, currentPosition);
+        try {
+            NotificationManagerCompat.from(getContext()).cancel(NOTIFICATION_ID);
+        } catch (Throwable ignored) {}
+        try {
+            Intent sIntent = new Intent(getContext(), PixelBeatsMediaService.class);
+            sIntent.setAction(PixelBeatsMediaService.ACTION_DISMISS);
+            getContext().startService(sIntent);
+        } catch (Throwable ignored) {}
+
+        JSObject ret = new JSObject();
+        ret.put("success", true);
+        call.resolve(ret);
     }
 }
 

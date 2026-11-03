@@ -67,6 +67,34 @@ const ArchiveTuneBridge = {
       }
     }
     return null;
+  },
+  async updateMediaSession(details) {
+    if (this.isNative()) {
+      try {
+        return await window.Capacitor.Plugins.ArchiveTune.updateMediaSession(details);
+      } catch (e) {
+        console.warn('[ArchiveTune Native] updateMediaSession error:', e);
+      }
+    }
+    return null;
+  },
+  async updatePlaybackState(details) {
+    if (this.isNative()) {
+      try {
+        return await window.Capacitor.Plugins.ArchiveTune.updatePlaybackState(details);
+      } catch (e) {
+        console.warn('[ArchiveTune Native] updatePlaybackState error:', e);
+      }
+    }
+    return null;
+  },
+  async hideMediaNotification() {
+    if (this.isNative()) {
+      try {
+        return await window.Capacitor.Plugins.ArchiveTune.hideMediaNotification();
+      } catch (e) {}
+    }
+    return null;
   }
 };
 
@@ -3360,6 +3388,14 @@ function updatePlayPauseUI(isPlaying) {
       navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
     } catch (e) {}
   }
+
+  if (ArchiveTuneBridge.isNative()) {
+    ArchiveTuneBridge.updatePlaybackState({
+      isPlaying: isPlaying,
+      position: (elements.audio && !isNaN(elements.audio.currentTime)) ? elements.audio.currentTime : 0,
+      duration: (elements.audio && !isNaN(elements.audio.duration)) ? elements.audio.duration : 0
+    });
+  }
 }
 
 function togglePlayPause() {
@@ -3443,7 +3479,7 @@ function playPrevTrack() {
 }
 
 function updateMediaSession(song) {
-  if (!('mediaSession' in navigator) || !song) return;
+  if (!song) return;
 
   const rawThumb = song.thumbnail || (elements.playerCoverArt ? elements.playerCoverArt.src : null) || 'icon.jpg';
   const artworkList = [];
@@ -3456,62 +3492,89 @@ function updateMediaSession(song) {
     });
   }
 
-  try {
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: song.title || 'PixelMusic Track',
+  if ('mediaSession' in navigator) {
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: song.title || 'PixelBeats Track',
+        artist: song.artist || 'Unknown Artist',
+        album: song.album || 'PixelBeats',
+        artwork: artworkList
+      });
+
+      navigator.mediaSession.playbackState = STATE.isPlaying ? 'playing' : 'paused';
+
+      navigator.mediaSession.setActionHandler('play', () => togglePlayPause());
+      navigator.mediaSession.setActionHandler('pause', () => togglePlayPause());
+      navigator.mediaSession.setActionHandler('previoustrack', () => playPrevTrack());
+      navigator.mediaSession.setActionHandler('nexttrack', () => playNextTrack());
+      navigator.mediaSession.setActionHandler('seekto', (details) => {
+        if (details.seekTime != null && elements.audio && !isNaN(elements.audio.duration)) {
+          elements.audio.currentTime = details.seekTime;
+          updateMediaSessionPositionState();
+        }
+      });
+      navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+        const skipTime = details.seekOffset || 10;
+        if (elements.audio) {
+          elements.audio.currentTime = Math.max(0, elements.audio.currentTime - skipTime);
+          updateMediaSessionPositionState();
+        }
+      });
+      navigator.mediaSession.setActionHandler('seekforward', (details) => {
+        const skipTime = details.seekOffset || 10;
+        if (elements.audio && !isNaN(elements.audio.duration)) {
+          elements.audio.currentTime = Math.min(elements.audio.duration, elements.audio.currentTime + skipTime);
+          updateMediaSessionPositionState();
+        }
+      });
+      navigator.mediaSession.setActionHandler('stop', () => {
+        if (elements.audio) elements.audio.pause();
+        STATE.isPlaying = false;
+        updatePlayPauseUI(false);
+      });
+    } catch (e) {
+      console.warn('[MediaSession] Metadata registration notice:', e);
+    }
+  }
+
+  // Native Android MediaSession with Spotify-style Notification & Live Scrubber
+  if (ArchiveTuneBridge.isNative()) {
+    const curTime = (elements.audio && !isNaN(elements.audio.currentTime)) ? elements.audio.currentTime : 0;
+    const durTime = (elements.audio && !isNaN(elements.audio.duration)) ? elements.audio.duration : parseDurationToSeconds(song.duration);
+    ArchiveTuneBridge.updateMediaSession({
+      title: song.title || 'PixelBeats Track',
       artist: song.artist || 'Unknown Artist',
-      album: song.album || 'PixelMusic Master',
-      artwork: artworkList
+      album: song.album || 'PixelBeats',
+      duration: durTime,
+      position: curTime,
+      isPlaying: STATE.isPlaying,
+      thumbnail: rawThumb
     });
-
-    navigator.mediaSession.playbackState = STATE.isPlaying ? 'playing' : 'paused';
-
-    navigator.mediaSession.setActionHandler('play', () => togglePlayPause());
-    navigator.mediaSession.setActionHandler('pause', () => togglePlayPause());
-    navigator.mediaSession.setActionHandler('previoustrack', () => playPrevTrack());
-    navigator.mediaSession.setActionHandler('nexttrack', () => playNextTrack());
-    navigator.mediaSession.setActionHandler('seekto', (details) => {
-      if (details.seekTime != null && elements.audio && !isNaN(elements.audio.duration)) {
-        elements.audio.currentTime = details.seekTime;
-        updateMediaSessionPositionState();
-      }
-    });
-    navigator.mediaSession.setActionHandler('seekbackward', (details) => {
-      const skipTime = details.seekOffset || 10;
-      if (elements.audio) {
-        elements.audio.currentTime = Math.max(0, elements.audio.currentTime - skipTime);
-        updateMediaSessionPositionState();
-      }
-    });
-    navigator.mediaSession.setActionHandler('seekforward', (details) => {
-      const skipTime = details.seekOffset || 10;
-      if (elements.audio && !isNaN(elements.audio.duration)) {
-        elements.audio.currentTime = Math.min(elements.audio.duration, elements.audio.currentTime + skipTime);
-        updateMediaSessionPositionState();
-      }
-    });
-    navigator.mediaSession.setActionHandler('stop', () => {
-      if (elements.audio) elements.audio.pause();
-      STATE.isPlaying = false;
-      updatePlayPauseUI(false);
-    });
-  } catch (e) {
-    console.warn('[MediaSession] Metadata registration notice:', e);
   }
 
   updateMediaSessionPositionState();
 }
 
 function updateMediaSessionPositionState() {
-  if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
-  if (!elements.audio || isNaN(elements.audio.duration) || elements.audio.duration <= 0) return;
-  try {
-    navigator.mediaSession.setPositionState({
-      duration: elements.audio.duration,
-      playbackRate: elements.audio.playbackRate || 1.0,
-      position: Math.min(elements.audio.currentTime || 0, elements.audio.duration)
-    });
-  } catch (e) {}
+  if (elements.audio && !isNaN(elements.audio.duration) && elements.audio.duration > 0) {
+    if ('mediaSession' in navigator && navigator.mediaSession.setPositionState) {
+      try {
+        navigator.mediaSession.setPositionState({
+          duration: elements.audio.duration,
+          playbackRate: elements.audio.playbackRate || 1.0,
+          position: Math.min(elements.audio.currentTime || 0, elements.audio.duration)
+        });
+      } catch (e) {}
+    }
+
+    if (ArchiveTuneBridge.isNative()) {
+      ArchiveTuneBridge.updatePlaybackState({
+        isPlaying: STATE.isPlaying,
+        position: elements.audio.currentTime || 0,
+        duration: elements.audio.duration
+      });
+    }
+  }
 }
 
 function addToQueue(song, playImmediately = false) {
@@ -4869,13 +4932,66 @@ function setupEventListeners() {
   document.addEventListener('keydown', unlockAudioContext);
 }
 
+/**
+ * Android Native Media Notification & Lock Screen Controls (Spotify-Style)
+ * Intercepts Play, Pause, Next, Previous, and Live Scrubber Seek from Notification Shade
+ */
+function setupNativeMediaControls() {
+  if (typeof window === 'undefined' || !window.Capacitor || !window.Capacitor.Plugins || !window.Capacitor.Plugins.ArchiveTune) {
+    return;
+  }
+  const ArchiveTune = window.Capacitor.Plugins.ArchiveTune;
+  ArchiveTune.addListener('mediaAction', (data) => {
+    console.log('[Native Media Action]', data);
+    if (!data || !data.action) return;
+
+    switch (data.action) {
+      case 'play':
+        if (elements.audio && (elements.audio.paused || !STATE.isPlaying)) {
+          togglePlayPause();
+        }
+        break;
+      case 'pause':
+        if (elements.audio && (!elements.audio.paused || STATE.isPlaying)) {
+          togglePlayPause();
+        }
+        break;
+      case 'toggle':
+        togglePlayPause();
+        break;
+      case 'next':
+        playNextTrack();
+        break;
+      case 'previous':
+        playPrevTrack();
+        break;
+      case 'seek':
+        if (typeof data.position === 'number' && !isNaN(data.position) && elements.audio) {
+          const seekPos = Math.max(0, data.position);
+          elements.audio.currentTime = seekPos;
+          updateScrubberUI(seekPos, elements.audio.duration || 0);
+          syncLyricsWithTime(seekPos, true);
+          updateMediaSessionPositionState();
+        }
+        break;
+      case 'stop':
+        if (elements.audio) elements.audio.pause();
+        STATE.isPlaying = false;
+        updatePlayPauseUI(false);
+        ArchiveTuneBridge.hideMediaNotification();
+        break;
+    }
+  });
+}
+
 // ================= APP INITIALIZATION =================
 async function initApp() {
   console.log('✨ Initializing PixelMusic Material You Audio Engine...');
 
-  // 1. Setup UI listeners first
+  // 1. Setup UI listeners and native media session controls
   try {
     setupEventListeners();
+    setupNativeMediaControls();
   } catch (err) {
     console.error('[Init] Listener error:', err);
   }

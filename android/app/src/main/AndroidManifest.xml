@@ -34,6 +34,24 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+        <service
+            android:name=".PixelBeatsMediaService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
+        <receiver
+            android:name=".PixelBeatsMediaReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.pixelbeats.music.ACTION_PLAY" />
+                <action android:name="com.pixelbeats.music.ACTION_PAUSE" />
+                <action android:name="com.pixelbeats.music.ACTION_TOGGLE" />
+                <action android:name="com.pixelbeats.music.ACTION_PREV" />
+                <action android:name="com.pixelbeats.music.ACTION_NEXT" />
+                <action android:name="com.pixelbeats.music.ACTION_STOP" />
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
     </application>
 
     <!-- Permissions for Background Streaming, Media Session & WakeLock -->
@@ -43,5 +61,6 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 </manifest>

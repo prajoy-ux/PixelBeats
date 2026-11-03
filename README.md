@@ -98,11 +98,12 @@
       <div align="left">
         <h3>🎵 Playback & Streaming</h3>
         <ul>
-          <li>Ad-free continuous music streaming</li>
-          <li>Lossless ALAC / FLAC high-res audio format indicator</li>
-          <li>Background playback with native Android media notification controls</li>
-          <li>Seamless Queue management & next-track auto-prefetch</li>
-          <li>Hardware media button & headset remote integration</li>
+          <li>Ad-free continuous music streaming with instant cold-start</li>
+          <li><b>Spotify-Style Media Notification:</b> Persistent MediaStyle notification & lock screen card with live album art</li>
+          <li><b>Live Interactive Scrubber:</b> Drag or tap the seek bar directly from the notification shade (Android 10–15+) to scrub to any specific timestamp</li>
+          <li><b>Foreground Media Service:</b> Android 14+ compliant playback service with WakeLock to guarantee zero audio interruptions</li>
+          <li><b>Transport Controls:</b> Instant Play, Pause, Previous, Next, and Bluetooth / Headset / Android Auto remote sync</li>
+          <li>Lossless ALAC / FLAC high-res audio format indicator & seamless auto-queue prefetching</li>
         </ul>
       </div>
     </td>
