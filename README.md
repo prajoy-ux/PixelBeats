@@ -198,14 +198,14 @@ graph TD
 <table>
   <thead>
     <tr>
-      <th align="center">Official GitHub Releases</th>
+      <th align="center">GitHub</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td align="center">
         <a href="https://github.com/prajoy-ux/PixelBeats/releases/latest">
-          <img src="https://img.shields.io/badge/Download-PixelBeats.apk-576028?style=for-the-badge&logo=android&logoColor=white" height="42" alt="Download APK" />
+          <img src="assets/badge_github.png" height="50" alt="Get PixelBeats on GitHub" />
         </a>
       </td>
     </tr>
