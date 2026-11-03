@@ -363,6 +363,25 @@ public class ArchiveTunePlugin extends Plugin {
 
             int respCode = chunkConn.getResponseCode();
             if (respCode != 200 && respCode != 206) {
+                streamCache.remove(videoId);
+                try {
+                    entry = fetchStreamFromInnerTube(videoId);
+                    if (entry != null && entry.rawUrl != null) {
+                        chunkConn.disconnect();
+                        chunkConn = (HttpURLConnection) new URL(entry.rawUrl).openConnection();
+                        chunkConn.setRequestProperty("User-Agent", entry.userAgent != null ? entry.userAgent : IOS_UA);
+                        if (rangeHeader != null) {
+                            chunkConn.setRequestProperty("Range", rangeHeader);
+                        } else {
+                            chunkConn.setRequestProperty("Range", "bytes=0-");
+                        }
+                        chunkConn.setConnectTimeout(8000);
+                        chunkConn.setReadTimeout(35000);
+                        respCode = chunkConn.getResponseCode();
+                    }
+                } catch (Exception ignored) {}
+            }
+            if (respCode != 200 && respCode != 206) {
                 out.write(("HTTP/1.1 " + respCode + " Stream Error\r\n\r\n").getBytes(StandardCharsets.UTF_8));
                 client.close();
                 return;
@@ -415,24 +434,24 @@ public class ArchiveTunePlugin extends Plugin {
     }
 
     private StreamDetails fetchStreamFromInnerTube(String videoId) throws Exception {
-        // Strategy 1: VISIONOS client with visitorData (plays 100% full songs without 33s stop or 403 blocks)
+        StreamDetails cached = streamCache.get(videoId);
+        if (cached != null && cached.rawUrl != null) {
+            return cached;
+        }
+
+        // Strategy 1: High-Speed iOS Client Profile (Direct AAC 140 resolution in ~400ms without bot walls)
         try {
-            String vData = getVisitorData();
             JSONObject payload = new JSONObject();
             JSONObject context = new JSONObject();
             JSONObject client = new JSONObject();
-            client.put("clientName", "VISIONOS");
-            client.put("clientVersion", "1.02");
+            client.put("clientName", "IOS");
+            client.put("clientVersion", "20.03.02");
             client.put("deviceMake", "Apple");
-            client.put("deviceModel", "RealityDevice17,1");
-            client.put("userAgent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_7_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15");
-            client.put("osName", "visionOS");
-            client.put("osVersion", "26.5.23O471");
-            if (vData != null && !vData.isEmpty()) {
-                client.put("visitorData", vData);
-            }
+            client.put("deviceModel", "iPhone16,2");
             client.put("hl", "en");
             client.put("gl", "US");
+            client.put("osName", "iOS");
+            client.put("osVersion", "18.3.2.22D82");
             context.put("client", client);
             payload.put("context", context);
             payload.put("videoId", videoId);
@@ -449,11 +468,11 @@ public class ArchiveTunePlugin extends Plugin {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_7_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15");
-            conn.setRequestProperty("X-YouTube-Client-Name", "101");
-            conn.setRequestProperty("X-YouTube-Client-Version", "1.02");
-            conn.setConnectTimeout(8000);
-            conn.setReadTimeout(10000);
+            conn.setRequestProperty("User-Agent", IOS_UA);
+            conn.setRequestProperty("X-YouTube-Client-Name", "5");
+            conn.setRequestProperty("X-YouTube-Client-Version", "20.03.02");
+            conn.setConnectTimeout(6000);
+            conn.setReadTimeout(8000);
             conn.setDoOutput(true);
 
             byte[] postBytes = payload.toString().getBytes(StandardCharsets.UTF_8);
@@ -479,7 +498,7 @@ public class ArchiveTunePlugin extends Plugin {
                                     int itag = f.optInt("itag", 0);
                                     if (itag == 140) {
                                         chosen = f;
-                                        break; // Best universal format for Android
+                                        break; // Best native hardware AAC format
                                     } else if (itag == 251 && chosen == null) {
                                         chosen = f;
                                     } else if (chosen == null) {
@@ -488,7 +507,7 @@ public class ArchiveTunePlugin extends Plugin {
                                 }
                             }
                             if (chosen != null) {
-                                StreamDetails d = buildStreamDetails(json, chosen, videoId, "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_7_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15");
+                                StreamDetails d = buildStreamDetails(json, chosen, videoId, IOS_UA);
                                 streamCache.put(videoId, d);
                                 return d;
                             }
@@ -497,97 +516,91 @@ public class ArchiveTunePlugin extends Plugin {
                 }
             }
         } catch (Exception e) {
-            android.util.Log.w("ArchiveTune", "VISIONOS stream resolution fallback: " + e.getMessage());
+            android.util.Log.w("ArchiveTune", "iOS client resolution notice: " + e.getMessage());
         }
 
-        // Strategy 2: Proven IOS Client Profile fallback (selecting itag 140)
-        JSONObject payload = new JSONObject();
-        JSONObject context = new JSONObject();
-        JSONObject client = new JSONObject();
-        client.put("clientName", "IOS");
-        client.put("clientVersion", "20.03.02");
-        client.put("deviceMake", "Apple");
-        client.put("deviceModel", "iPhone16,2");
-        client.put("hl", "en");
-        client.put("gl", "US");
-        client.put("osName", "iOS");
-        client.put("osVersion", "18.3.2.22D82");
-        context.put("client", client);
-        payload.put("context", context);
-        payload.put("videoId", videoId);
+        // Strategy 2: High-Speed Android VR Client Profile fallback
+        try {
+            JSONObject payload = new JSONObject();
+            JSONObject context = new JSONObject();
+            JSONObject client = new JSONObject();
+            client.put("clientName", "ANDROID_VR");
+            client.put("clientVersion", "1.61.48");
+            client.put("deviceMake", "Oculus");
+            client.put("deviceModel", "Quest 3");
+            client.put("hl", "en");
+            client.put("gl", "US");
+            client.put("osName", "Android");
+            client.put("osVersion", "12");
+            context.put("client", client);
+            payload.put("context", context);
+            payload.put("videoId", videoId);
 
-        JSONObject playbackContext = new JSONObject();
-        JSONObject contentPlaybackContext = new JSONObject();
-        contentPlaybackContext.put("html5Preference", "HTML5_PREF_WANTS");
-        playbackContext.put("contentPlaybackContext", contentPlaybackContext);
-        payload.put("playbackContext", playbackContext);
-        payload.put("contentCheckOk", true);
-        payload.put("racyCheckOk", true);
+            JSONObject playbackContext = new JSONObject();
+            JSONObject contentPlaybackContext = new JSONObject();
+            contentPlaybackContext.put("html5Preference", "HTML5_PREF_WANTS");
+            playbackContext.put("contentPlaybackContext", contentPlaybackContext);
+            payload.put("playbackContext", playbackContext);
+            payload.put("contentCheckOk", true);
+            payload.put("racyCheckOk", true);
 
-        URL url = new URL("https://www.youtube.com/youtubei/v1/player?prettyPrint=false");
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "application/json");
-        conn.setRequestProperty("User-Agent", IOS_UA);
-        conn.setRequestProperty("X-YouTube-Client-Name", "5");
-        conn.setRequestProperty("X-YouTube-Client-Version", "20.03.02");
-        conn.setConnectTimeout(10000);
-        conn.setReadTimeout(12000);
-        conn.setDoOutput(true);
+            URL url = new URL("https://www.youtube.com/youtubei/v1/player?prettyPrint=false");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            String vrUa = "Mozilla/5.0 (Android; Mobile VR) AppleWebKit/537.36";
+            conn.setRequestProperty("User-Agent", vrUa);
+            conn.setRequestProperty("X-YouTube-Client-Name", "28");
+            conn.setRequestProperty("X-YouTube-Client-Version", "1.61.48");
+            conn.setConnectTimeout(6000);
+            conn.setReadTimeout(8000);
+            conn.setDoOutput(true);
 
-        byte[] postBytes = payload.toString().getBytes(StandardCharsets.UTF_8);
-        try (OutputStream os = conn.getOutputStream()) {
-            os.write(postBytes);
-        }
+            byte[] postBytes = payload.toString().getBytes(StandardCharsets.UTF_8);
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(postBytes);
+            }
 
-        if (conn.getResponseCode() != 200) {
-            throw new Exception("InnerTube player responded with code: " + conn.getResponseCode());
-        }
-
-        String responseBody = readStream(conn.getInputStream());
-        JSONObject json = new JSONObject(responseBody);
-
-        JSONObject playability = json.optJSONObject("playabilityStatus");
-        String status = playability != null ? playability.optString("status") : "";
-        if (!"OK".equals(status)) {
-            throw new Exception("Playability status is not OK: " + status);
-        }
-
-        JSONObject streamingData = json.optJSONObject("streamingData");
-        if (streamingData == null) {
-            throw new Exception("No streamingData in player response");
-        }
-
-        JSONArray adaptiveFormats = streamingData.optJSONArray("adaptiveFormats");
-        if (adaptiveFormats == null || adaptiveFormats.length() == 0) {
-            throw new Exception("No adaptiveFormats found");
-        }
-
-        JSONObject chosenFormat = null;
-        for (int i = 0; i < adaptiveFormats.length(); i++) {
-            JSONObject f = adaptiveFormats.getJSONObject(i);
-            String mime = f.optString("mimeType", "");
-            String fUrl = f.optString("url", "");
-            if (mime.startsWith("audio/") && !fUrl.isEmpty()) {
-                int itag = f.optInt("itag", 0);
-                if (itag == 140) {
-                    chosenFormat = f;
-                    break;
-                } else if (itag == 250 && chosenFormat == null) {
-                    chosenFormat = f;
-                } else if (chosenFormat == null) {
-                    chosenFormat = f;
+            if (conn.getResponseCode() == 200) {
+                String responseBody = readStream(conn.getInputStream());
+                JSONObject json = new JSONObject(responseBody);
+                JSONObject playability = json.optJSONObject("playabilityStatus");
+                if (playability != null && "OK".equals(playability.optString("status"))) {
+                    JSONObject streamingData = json.optJSONObject("streamingData");
+                    if (streamingData != null) {
+                        JSONArray adaptiveFormats = streamingData.optJSONArray("adaptiveFormats");
+                        if (adaptiveFormats != null && adaptiveFormats.length() > 0) {
+                            JSONObject chosen = null;
+                            for (int i = 0; i < adaptiveFormats.length(); i++) {
+                                JSONObject f = adaptiveFormats.getJSONObject(i);
+                                String mime = f.optString("mimeType", "");
+                                String fUrl = f.optString("url", "");
+                                if (mime.startsWith("audio/") && !fUrl.isEmpty()) {
+                                    int itag = f.optInt("itag", 0);
+                                    if (itag == 140) {
+                                        chosen = f;
+                                        break;
+                                    } else if (itag == 251 && chosen == null) {
+                                        chosen = f;
+                                    } else if (chosen == null) {
+                                        chosen = f;
+                                    }
+                                }
+                            }
+                            if (chosen != null) {
+                                StreamDetails d = buildStreamDetails(json, chosen, videoId, vrUa);
+                                streamCache.put(videoId, d);
+                                return d;
+                            }
+                        }
+                    }
                 }
             }
+        } catch (Exception e) {
+            android.util.Log.w("ArchiveTune", "ANDROID_VR stream fallback notice: " + e.getMessage());
         }
 
-        if (chosenFormat == null) {
-            throw new Exception("No valid audio format found with direct URL");
-        }
-
-        StreamDetails details = buildStreamDetails(json, chosenFormat, videoId, IOS_UA);
-        streamCache.put(videoId, details);
-        return details;
+        throw new Exception("Unable to resolve direct audio stream for track: " + videoId);
     }
 
     private StreamDetails buildStreamDetails(JSONObject json, JSONObject format, String videoId, String ua) {
