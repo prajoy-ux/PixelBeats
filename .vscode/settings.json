@@ -10,5 +10,12 @@
       "default": true
     }
   ],
-  "java.configuration.updateBuildConfiguration": "interactive"
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.errors.incompleteClasspath.severity": "ignore",
+  "java.project.sourcePaths": [
+    "android/app/src/main/java"
+  ],
+  "files.associations": {
+    "*.java": "java"
+  }
 }
