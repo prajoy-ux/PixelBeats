@@ -1,30 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#363D17" id="meta-theme-color">
   <title>PixelMusic // Material You Audio</title>
-  
+
   <!-- Google Fonts: Plus Jakarta Sans & Outfit (Google Pixel Material Design 3) - Asynchronous Instant Paint -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" media="print" onload="this.media='all'">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" media="print" onload="this.media='all'">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    media="print" onload="this.media='all'">
   <noscript>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet">
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
   </noscript>
-  
+
   <!-- App Icon & Favicon -->
   <link rel="icon" type="image/jpeg" href="icon.jpg">
-  
+
   <!-- Material You Stylesheet -->
   <link rel="stylesheet" href="style.css">
 
   <!-- High-Contrast Material You Overrides -->
   <style id="slider-override">
-
     /* 0. MAIN HERO PLAYER CARD (100% Soft Sage #C8D394 Floating Card) */
     .hero-media-card,
     .player-card,
@@ -42,10 +50,12 @@
     .track-title {
       color: #363D17 !important;
     }
+
     #track-artist,
     .track-artist {
       color: #576028 !important;
     }
+
     #time-current,
     #time-duration,
     .time-label {
@@ -120,6 +130,7 @@
       color: #EFF2E1 !important;
       border: none !important;
     }
+
     .m3-hero-play-btn .material-symbols-rounded,
     #btn-play .material-symbols-rounded,
     #play-icon {
@@ -134,6 +145,7 @@
       color: #363D17 !important;
       border: none !important;
     }
+
     .m3-pill-btn.transport-nav-btn .material-symbols-rounded,
     #btn-prev .material-symbols-rounded,
     #btn-next .material-symbols-rounded {
@@ -153,6 +165,7 @@
       opacity: 1 !important;
       transition: all 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
     }
+
     .transport-sub-btn .material-symbols-rounded,
     .m3-icon-btn.transport-sub-btn .material-symbols-rounded,
     #btn-shuffle .material-symbols-rounded,
@@ -160,6 +173,7 @@
       color: #363D17 !important;
       opacity: 1 !important;
     }
+
     .transport-sub-btn:hover,
     .m3-icon-btn.transport-sub-btn:hover,
     #btn-shuffle:hover,
@@ -167,6 +181,7 @@
       background: rgba(54, 61, 23, 0.18) !important;
       background-color: rgba(54, 61, 23, 0.18) !important;
     }
+
     .transport-sub-btn.active,
     .m3-icon-btn.transport-sub-btn.active,
     #btn-shuffle.active,
@@ -178,6 +193,7 @@
       opacity: 1 !important;
       box-shadow: 0 2px 8px rgba(54, 61, 23, 0.28) !important;
     }
+
     .transport-sub-btn.active .material-symbols-rounded,
     .m3-icon-btn.transport-sub-btn.active .material-symbols-rounded,
     #btn-shuffle.active .material-symbols-rounded,
@@ -194,6 +210,7 @@
       outline: none !important;
       box-shadow: none !important;
     }
+
     .scrubber-container::before,
     .scrubber-container::after,
     .scrubber-split-track::before,
@@ -215,6 +232,7 @@
       position: relative !important;
       overflow: visible !important;
     }
+
     .scrubber-container:hover .scrubber-split-track,
     .scrubber-container:active .scrubber-split-track,
     .scrubber-container.is-dragging .scrubber-split-track {
@@ -234,6 +252,7 @@
       pointer-events: none !important;
       transition: width 0.05s linear, height 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
     }
+
     .scrubber-container:hover .scrubber-fill-olive,
     .scrubber-container:hover #scrubber-fill,
     .scrubber-container:active .scrubber-fill-olive,
@@ -257,6 +276,7 @@
       box-shadow: none !important;
       transition: height 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
     }
+
     .scrubber-container:hover .scrubber-handle-line,
     .scrubber-container:hover #scrubber-thumb,
     .scrubber-container:active .scrubber-handle-line,
@@ -277,6 +297,7 @@
       pointer-events: none !important;
       transition: height 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
     }
+
     .scrubber-container:hover .scrubber-empty-cream,
     .scrubber-container:hover #scrubber-empty,
     .scrubber-container:active .scrubber-empty-cream,
@@ -328,6 +349,7 @@
       transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease !important;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
     }
+
     .pixel-vol-mute .material-symbols-rounded,
     #vol-mute-btn .material-symbols-rounded,
     .vol-circle-btn .material-symbols-rounded {
@@ -398,6 +420,7 @@
       color: #363D17 !important;
       pointer-events: none !important;
     }
+
     .pixel-vol-empty .material-symbols-rounded,
     #vol-empty-bar .material-symbols-rounded,
     .vol-empty-cream .material-symbols-rounded {
@@ -423,6 +446,7 @@
       padding: 0 !important;
       flex-shrink: 0 !important;
     }
+
     .pixel-vol-caption .material-symbols-rounded,
     #vol-lyrics-btn .material-symbols-rounded,
     .vol-square-btn .material-symbols-rounded {
@@ -447,6 +471,7 @@
       padding: 0 !important;
       flex-shrink: 0 !important;
     }
+
     .pixel-vol-eq .material-symbols-rounded,
     #vol-eq-btn .material-symbols-rounded {
       color: #363D17 !important;
@@ -476,11 +501,12 @@
       height: 52px !important;
       opacity: 1 !important;
       transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-                  border-radius 0.3s ease,
-                  background 0.2s ease,
-                  color 0.2s ease,
-                  box-shadow 0.2s ease !important;
+        border-radius 0.3s ease,
+        background 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease !important;
     }
+
     .bento-widget-btn span,
     .bento-widget-btn .material-symbols-rounded,
     .bento-widget-btn .btn-icon-m3,
@@ -509,6 +535,7 @@
       color: #363D17 !important;
       font-weight: 700 !important;
     }
+
     .bento-widget-btn:hover,
     #btn-download-track:hover,
     #btn-player-add-playlist:hover,
@@ -521,6 +548,7 @@
       color: #363D17 !important;
       border-radius: 18px !important;
     }
+
     .bento-widget-btn:active,
     #btn-download-track:active,
     #btn-player-add-playlist:active,
@@ -531,6 +559,7 @@
       transform: scale(0.94) !important;
       border-radius: 16px !important;
     }
+
     .bento-widget-btn.active,
     #btn-download-track.active,
     #btn-player-add-playlist.active,
@@ -544,6 +573,7 @@
       border: none !important;
       opacity: 1 !important;
     }
+
     .bento-widget-btn.active:hover,
     #btn-download-track.active:hover,
     #btn-player-add-playlist.active:hover,
@@ -555,6 +585,7 @@
       background-color: #363D17 !important;
       color: #EFF2E1 !important;
     }
+
     .bento-widget-btn.active span,
     .bento-widget-btn.active .material-symbols-rounded,
     .bento-widget-btn.active .btn-icon-m3,
@@ -622,9 +653,9 @@
       opacity: 0;
       transform: translate3d(0, 0, 0);
       transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-                  width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-                  height 0.3s ease,
-                  opacity 0.25s ease !important;
+        width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+        height 0.3s ease,
+        opacity 0.25s ease !important;
     }
 
     /* All nav items, buttons, unselected slots, active/hover/focus states strictly transparent and equal 25% */
@@ -879,6 +910,7 @@
         opacity: 0;
         transform: scale(0.94) translateX(28px);
       }
+
       100% {
         opacity: 1;
         transform: scale(1) translateX(0);
@@ -890,6 +922,7 @@
         opacity: 0;
         transform: scale(0.94) translateX(-28px);
       }
+
       100% {
         opacity: 1;
         transform: scale(1) translateX(0);
@@ -933,6 +966,7 @@
       gap: 4px !important;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16) !important;
     }
+
     .m3-segment-btn {
       background: transparent !important;
       border: none !important;
@@ -943,11 +977,13 @@
       font-weight: 700 !important;
       transition: all 0.25s cubic-bezier(0.2, 0, 0, 1) !important;
     }
+
     .m3-segment-btn .material-symbols-rounded {
       color: #363D17 !important;
       opacity: 0.75 !important;
       font-size: 19px !important;
     }
+
     .m3-segment-btn.active {
       background: #EFF2E1 !important;
       background-color: #EFF2E1 !important;
@@ -955,6 +991,7 @@
       opacity: 1 !important;
       box-shadow: 0 3px 12px rgba(0, 0, 0, 0.22) !important;
     }
+
     .m3-segment-btn.active .material-symbols-rounded {
       color: #283416 !important;
       opacity: 1 !important;
@@ -969,18 +1006,22 @@
       padding: 6px 8px 6px 18px !important;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16) !important;
     }
+
     .m3-search-bar .search-icon {
       color: #363D17 !important;
       font-size: 22px !important;
     }
+
     .m3-search-input {
       color: #363D17 !important;
       font-weight: 600 !important;
       font-size: 14px !important;
     }
+
     .m3-search-input::placeholder {
       color: rgba(54, 61, 23, 0.6) !important;
     }
+
     .m3-search-submit-btn {
       background: #576028 !important;
       background-color: #576028 !important;
@@ -988,12 +1029,15 @@
       border-radius: 50% !important;
       border: none !important;
     }
+
     .m3-search-submit-btn .material-symbols-rounded {
       color: #EFF2E1 !important;
     }
+
     .m3-search-clear-btn {
       color: #363D17 !important;
     }
+
     .m3-search-clear-btn .material-symbols-rounded {
       color: #363D17 !important;
     }
@@ -1006,16 +1050,20 @@
       padding: 5px 6px 5px 16px !important;
       box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14) !important;
     }
+
     .m3-import-bar .import-icon {
       color: #363D17 !important;
     }
+
     .m3-import-input {
       color: #363D17 !important;
       font-weight: 600 !important;
     }
+
     .m3-import-input::placeholder {
       color: rgba(54, 61, 23, 0.65) !important;
     }
+
     .m3-pill-action-btn {
       background: #576028 !important;
       background-color: #576028 !important;
@@ -1032,14 +1080,17 @@
       border: none !important;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16) !important;
     }
+
     .browse-tile .tile-gradient {
       background: linear-gradient(180deg, rgba(200, 211, 148, 0.15) 0%, rgba(54, 61, 23, 0.88) 100%) !important;
     }
+
     .browse-tile .tile-badge {
       color: #C8D394 !important;
       font-weight: 800 !important;
       letter-spacing: 0.6px !important;
     }
+
     .browse-tile .tile-title {
       color: #EFF2E1 !important;
       font-weight: 800 !important;
@@ -1055,26 +1106,31 @@
       padding: 8px 14px 8px 8px !important;
       box-shadow: 0 3px 10px rgba(0, 0, 0, 0.14) !important;
     }
+
     .song-card:hover,
     .queue-item:hover {
       background: #EFF2E1 !important;
       background-color: #EFF2E1 !important;
       transform: translateX(4px);
     }
+
     .song-card .song-title,
     .queue-item .queue-title {
       color: #363D17 !important;
       font-weight: 700 !important;
     }
+
     .song-card .song-meta,
     .queue-item .queue-artist {
       color: #576028 !important;
       font-weight: 600 !important;
     }
+
     .queue-index {
       color: #576028 !important;
       font-weight: 800 !important;
     }
+
     .song-action-btn,
     .queue-btn-action {
       background: #576028 !important;
@@ -1083,10 +1139,12 @@
       border: none !important;
       border-radius: 50% !important;
     }
+
     .song-action-btn .material-symbols-rounded,
     .queue-btn-action .material-symbols-rounded {
       color: #EFF2E1 !important;
     }
+
     .song-action-btn:hover,
     .queue-btn-action:hover {
       background: #363D17 !important;
@@ -1102,6 +1160,7 @@
       border: 1.5px solid #576028 !important;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14) !important;
     }
+
     .queue-now-badge {
       background: #576028 !important;
       background-color: #576028 !important;
@@ -1118,20 +1177,24 @@
       padding: 18px 20px !important;
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16) !important;
     }
+
     .vault-title-row .material-symbols-rounded {
       color: #576028 !important;
       font-size: 24px !important;
     }
+
     .vault-heading {
       color: #363D17 !important;
       font-weight: 800 !important;
       font-size: 16px !important;
     }
+
     .vault-subtext {
       color: #576028 !important;
       font-weight: 600 !important;
       font-size: 12px !important;
     }
+
     #btn-vault-play-all,
     .m3-accent-pill-btn {
       background: #576028 !important;
@@ -1142,6 +1205,7 @@
       font-weight: 700 !important;
       padding: 8px 18px !important;
     }
+
     .m3-accent-pill-btn .material-symbols-rounded {
       color: #EFF2E1 !important;
     }
@@ -1160,6 +1224,7 @@
       padding: 8px 18px !important;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
     }
+
     #btn-create-playlist .material-symbols-rounded,
     #btn-clear-queue .material-symbols-rounded,
     .m3-tonal-pill-btn .material-symbols-rounded {
@@ -1176,22 +1241,26 @@
       padding: 12px !important;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16) !important;
     }
+
     .album-card-thumb,
     .playlist-card-cover {
       border-radius: 16px !important;
     }
+
     .album-card-title,
     .playlist-card-title {
       color: #363D17 !important;
       font-weight: 800 !important;
       font-size: 13.5px !important;
     }
+
     .album-card-artist,
     .playlist-card-count {
       color: #576028 !important;
       font-weight: 600 !important;
       font-size: 11.5px !important;
     }
+
     .album-card-year {
       color: #576028 !important;
       font-weight: 700 !important;
@@ -1206,13 +1275,16 @@
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16) !important;
       border: none !important;
     }
+
     .empty-icon {
       color: #576028 !important;
     }
+
     .empty-state h3 {
       color: #363D17 !important;
       font-weight: 800 !important;
     }
+
     .empty-state p {
       color: #576028 !important;
       font-weight: 600 !important;
@@ -1227,17 +1299,21 @@
       padding: 20px !important;
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16) !important;
     }
+
     .card-header-row .card-icon {
       color: #576028 !important;
     }
+
     .card-header-row h4 {
       color: #363D17 !important;
       font-weight: 800 !important;
     }
+
     .setting-desc {
       color: #576028 !important;
       font-weight: 600 !important;
     }
+
     .theme-card-option {
       background: #EFF2E1 !important;
       background-color: #EFF2E1 !important;
@@ -1245,25 +1321,31 @@
       border: 2px solid transparent !important;
       color: #363D17 !important;
     }
+
     .theme-card-option.active {
       border-color: #576028 !important;
       box-shadow: 0 3px 10px rgba(87, 96, 40, 0.3) !important;
     }
+
     .theme-card-title {
       color: #363D17 !important;
       font-weight: 700 !important;
     }
+
     .theme-card-desc {
       color: #576028 !important;
     }
+
     .system-info-grid .info-label {
       color: #576028 !important;
       font-weight: 600 !important;
     }
+
     .system-info-grid .info-val {
       color: #363D17 !important;
       font-weight: 800 !important;
     }
+
     .eq-pill,
     .sleep-pill {
       background: #EFF2E1 !important;
@@ -1273,6 +1355,7 @@
       border-radius: 999px !important;
       font-weight: 700 !important;
     }
+
     .eq-pill.active,
     .sleep-pill.active {
       background: #576028 !important;
@@ -1287,18 +1370,22 @@
       border-radius: 32px 32px 0 0 !important;
       border: none !important;
     }
+
     .sheet-title {
       color: #363D17 !important;
     }
+
     .album-title {
       color: #363D17 !important;
     }
+
     .album-artist,
     .album-meta {
       color: #576028 !important;
     }
   </style>
 </head>
+
 <body class="theme-matcha">
 
   <!-- Material Floating Toast Notification -->
@@ -1312,20 +1399,22 @@
 
     <!-- Main Viewport -->
     <main class="content-viewport">
-      
+
       <!-- ================= TAB 1: PLAYER ================= -->
       <section id="tab-player" class="tab-panel active initial-load">
-        
+
         <!-- Hero Media Bento Card (Soft Sage Material You Hero Card) -->
         <div class="hero-media-card player-card hero-card" id="hero-card">
-          
+
           <!-- HD Album Art Container (Tap to Toggle Lyrics) -->
           <div class="album-art-wrapper" id="album-art-wrapper" title="Tap to toggle live lyrics">
             <div class="ambient-bass-glow" id="ambient-bass-glow"></div>
-            <button type="button" id="btn-quick-theme" class="quick-theme-pill-btn" title="Cycle Themes (Matcha, Game Boy, Cyberpunk, Synthwave, AMOLED)" aria-label="Cycle Themes">
+            <button type="button" id="btn-quick-theme" class="quick-theme-pill-btn"
+              title="Cycle Themes (Matcha, Game Boy, Cyberpunk, Synthwave, AMOLED)" aria-label="Cycle Themes">
               <span class="material-symbols-rounded">palette</span>
             </button>
-            <img id="player-cover-art" class="player-cover-art" src="idle-cover.jpg" alt="Album Cover" onerror="this.src='idle-cover.jpg'">
+            <img id="player-cover-art" class="player-cover-art" src="idle-cover.jpg" alt="Album Cover"
+              onerror="this.src='idle-cover.jpg'">
             <div id="art-loading" class="art-loading hidden">
               <div class="m3-spinner"></div>
             </div>
@@ -1364,13 +1453,16 @@
                 <div class="scrubber-handle-line" id="scrubber-thumb"></div>
                 <div class="scrubber-empty-cream" id="scrubber-empty"></div>
               </div>
-              <input type="range" id="seek-slider" min="0" max="100" value="0" step="0.1" class="seek-slider" aria-label="Seek track">
+              <input type="range" id="seek-slider" min="0" max="100" value="0" step="0.1" class="seek-slider"
+                aria-label="Seek track">
             </div>
             <div class="time-row">
               <span id="time-current" class="time-label">00:00</span>
-              <div id="lossless-badge" class="lossless-badge" role="button" tabindex="0" title="Lossless Audio: 24-bit/48 kHz ALAC Quality">
+              <div id="lossless-badge" class="lossless-badge" role="button" tabindex="0"
+                title="Lossless Audio: 24-bit/48 kHz ALAC Quality">
                 <svg class="lossless-icon-svg" viewBox="0 0 15 9" width="14" height="9" aria-hidden="true">
-                  <path fill="#141A02" d="M8.184,0.35C9.944,0.35 10.703,3.296 11.338,5.238C11.673,3.842 11.497,3.542 11.857,3.542C11.99,3.542 12.126,3.633 12.126,3.798C12.126,3.809 12.123,3.839 12.117,3.883L12.091,4.058C12.02,4.522 11.845,5.494 11.654,6.144C13.198,10.191 14.345,4.861 14.474,3.772C14.493,3.615 14.612,3.542 14.731,3.542C14.891,3.542 15.022,3.662 14.997,3.843C14.72,5.605 14.295,8.35 12.547,8.35C11.582,8.35 11.04,7.595 10.611,6.73C9.54,4.626 9.047,1.093 7.997,1.093C7.66,1.093 7.411,1.444 7.394,1.444C7.362,1.444 7.337,1.301 7.023,0.909C7.322,0.567 7.734,0.35 8.184,0.35ZM2.458,0.354C5.211,0.354 5.456,7.618 7.014,7.618C7.197,7.618 7.394,7.507 7.61,7.256C7.729,7.458 7.851,7.638 7.978,7.796C7.667,8.151 7.28,8.35 6.795,8.35C5.054,8.349 4.306,5.434 3.663,3.466C3.511,4.097 3.432,4.669 3.402,4.925C3.382,5.088 3.263,5.163 3.143,5.163C3.009,5.163 2.874,5.071 2.874,4.908L2.874,4.908L2.877,4.87C2.966,4.223 3.146,3.243 3.347,2.56C3.079,1.858 2.745,1.091 2.252,1.091C1.257,1.091 0.687,3.591 0.527,4.925C0.508,5.088 0.388,5.163 0.268,5.163C0.135,5.163 0,5.071 0,4.908C0,4.896 0.001,4.883 0.002,4.87C0.283,2.836 0.808,0.354 2.458,0.354ZM5.315,0.35C5.809,0.35 6.339,0.608 6.797,1.211C6.822,1.241 7.078,1.639 7.159,1.777C8.277,3.802 8.818,7.627 9.881,7.627C10.065,7.627 10.264,7.513 10.484,7.256C10.604,7.458 10.726,7.638 10.852,7.796C10.542,8.15 10.155,8.35 9.67,8.35C6.933,8.349 6.636,1.09 5.128,1.09C4.788,1.09 4.536,1.444 4.519,1.444C4.487,1.444 4.462,1.301 4.148,0.909C4.455,0.558 4.87,0.35 5.315,0.35Z"/>
+                  <path fill="#141A02"
+                    d="M8.184,0.35C9.944,0.35 10.703,3.296 11.338,5.238C11.673,3.842 11.497,3.542 11.857,3.542C11.99,3.542 12.126,3.633 12.126,3.798C12.126,3.809 12.123,3.839 12.117,3.883L12.091,4.058C12.02,4.522 11.845,5.494 11.654,6.144C13.198,10.191 14.345,4.861 14.474,3.772C14.493,3.615 14.612,3.542 14.731,3.542C14.891,3.542 15.022,3.662 14.997,3.843C14.72,5.605 14.295,8.35 12.547,8.35C11.582,8.35 11.04,7.595 10.611,6.73C9.54,4.626 9.047,1.093 7.997,1.093C7.66,1.093 7.411,1.444 7.394,1.444C7.362,1.444 7.337,1.301 7.023,0.909C7.322,0.567 7.734,0.35 8.184,0.35ZM2.458,0.354C5.211,0.354 5.456,7.618 7.014,7.618C7.197,7.618 7.394,7.507 7.61,7.256C7.729,7.458 7.851,7.638 7.978,7.796C7.667,8.151 7.28,8.35 6.795,8.35C5.054,8.349 4.306,5.434 3.663,3.466C3.511,4.097 3.432,4.669 3.402,4.925C3.382,5.088 3.263,5.163 3.143,5.163C3.009,5.163 2.874,5.071 2.874,4.908L2.874,4.908L2.877,4.87C2.966,4.223 3.146,3.243 3.347,2.56C3.079,1.858 2.745,1.091 2.252,1.091C1.257,1.091 0.687,3.591 0.527,4.925C0.508,5.088 0.388,5.163 0.268,5.163C0.135,5.163 0,5.071 0,4.908C0,4.896 0.001,4.883 0.002,4.87C0.283,2.836 0.808,0.354 2.458,0.354ZM5.315,0.35C5.809,0.35 6.339,0.608 6.797,1.211C6.822,1.241 7.078,1.639 7.159,1.777C8.277,3.802 8.818,7.627 9.881,7.627C10.065,7.627 10.264,7.513 10.484,7.256C10.604,7.458 10.726,7.638 10.852,7.796C10.542,8.15 10.155,8.35 9.67,8.35C6.933,8.349 6.636,1.09 5.128,1.09C4.788,1.09 4.536,1.444 4.519,1.444C4.487,1.444 4.462,1.301 4.148,0.909C4.455,0.558 4.87,0.35 5.315,0.35Z" />
                 </svg>
                 <span class="lossless-text">Lossless</span>
               </div>
@@ -1409,11 +1501,13 @@
             <span class="material-symbols-rounded btn-icon-m3">playlist_add</span>
             <span class="btn-text">PLAYLIST</span>
           </button>
-          <button type="button" id="btn-share-track" class="bento-widget-btn" title="Share current song" aria-label="Share current song">
+          <button type="button" id="btn-share-track" class="bento-widget-btn" title="Share current song"
+            aria-label="Share current song">
             <span class="material-symbols-rounded btn-icon-m3" aria-hidden="true">share</span>
             <span class="btn-text">SHARE</span>
           </button>
-          <button type="button" id="btn-bento-theme" class="bento-widget-btn" title="Cycle Themes (Matcha, Game Boy, Cyberpunk, Synthwave, AMOLED)" aria-label="Cycle Themes">
+          <button type="button" id="btn-bento-theme" class="bento-widget-btn"
+            title="Cycle Themes (Matcha, Game Boy, Cyberpunk, Synthwave, AMOLED)" aria-label="Cycle Themes">
             <span class="material-symbols-rounded btn-icon-m3" aria-hidden="true">palette</span>
             <span class="btn-text">THEME</span>
           </button>
@@ -1444,9 +1538,9 @@
 
       <!-- ================= TAB 2: SEARCH ================= -->
       <section id="tab-search" class="tab-panel">
-        
+
         <div class="search-container">
-          
+
           <!-- Segmented Filter Buttons: Songs vs Albums -->
           <div class="m3-segmented-control">
             <button id="search-mode-songs" class="m3-segment-btn active">
@@ -1462,7 +1556,8 @@
           <!-- Material 3 Pill Search Bar with Clear Button -->
           <div class="m3-search-bar">
             <span class="material-symbols-rounded search-icon">search</span>
-            <input type="text" id="search-input" class="m3-search-input" placeholder="Search songs, artists, or albums..." value="">
+            <input type="text" id="search-input" class="m3-search-input"
+              placeholder="Search songs, artists, or albums..." value="">
             <button id="btn-search-clear" class="m3-search-clear-btn hidden" title="Clear search text">
               <span class="material-symbols-rounded">close</span>
             </button>
@@ -1474,7 +1569,8 @@
           <!-- YouTube/Soundcloud Playlist URL Importer -->
           <div class="m3-import-bar">
             <span class="material-symbols-rounded import-icon">link</span>
-            <input type="text" id="playlist-input" class="m3-import-input" placeholder="Or paste YouTube playlist URL...">
+            <input type="text" id="playlist-input" class="m3-import-input"
+              placeholder="Or paste YouTube playlist URL...">
             <button id="btn-import-playlist" class="m3-pill-action-btn">
               <span>Import</span>
             </button>
@@ -1488,7 +1584,8 @@
             </div>
             <div class="browse-tiles-grid">
               <div class="browse-tile" data-query="Global Top Hits 2026 official audio">
-                <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=80" class="tile-bg" alt="Top Hits" onerror="this.style.opacity='0'">
+                <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=80"
+                  class="tile-bg" alt="Top Hits" onerror="this.style.opacity='0'">
                 <div class="tile-gradient"></div>
                 <div class="tile-content">
                   <span class="tile-badge">CHARTS</span>
@@ -1497,7 +1594,8 @@
               </div>
 
               <div class="browse-tile" data-query="Bollywood Acoustic & Indie Hits Arijit A.R. Rahman">
-                <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=80" class="tile-bg" alt="Bollywood & Indie" onerror="this.style.opacity='0'">
+                <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=80"
+                  class="tile-bg" alt="Bollywood & Indie" onerror="this.style.opacity='0'">
                 <div class="tile-gradient"></div>
                 <div class="tile-content">
                   <span class="tile-badge">DESI & ACOUSTIC</span>
@@ -1506,7 +1604,8 @@
               </div>
 
               <div class="browse-tile" data-query="The Weeknd SZA Frank Ocean R&B">
-                <img src="https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=500&auto=format&fit=crop&q=80" class="tile-bg" alt="Late Night R&B" onerror="this.style.opacity='0'">
+                <img src="https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=500&auto=format&fit=crop&q=80"
+                  class="tile-bg" alt="Late Night R&B" onerror="this.style.opacity='0'">
                 <div class="tile-gradient"></div>
                 <div class="tile-content">
                   <span class="tile-badge">MOODY VIBES</span>
@@ -1515,7 +1614,8 @@
               </div>
 
               <div class="browse-tile" data-query="Dua Lipa Billie Eilish Pop Hits">
-                <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=600&q=80" class="tile-bg" alt="Pop Essentials" onerror="this.style.opacity='0'">
+                <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=600&q=80"
+                  class="tile-bg" alt="Pop Essentials" onerror="this.style.opacity='0'">
                 <div class="tile-gradient"></div>
                 <div class="tile-content">
                   <span class="tile-badge">GLOBAL POP</span>
@@ -1524,7 +1624,8 @@
               </div>
 
               <div class="browse-tile" data-query="Travis Scott Kendrick Lamar Drake">
-                <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=500&auto=format&fit=crop&q=80" class="tile-bg" alt="Hip-Hop & Rap" onerror="this.style.opacity='0'">
+                <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=500&auto=format&fit=crop&q=80"
+                  class="tile-bg" alt="Hip-Hop & Rap" onerror="this.style.opacity='0'">
                 <div class="tile-gradient"></div>
                 <div class="tile-content">
                   <span class="tile-badge">FLOW & BASS</span>
@@ -1533,7 +1634,8 @@
               </div>
 
               <div class="browse-tile" data-query="Arctic Monkeys Tame Impala Cigarettes After Sex">
-                <img src="https://images.unsplash.com/photo-1464375117522-1311d6a5b81f?w=500&auto=format&fit=crop&q=80" class="tile-bg" alt="Alt & Indie Rock" onerror="this.style.opacity='0'">
+                <img src="https://images.unsplash.com/photo-1464375117522-1311d6a5b81f?w=500&auto=format&fit=crop&q=80"
+                  class="tile-bg" alt="Alt & Indie Rock" onerror="this.style.opacity='0'">
                 <div class="tile-gradient"></div>
                 <div class="tile-content">
                   <span class="tile-badge">ALTERNATIVE</span>
@@ -1564,7 +1666,7 @@
 
       <!-- ================= TAB 3: LIBRARY ================= -->
       <section id="tab-library" class="tab-panel">
-        
+
         <!-- Library Segmented Control -->
         <div class="library-header-section">
           <div class="m3-segmented-control">
@@ -1647,11 +1749,13 @@
               <span id="history-storage-info" class="vault-subtext">0 Songs Recorded</span>
             </div>
             <div class="history-actions-group" style="display: flex; gap: 8px; align-items: center;">
-              <button type="button" id="btn-history-play-all" class="m3-accent-pill-btn" title="Play all recently played tracks">
+              <button type="button" id="btn-history-play-all" class="m3-accent-pill-btn"
+                title="Play all recently played tracks">
                 <span class="material-symbols-rounded">play_arrow</span>
                 <span>Play All</span>
               </button>
-              <button type="button" id="btn-history-clear" class="m3-tonal-pill-btn history-clear-btn" title="Clear listening history">
+              <button type="button" id="btn-history-clear" class="m3-tonal-pill-btn history-clear-btn"
+                title="Clear listening history">
                 <span class="material-symbols-rounded" style="font-size: 18px;">delete_sweep</span>
                 <span>Clear</span>
               </button>
@@ -1694,17 +1798,19 @@
       <!-- ================= TAB 5: CONFIG ================= -->
       <section id="tab-settings" data-view="config" class="tab-panel">
         <div class="settings-scroll-container">
-          
+
           <!-- Developer & Project Info Card -->
           <div class="m3-settings-card creator-profile-card">
             <div class="card-header-row">
-              <span class="material-symbols-rounded card-icon" style="color: var(--primary-pill, #C8D394);">person</span>
+              <span class="material-symbols-rounded card-icon"
+                style="color: var(--primary-pill, #C8D394);">person</span>
               <h4>About & Developer</h4>
             </div>
 
             <div class="creator-badge-box">
               <div class="creator-avatar-wrapper">
-                <img id="creator-avatar-img" class="creator-avatar-img" src="prajoy_avatar.jpg" alt="Prajoy Sarkar" onerror="this.src='prajoy_avatar.jpg'">
+                <img id="creator-avatar-img" class="creator-avatar-img" src="prajoy_avatar.jpg" alt="Prajoy Sarkar"
+                  onerror="this.src='prajoy_avatar.jpg'">
               </div>
               <div class="creator-info">
                 <div class="creator-name">Prajoy Sarkar</div>
@@ -1715,11 +1821,13 @@
 
             <div class="creator-links-container">
               <!-- Prajoy (Founder) GitHub Profile Link -->
-              <a href="https://github.com/prajoy-ux" target="_blank" rel="noopener noreferrer" class="creator-link-pill">
+              <a href="https://github.com/prajoy-ux" target="_blank" rel="noopener noreferrer"
+                class="creator-link-pill">
                 <div class="creator-link-left">
                   <span class="creator-link-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                      <path
+                        d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
                     </svg>
                   </span>
                   <div class="creator-link-text">
@@ -1735,11 +1843,12 @@
                 <div class="creator-link-left">
                   <span class="creator-link-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                      <path
+                        d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
                     </svg>
                   </span>
                   <div class="creator-link-text">
-                    <span class="creator-link-title">Co-Creator &amp; Feature Manager</span>
+                    <span class="creator-link-title">Roni Bhandari (Co-Creator &amp; Feature Manager)</span>
                     <span class="creator-link-handle">@roni69k</span>
                   </div>
                 </div>
@@ -1747,7 +1856,8 @@
               </a>
 
               <!-- GitHub Repository Link -->
-              <a href="https://github.com/roni69k/PixelBeats" target="_blank" rel="noopener noreferrer" class="creator-link-pill">
+              <a href="https://github.com/roni69k/PixelBeats" target="_blank" rel="noopener noreferrer"
+                class="creator-link-pill">
                 <div class="creator-link-left">
                   <span class="creator-link-icon">
                     <span class="material-symbols-rounded">folder_code</span>
@@ -1761,7 +1871,8 @@
               </a>
 
               <!-- GitHub Releases Link -->
-              <a href="https://github.com/roni69k/PixelBeats/releases/latest" target="_blank" rel="noopener noreferrer" class="creator-link-pill">
+              <a href="https://github.com/roni69k/PixelBeats/releases/latest" target="_blank" rel="noopener noreferrer"
+                class="creator-link-pill">
                 <div class="creator-link-left">
                   <span class="creator-link-icon">
                     <span class="material-symbols-rounded">download</span>
@@ -1776,19 +1887,21 @@
             </div>
 
             <div class="app-version-badge-box">
-              <span class="material-symbols-rounded" style="font-size: 16px; color: var(--primary-pill, #C8D394);">favorite</span>
+              <span class="material-symbols-rounded"
+                style="font-size: 16px; color: var(--primary-pill, #C8D394);">favorite</span>
               <span>Made by Prajoy &amp; Roni • GNU GPL-3.0</span>
             </div>
           </div>
 
-          
+
           <!-- Themes & Appearance Card -->
           <div class="m3-settings-card">
             <div class="card-header-row">
               <span class="material-symbols-rounded card-icon">palette</span>
               <h4>Themes & Accent Colors</h4>
             </div>
-            <p class="theme-card-desc" style="font-size: 12px; margin-bottom: 12px; opacity: 0.85;">Choose your preferred retro audio visual aesthetic:</p>
+            <p class="theme-card-desc" style="font-size: 12px; margin-bottom: 12px; opacity: 0.85;">Choose your
+              preferred retro audio visual aesthetic:</p>
             <div class="theme-selection-grid" id="theme-selection-grid">
               <div class="theme-card-option active" data-theme="matcha">
                 <div class="theme-color-preview matcha"></div>
@@ -1962,7 +2075,8 @@
               <span class="info-label">Version:</span><span id="system-app-version" class="info-val">v1.2.1</span>
             </div>
             <div style="margin-top: 14px;">
-              <button type="button" id="btn-check-updates" class="m3-accent-pill-btn w-full" style="justify-content: center; gap: 8px;">
+              <button type="button" id="btn-check-updates" class="m3-accent-pill-btn w-full"
+                style="justify-content: center; gap: 8px;">
                 <span class="material-symbols-rounded">system_update</span>
                 <span id="btn-check-updates-text">Check for Updates</span>
               </button>
@@ -2136,7 +2250,7 @@
 
       <div class="update-dialog-body">
         <p class="update-desc" id="update-release-title">A brand new update of PixelBeats is ready to install.</p>
-        
+
         <div class="update-notes-box" id="update-changelog-box">
           <div class="update-notes-title">What's New:</div>
           <div id="update-notes-content" class="update-notes-text">Loading release details...</div>
@@ -2147,7 +2261,8 @@
             <span class="material-symbols-rounded" style="font-size: 15px;">folder_zip</span>
             <span id="update-meta-size">~5.3 MB</span>
           </span>
-          <a href="https://github.com/roni69k/PixelBeats/releases/latest" target="_blank" rel="noopener noreferrer" class="update-pill-meta" style="text-decoration: none; color: inherit;">
+          <a href="https://github.com/roni69k/PixelBeats/releases/latest" target="_blank" rel="noopener noreferrer"
+            class="update-pill-meta" style="text-decoration: none; color: inherit;">
             <span class="material-symbols-rounded" style="font-size: 15px;">verified</span>
             <span>Official GitHub Release</span>
           </a>
@@ -2165,11 +2280,14 @@
         </div>
 
         <div class="update-actions" id="update-actions">
-          <button type="button" id="btn-install-update" class="m3-accent-pill-btn flex-1" style="justify-content: center;">
+          <button type="button" id="btn-install-update" class="m3-accent-pill-btn flex-1"
+            style="justify-content: center;">
             <span class="material-symbols-rounded">download</span>
             <span id="btn-install-text">Download &amp; Install</span>
           </button>
-          <a href="https://github.com/roni69k/PixelBeats/releases/latest" target="_blank" rel="noopener noreferrer" id="btn-get-github" class="m3-tonal-pill-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+          <a href="https://github.com/roni69k/PixelBeats/releases/latest" target="_blank" rel="noopener noreferrer"
+            id="btn-get-github" class="m3-tonal-pill-btn"
+            style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
             <span class="material-symbols-rounded" style="font-size: 18px;">open_in_new</span>
             <span>Get it on GitHub</span>
           </a>
@@ -2190,4 +2308,5 @@
   <!-- Main Application Script -->
   <script src="app.js"></script>
 </body>
+
 </html>
