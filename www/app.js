@@ -45,7 +45,7 @@ const ArchiveTuneBridge = {
     return null;
   },
   async getNextQueue(videoId) {
-    if (this.isNative()) {
+    if (this.isNative() && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ArchiveTune) {
       try {
         const res = await window.Capacitor.Plugins.ArchiveTune.getNextQueue({ videoId });
         return res && res.tracks ? res.tracks : [];
@@ -53,7 +53,7 @@ const ArchiveTuneBridge = {
         console.warn('[ArchiveTune Native] Next queue notice:', e);
       }
     }
-    return null;
+    return [];
   },
   async getLyrics(videoId, title, artist, durationSec) {
     if (this.isNative()) {
@@ -3960,7 +3960,10 @@ async function playTrackAtIndex(index) {
     prefetchNextSong();
 
     if (STATE.isAutoCycle) {
-      fetchAndAppendSimilarCycle(song.videoId);
+      const remainingTracks = STATE.queue.length - (index + 1);
+      if (remainingTracks <= 5 || STATE.queue.length <= 2) {
+        fetchAndAppendSimilarCycle(song.videoId);
+      }
     }
 
   } catch (err) {
@@ -3977,7 +3980,6 @@ let currentAutoQueueRootVideoId = null;
 
 async function fetchAndAppendSimilarCycle(videoId) {
   if (!videoId || !STATE.isAutoCycle || isFetchingSimilar) return;
-  // If auto-queue is already actively loading fresh recommendations for this root track, let it finish
   if (currentAutoQueueRootVideoId === videoId && STATE.currentIndex === 0 && STATE.queue.length <= 1) return;
 
   const session = activeQueueSessionId;
@@ -3985,42 +3987,59 @@ async function fetchAndAppendSimilarCycle(videoId) {
 
   try {
     let similarTracks = [];
-    if (STATE.isBackendAlive) {
+
+    // 1. Primary: Native ArchiveTune on-device YouTube Music Radio recommendations (50 same-genre tracks!)
+    if (ArchiveTuneBridge.isNative()) {
+      try {
+        const nativeRecs = await ArchiveTuneBridge.getNextQueue(videoId);
+        if (nativeRecs && nativeRecs.length > 0) {
+          similarTracks = nativeRecs;
+        }
+      } catch (e) {
+        console.warn('[Auto-Cycle] Native getNextQueue notice:', e);
+      }
+    }
+
+    // 2. Secondary: Backend recommendations (if configured and alive)
+    if ((!similarTracks || similarTracks.length === 0) && STATE.isBackendAlive) {
       const cur = STATE.queue[STATE.currentIndex] || {};
       const resp = await fetch(`${STATE.backendUrl}/api/recommendations?videoId=${encodeURIComponent(videoId)}&artist=${encodeURIComponent(cur.artist || '')}`);
       if (resp.ok) similarTracks = await resp.json();
     }
 
+    // 3. Tertiary: Public mirror fallback
     if (!similarTracks || similarTracks.length === 0) {
-      const pipedUrl = `${getPipedBaseUrl()}/streams/${videoId}`;
-      const resp = await fetch(pipedUrl);
-      if (resp.ok) {
-        const data = await resp.json();
-        const related = data.relatedStreams || [];
-        similarTracks = related.map(r => ({
-          videoId: (r.url || '').replace('/watch?v=', ''),
-          title: r.title || 'Unknown Title',
-          artist: r.uploaderName || 'Unknown Artist',
-          album: 'Single',
-          duration: formatSecondsToTime(r.duration || 0),
-          thumbnail: r.thumbnail || `https://i.ytimg.com/vi/${(r.url || '').replace('/watch?v=', '')}/hqdefault.jpg`
-        }));
-      }
+      try {
+        const pipedUrl = `${getPipedBaseUrl()}/streams/${videoId}`;
+        const resp = await fetch(pipedUrl);
+        if (resp.ok) {
+          const data = await resp.json();
+          const related = data.relatedStreams || [];
+          similarTracks = related.map(r => ({
+            videoId: (r.url || '').replace('/watch?v=', ''),
+            title: r.title || 'Unknown Title',
+            artist: r.uploaderName || 'Unknown Artist',
+            album: 'Single',
+            duration: formatSecondsToTime(r.duration || 0),
+            thumbnail: r.thumbnail || `https://i.ytimg.com/vi/${(r.url || '').replace('/watch?v=', '')}/hqdefault.jpg`
+          })).filter(t => t.videoId);
+        }
+      } catch (e) { }
     }
 
-    // Discard results if the user switched songs or selected a new track from search in the meantime
+    // Discard results if the user switched songs in the meantime
     if (session !== activeQueueSessionId) return;
-    if (STATE.queue.length === 0 || !STATE.queue[STATE.currentIndex] || STATE.queue[STATE.currentIndex].videoId !== videoId) return;
 
     if (similarTracks && similarTracks.length > 0) {
       const existingIds = new Set(STATE.queue.map(s => s.videoId));
       const freshTracks = similarTracks.filter(t => t.videoId && !existingIds.has(t.videoId));
 
       if (freshTracks.length > 0) {
-        const toAdd = freshTracks.slice(0, 10);
+        const toAdd = freshTracks.slice(0, 40);
         toAdd.forEach(t => STATE.queue.push(t));
         updateQueueBadges();
         renderQueueList();
+        console.log(`[Auto-Cycle] Appended ${toAdd.length} fresh same-genre tracks. Total queue: ${STATE.queue.length}`);
       }
     }
   } catch (err) {
@@ -4102,7 +4121,7 @@ function togglePlayPause() {
   }
 }
 
-function playNextTrack() {
+async function playNextTrack() {
   playHapticSfx('click');
   if (sleepEndTime === 'end') {
     sleepEndTime = null;
@@ -4127,7 +4146,19 @@ function playNextTrack() {
   if (nextIndex >= STATE.queue.length) {
     if (STATE.isRepeat) {
       nextIndex = 0;
+    } else if (STATE.isAutoCycle && STATE.queue.length > 0) {
+      // Continuous Same-Genre Autoplay!
+      showToast('Autoplay: Finding more tracks in same genre...', 'sync', 2000);
+      const lastTrack = STATE.queue[STATE.queue.length - 1];
+      await fetchAndAppendSimilarCycle(lastTrack.videoId);
+      if (nextIndex < STATE.queue.length) {
+        playTrackAtIndex(nextIndex);
+        return;
+      } else {
+        nextIndex = 0; // Fallback loop if no more tracks
+      }
     } else {
+      showToast('Queue ended', 'playlist_play', 2000);
       return;
     }
   }
@@ -4577,17 +4608,33 @@ async function playSongWithAutoQueue(song) {
       if (session !== activeQueueSessionId || signal.aborted) return;
       if (!STATE.queue[0] || STATE.queue[0].videoId !== song.videoId) return;
 
+      const curIds = new Set(STATE.queue.map(s => s.videoId));
+
+      // 1. If user clicked a song from search results, queue other search results first
+      if (STATE.lastSearchResults && STATE.lastSearchResults.length > 1) {
+        const fromSearch = STATE.lastSearchResults.filter(r => r.videoId && !curIds.has(r.videoId));
+        fromSearch.forEach(t => {
+          STATE.queue.push(t);
+          curIds.add(t.videoId);
+        });
+      }
+
+      // 2. Append up to 50 same-genre radio recommendations from YouTube Music
       if (recs && recs.length > 0) {
-        const curIds = new Set(STATE.queue.map(s => s.videoId));
         const newTracks = recs.filter(r => r.videoId && !curIds.has(r.videoId));
         if (newTracks.length > 0) {
-          newTracks.slice(0, 15).forEach(t => STATE.queue.push(t));
-          updateQueueBadges();
-          renderQueueList();
-          showToast(`Loaded ${Math.min(newTracks.length, 15)} similar tracks to Up Next`, 'queue_music');
-          prefetchNextSong();
+          const toAdd = newTracks.slice(0, 50);
+          toAdd.forEach(t => {
+            STATE.queue.push(t);
+            curIds.add(t.videoId);
+          });
         }
       }
+
+      updateQueueBadges();
+      renderQueueList();
+      showToast(`Autoplay: Queued ${STATE.queue.length} same-genre tracks`, 'queue_music', 2200);
+      prefetchNextSong();
     } catch (err) {
       if (err.name === 'AbortError') return;
       console.warn('[AutoQueue] Error loading fresh recommendations:', err);
