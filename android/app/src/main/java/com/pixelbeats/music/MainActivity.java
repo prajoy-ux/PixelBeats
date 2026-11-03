@@ -1,11 +1,15 @@
 package com.pixelbeats.music;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import androidx.core.app.ActivityCompat;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
@@ -16,6 +20,15 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(ArchiveTunePlugin.class);
         super.onCreate(savedInstanceState);
+
+        // Request POST_NOTIFICATIONS runtime permission on Android 13+ so background playback notifications work
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            try {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+                }
+            } catch (Throwable ignored) {}
+        }
 
         if (getIntent() != null && getIntent().getData() != null) {
             ArchiveTunePlugin.pendingDeepLinkUrl = getIntent().getData().toString();
@@ -39,7 +52,7 @@ public class MainActivity extends BridgeActivity {
             if (powerManager != null) {
                 wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "PixelBeats:AudioPlaybackWakeLock");
                 wakeLock.setReferenceCounted(false);
-                wakeLock.acquire();
+                wakeLock.acquire(12 * 60 * 60 * 1000L); // 12 hours timeout
             }
 
             // 2. High-Performance WifiLock: Prevents Wi-Fi chip power-saving sleep when screen turns off
@@ -54,31 +67,34 @@ public class MainActivity extends BridgeActivity {
         }
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        // Crucial: Chromium WebView pauses media decoders on super.onPause().
-        // Calling webView.onResume() immediately keeps the audio engine and buffer streaming smoothly!
+    private void keepWebViewAlive() {
         try {
             if (getBridge() != null && getBridge().getWebView() != null) {
                 WebView wv = getBridge().getWebView();
                 wv.onResume();
                 wv.resumeTimers();
             }
-        } catch (Exception e) {}
+        } catch (Throwable ignored) {}
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        keepWebViewAlive();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        // Ensure background stream continues when screen turns off or user switches apps
-        try {
-            if (getBridge() != null && getBridge().getWebView() != null) {
-                WebView wv = getBridge().getWebView();
-                wv.onResume();
-                wv.resumeTimers();
-            }
-        } catch (Exception e) {}
+        keepWebViewAlive();
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (!hasFocus) {
+            keepWebViewAlive();
+        }
     }
 
     @Override
@@ -103,5 +119,4 @@ public class MainActivity extends BridgeActivity {
             ArchiveTunePlugin.handleIncomingDeepLink(intent.getData().toString());
         }
     }
-
 }

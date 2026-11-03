@@ -1623,21 +1623,21 @@ public class ArchiveTunePlugin extends Plugin {
         currentPosition = position != null ? position : 0.0;
         currentIsPlaying = isPlaying != null ? isPlaying : false;
 
+        // Immediate notification rebuild ensures foreground service is active in 0ms
+        updateNativeMetadata(currentTitle, currentArtist, currentAlbum, currentDuration, currentArtworkBitmap);
+        updateNativePlaybackStateOnly(currentIsPlaying, currentPosition);
+        rebuildNotification();
+
         if (thumbnail != null && !thumbnail.isEmpty() && !thumbnail.equals(currentThumbnailUrl)) {
             currentThumbnailUrl = thumbnail;
             new Thread(() -> {
                 Bitmap bmp = loadBitmap(thumbnail);
                 if (bmp != null) {
                     currentArtworkBitmap = bmp;
+                    updateNativeMetadata(currentTitle, currentArtist, currentAlbum, currentDuration, currentArtworkBitmap);
+                    rebuildNotification();
                 }
-                updateNativeMetadata(currentTitle, currentArtist, currentAlbum, currentDuration, currentArtworkBitmap);
-                updateNativePlaybackStateOnly(currentIsPlaying, currentPosition);
-                rebuildNotification();
             }, "ArtworkLoader").start();
-        } else {
-            updateNativeMetadata(currentTitle, currentArtist, currentAlbum, currentDuration, currentArtworkBitmap);
-            updateNativePlaybackStateOnly(currentIsPlaying, currentPosition);
-            rebuildNotification();
         }
 
         JSObject ret = new JSObject();
