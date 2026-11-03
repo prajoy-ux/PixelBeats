@@ -33,8 +33,29 @@
 
 ---
 
-> [!TIP]
-> **Ad-free, privacy-focused, and open source.** PixelBeats delivers uninterrupted listening with high-fidelity streams, intelligent local proxying, synchronized live lyrics, and an offline encrypted vault.
+> [!CAUTION]
+> **IMPERSONATION WARNING — PIXELBEATS IS NOT ON GOOGLE PLAY**
+>
+> **PixelBeats has no official Google Play Store listing.** The PixelBeats maintainers have **not published, authorized, or endorsed any application on Google Play** under the PixelBeats name.
+>
+> Google Play listings that use the **PixelBeats name, logo, app icon, screenshots, or other official branding** are **unofficial third-party listings**, even if they look identical to this project. They are **not verified or supported by the PixelBeats maintainers** and should **not be mistaken for official releases**. Their contents and safety cannot be guaranteed.
+>
+> **Get the official PixelBeats only from trusted sources:** [GitHub Releases](https://github.com/prajoy-ux/PixelBeats/releases/latest).
+>
+> If you encounter a Google Play listing impersonating PixelBeats, **report it to Google Play** and [notify the maintainers](https://github.com/prajoy-ux/PixelBeats/issues/new).
+
+---
+
+> [!WARNING]
+> **Forks are not supported in any way.**  
+> We do not provide support, maintenance, troubleshooting, or assistance for any forked version of this project. If you choose to use a fork, you do so at your own risk.
+>
+> **PixelBeats** isn’t just another generic YouTube Music wrapper. It’s a fully custom-built player crafted with modern Material You tokens, an ultra-fast streaming proxy, and native Capacitor integration, because we believe your music should stay private, look clean, and work reliably everywhere.
+
+---
+
+> [!IMPORTANT]  
+> **Geographic Availability:** If YouTube Music or streaming providers are restricted in your region, a VPN or proxy set to a supported region may be required for initial stream resolution.
 
 ---
 
