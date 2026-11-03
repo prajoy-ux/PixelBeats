@@ -401,6 +401,13 @@ const elements = {
   playlistsGrid: document.getElementById('playlists-grid'),
   btnCreatePlaylist: document.getElementById('btn-create-playlist'),
   libAlbumsGrid: document.getElementById('lib-albums-grid'),
+  btnQuickTheme: document.getElementById('btn-quick-theme'),
+  libNavHistory: document.getElementById('lib-nav-history'),
+  libViewHistory: document.getElementById('lib-view-history'),
+  historyStorageInfo: document.getElementById('history-storage-info'),
+  historyList: document.getElementById('history-list'),
+  btnHistoryPlayAll: document.getElementById('btn-history-play-all'),
+  btnHistoryClear: document.getElementById('btn-history-clear'),
 
   // Queue
   queueList: document.getElementById('queue-list'),
@@ -3601,6 +3608,7 @@ async function playTrackAtIndex(index) {
   // 3. Update track metadata, visuals & queue
   elements.trackTitle.textContent = song.title;
   elements.trackArtist.textContent = `${song.artist} • ${song.album || 'Single'}`;
+  HistoryManager.recordTrack(song);
 
   loadHdCover(song.thumbnail, song.videoId);
   syncMiniPlayer();
@@ -4642,6 +4650,8 @@ function switchTab(tabId) {
 
   if (previousTabId === targetId && document.getElementById(targetId)?.classList.contains('active')) {
     positionNavIndicator(false);
+  ThemeManager.init();
+  HistoryManager.init();
     return;
   }
   STATE.activeTab = targetId;
@@ -4906,20 +4916,272 @@ function initGlobalRipple() {
   });
 }
 
+
+// ================= THEME MANAGER =================
+const ThemeManager = {
+  THEMES: ['matcha', 'gameboy', 'cyberpunk', 'synthwave', 'amoled'],
+  THEME_LABELS: {
+    matcha: 'Sage Matcha (Material 3)',
+    gameboy: 'Game Boy 1989 Retro',
+    cyberpunk: 'Cyberpunk Neon',
+    synthwave: 'Retro Synthwave',
+    amoled: 'AMOLED Pitch Black'
+  },
+  THEME_COLORS: {
+    matcha: '#363D17',
+    gameboy: '#0f380f',
+    cyberpunk: '#0B0A1A',
+    synthwave: '#150D2A',
+    amoled: '#000000'
+  },
+
+  current() {
+    return localStorage.getItem('pixelbeats_theme') || 'matcha';
+  },
+
+  apply(themeName, showToastFeedback = false) {
+    if (!this.THEMES.includes(themeName)) themeName = 'matcha';
+    this.THEMES.forEach(t => document.body.classList.remove(`theme-${t}`));
+    document.body.classList.remove('theme-olive', 'theme-terracotta', 'theme-lavender');
+    document.body.classList.add(`theme-${themeName}`);
+    localStorage.setItem('pixelbeats_theme', themeName);
+
+    // Update Meta theme color
+    const metaTag = document.getElementById('meta-theme-color');
+    if (metaTag && this.THEME_COLORS[themeName]) {
+      metaTag.setAttribute('content', this.THEME_COLORS[themeName]);
+    }
+
+    // Update settings grid active pill
+    document.querySelectorAll('.theme-card-option').forEach(el => {
+      el.classList.toggle('active', el.dataset.theme === themeName);
+    });
+
+    if (showToastFeedback) {
+      playHapticSfx('click');
+      showToast(`Theme: ${this.THEME_LABELS[themeName] || themeName}`, 'palette', 2200);
+    }
+  },
+
+  cycle() {
+    const cur = this.current();
+    const idx = this.THEMES.indexOf(cur);
+    const nextIdx = (idx + 1) % this.THEMES.length;
+    this.apply(this.THEMES[nextIdx], true);
+  },
+
+  init() {
+    const saved = this.current();
+    this.apply(saved, false);
+
+    // Bind settings grid options
+    document.querySelectorAll('.theme-card-option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = btn.dataset.theme;
+        if (t) this.apply(t, true);
+      });
+    });
+
+    // Bind quick theme toggle
+    const btnQuick = document.getElementById('btn-quick-theme');
+    if (btnQuick) {
+      btnQuick.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.cycle();
+      });
+    }
+  }
+};
+
+// ================= LISTENING HISTORY MANAGER =================
+const HistoryManager = {
+  STORAGE_KEY: 'pixelbeats_history',
+  MAX_ITEMS: 60,
+
+  getAll() {
+    try {
+      const raw = localStorage.getItem(this.STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  },
+
+  recordTrack(song) {
+    if (!song || (!song.videoId && !song.id)) return;
+    try {
+      const trackId = song.videoId || song.id;
+      let history = this.getAll();
+      // Remove any previous occurrence of this track so it moves to top
+      history = history.filter(item => (item.videoId || item.id) !== trackId);
+      history.unshift({
+        videoId: trackId,
+        id: trackId,
+        title: song.title || 'Untitled Track',
+        artist: song.artist || 'Unknown Artist',
+        album: song.album || 'Single',
+        thumbnail: song.thumbnail || `https://i.ytimg.com/vi/${trackId}/hqdefault.jpg`,
+        duration: song.duration || '--:--',
+        playedAt: Date.now()
+      });
+      if (history.length > this.MAX_ITEMS) {
+        history = history.slice(0, this.MAX_ITEMS);
+      }
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
+      if (STATE.activeLibView === 'history') {
+        this.render();
+      }
+    } catch (e) {
+      console.warn('[History] Save failed:', e);
+    }
+  },
+
+  clear() {
+    try {
+      localStorage.removeItem(this.STORAGE_KEY);
+      playHapticSfx('click');
+      showToast('Listening history cleared', 'delete_sweep', 2500);
+      this.render();
+    } catch (e) { }
+  },
+
+  playAll() {
+    const history = this.getAll();
+    if (!history || history.length === 0) {
+      showToast('No recently played tracks to play', 'info');
+      return;
+    }
+    playHapticSfx('play');
+    STATE.queue = [...history];
+    updateQueueBadges();
+    renderQueueList();
+    playTrackAtIndex(0);
+    showToast(`Playing ${history.length} recently played tracks`, 'history');
+    switchTab('tab-player');
+    syncMiniPlayer();
+  },
+
+  formatTimeAgo(timestamp) {
+    if (!timestamp) return '';
+    const diffMs = Date.now() - timestamp;
+    const diffSec = Math.floor(diffMs / 1000);
+    if (diffSec < 60) return 'Just now';
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHour = Math.floor(diffMin / 60);
+    if (diffHour < 24) return `${diffHour}h ago`;
+    const diffDays = Math.floor(diffHour / 24);
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return new Date(timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  },
+
+  render() {
+    const listEl = document.getElementById('history-list');
+    const storageInfoEl = document.getElementById('history-storage-info');
+    if (!listEl) return;
+    const history = this.getAll();
+
+    if (storageInfoEl) {
+      storageInfoEl.textContent = `${history.length} Song${history.length === 1 ? '' : 's'} Recorded`;
+    }
+
+    if (history.length === 0) {
+      listEl.innerHTML = `
+        <div class="empty-state">
+          <span class="material-symbols-rounded empty-icon">history</span>
+          <h3>No Recent Tracks</h3>
+          <p>Songs you listen to will automatically appear here so you can replay them anytime!</p>
+        </div>
+      `;
+      return;
+    }
+
+    listEl.innerHTML = '';
+    history.forEach((song, idx) => {
+      const thumbUrl = song.thumbnail || `https://i.ytimg.com/vi/${song.videoId || song.id}/hqdefault.jpg`;
+      const timeAgo = this.formatTimeAgo(song.playedAt);
+      const item = document.createElement('div');
+      item.className = 'queue-item stagger-item';
+      item.style.setProperty('--item-index', idx);
+      item.innerHTML = `
+        <img src="${thumbUrl}" class="queue-thumb" alt="Cover" onerror="this.src='icon.jpg'">
+        <div class="queue-details">
+          <div class="queue-title">${escapeHtml(song.title)}</div>
+          <div class="queue-artist">${escapeHtml(song.artist)} • ${song.duration || '--:--'}</div>
+          <div class="history-time-badge">
+            <span class="material-symbols-rounded" style="font-size: 11px;">schedule</span>
+            <span>${timeAgo}</span>
+          </div>
+        </div>
+        <div class="queue-actions-row">
+          <button type="button" class="queue-btn-action btn-history-queue" title="Add to Queue">
+            <span class="material-symbols-rounded">playlist_add</span>
+          </button>
+          <button type="button" class="queue-btn-action btn-history-save" title="Save to Offline Vault">
+            <span class="material-symbols-rounded">download</span>
+          </button>
+        </div>
+      `;
+
+      item.addEventListener('click', (e) => {
+        if (e.target.closest('.queue-btn-action')) return;
+        playHapticSfx('click');
+        prefetchTrackAudioAndLyrics(song);
+        addToQueue(song, true);
+        switchTab('tab-player');
+        syncMiniPlayer();
+      });
+
+      const btnQueue = item.querySelector('.btn-history-queue');
+      if (btnQueue) {
+        btnQueue.addEventListener('click', (e) => {
+          e.stopPropagation();
+          playHapticSfx('click');
+          addToQueue(song, false);
+          showToast(`Queued: ${song.title.slice(0, 26)}`, 'playlist_add');
+        });
+      }
+
+      const btnSave = item.querySelector('.btn-history-save');
+      if (btnSave) {
+        btnSave.addEventListener('click', (e) => {
+          e.stopPropagation();
+          downloadTrackToVault(song);
+        });
+      }
+
+      listEl.appendChild(item);
+    });
+  },
+
+  init() {
+    this.render();
+  }
+};
+
+function renderHistoryUI() {
+  HistoryManager.render();
+}
+
 function switchLibraryView(view) {
   STATE.activeLibView = view;
   if (elements.libNavOffline) elements.libNavOffline.classList.toggle('active', view === 'offline');
   if (elements.libNavPlaylists) elements.libNavPlaylists.classList.toggle('active', view === 'playlists');
+  if (elements.libNavHistory) elements.libNavHistory.classList.toggle('active', view === 'history');
   if (elements.libNavAlbums) elements.libNavAlbums.classList.toggle('active', view === 'albums');
 
   if (elements.libViewOffline) elements.libViewOffline.classList.toggle('hidden', view !== 'offline');
   if (elements.libViewPlaylists) elements.libViewPlaylists.classList.toggle('hidden', view !== 'playlists');
+  if (elements.libViewHistory) elements.libViewHistory.classList.toggle('hidden', view !== 'history');
   if (elements.libViewAlbums) elements.libViewAlbums.classList.toggle('hidden', view !== 'albums');
 
   if (view === 'offline') {
     updateVaultUI();
   } else if (view === 'playlists') {
     renderPlaylistsGrid();
+  } else if (view === 'history') {
+    renderHistoryUI();
   } else if (view === 'albums') {
     renderLibraryAlbums();
   }
@@ -5260,7 +5522,20 @@ function setupEventListeners() {
   // Library Navigation Pills
   elements.libNavOffline.addEventListener('click', () => switchLibraryView('offline'));
   elements.libNavPlaylists.addEventListener('click', () => switchLibraryView('playlists'));
+  if (elements.libNavHistory) elements.libNavHistory.addEventListener('click', () => switchLibraryView('history'));
   elements.libNavAlbums.addEventListener('click', () => switchLibraryView('albums'));
+
+  // History Actions
+  if (elements.btnHistoryPlayAll) {
+    elements.btnHistoryPlayAll.addEventListener('click', () => {
+      HistoryManager.playAll();
+    });
+  }
+  if (elements.btnHistoryClear) {
+    elements.btnHistoryClear.addEventListener('click', () => {
+      HistoryManager.clear();
+    });
+  }
 
   // Vault Play All
   elements.btnVaultPlayAll.addEventListener('click', async () => {
@@ -5672,7 +5947,7 @@ function syncCreatorAvatarFromGitHub() {
 }
 
 // ================= IN-APP SELF UPDATER =================
-const APP_VERSION = '1.1.5';
+const APP_VERSION = '1.2.0';
 const GITHUB_REPO = 'prajoy-ux/PixelBeats';
 let pendingUpdateApkUrl = null;
 let isUpdating = false;

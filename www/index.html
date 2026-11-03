@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#363D17" id="meta-theme-color">
   <title>PixelMusic // Material You Audio</title>
   
   <!-- Google Fonts: Plus Jakarta Sans & Outfit (Google Pixel Material Design 3) - Asynchronous Instant Paint -->
@@ -1321,6 +1322,9 @@
           <!-- HD Album Art Container (Tap to Toggle Lyrics) -->
           <div class="album-art-wrapper" id="album-art-wrapper" title="Tap to toggle live lyrics">
             <div class="ambient-bass-glow" id="ambient-bass-glow"></div>
+            <button type="button" id="btn-quick-theme" class="quick-theme-pill-btn" title="Cycle Themes (Matcha, Game Boy, Cyberpunk, Synthwave, AMOLED)" aria-label="Cycle Themes">
+              <span class="material-symbols-rounded">palette</span>
+            </button>
             <img id="player-cover-art" class="player-cover-art" src="idle-cover.jpg" alt="Album Cover" onerror="this.src='idle-cover.jpg'">
             <div id="art-loading" class="art-loading hidden">
               <div class="m3-spinner"></div>
@@ -1568,6 +1572,10 @@
               <span class="material-symbols-rounded">playlist_play</span>
               <span>Playlists</span>
             </button>
+            <button id="lib-nav-history" class="m3-segment-btn">
+              <span class="material-symbols-rounded">history</span>
+              <span>History</span>
+            </button>
             <button id="lib-nav-albums" class="m3-segment-btn">
               <span class="material-symbols-rounded">album</span>
               <span>Albums</span>
@@ -1623,6 +1631,37 @@
             <!-- Albums rendered here -->
           </div>
         </div>
+
+        <!-- SUB-VIEW 4: LISTENING HISTORY -->
+        <div id="lib-view-history" class="lib-sub-view hidden">
+          <div class="vault-overview-card history-overview-card">
+            <div class="vault-meta">
+              <div class="vault-title-row">
+                <span class="material-symbols-rounded">history</span>
+                <span class="vault-heading">Recently Played</span>
+              </div>
+              <span id="history-storage-info" class="vault-subtext">0 Songs Recorded</span>
+            </div>
+            <div class="history-actions-group" style="display: flex; gap: 8px; align-items: center;">
+              <button type="button" id="btn-history-play-all" class="m3-accent-pill-btn" title="Play all recently played tracks">
+                <span class="material-symbols-rounded">play_arrow</span>
+                <span>Play All</span>
+              </button>
+              <button type="button" id="btn-history-clear" class="m3-tonal-pill-btn history-clear-btn" title="Clear listening history">
+                <span class="material-symbols-rounded" style="font-size: 18px;">delete_sweep</span>
+                <span>Clear</span>
+              </button>
+            </div>
+          </div>
+          <div id="history-list" class="results-stream">
+            <div class="empty-state">
+              <span class="material-symbols-rounded empty-icon">history</span>
+              <h3>No Recent Tracks</h3>
+              <p>Songs you listen to will automatically appear here so you can replay them anytime!</p>
+            </div>
+          </div>
+        </div>
+
 
       </section>
 
@@ -1709,7 +1748,7 @@
                   </span>
                   <div class="creator-link-text">
                     <span class="creator-link-title">Releases & Updates</span>
-                    <span id="creator-app-version" class="creator-link-handle">PixelBeats v1.1.4 APK</span>
+                    <span id="creator-app-version" class="creator-link-handle">PixelBeats v1.2.0 APK</span>
                   </div>
                 </div>
                 <span class="material-symbols-rounded creator-link-arrow">open_in_new</span>
@@ -1719,6 +1758,53 @@
             <div class="app-version-badge-box">
               <span class="material-symbols-rounded" style="font-size: 16px; color: var(--primary-pill, #C8D394);">favorite</span>
               <span>Made by Prajoy Sarkar • GNU GPL-3.0</span>
+            </div>
+          </div>
+
+          
+          <!-- Themes & Appearance Card -->
+          <div class="m3-settings-card">
+            <div class="card-header-row">
+              <span class="material-symbols-rounded card-icon">palette</span>
+              <h4>Themes & Accent Colors</h4>
+            </div>
+            <p class="theme-card-desc" style="font-size: 12px; margin-bottom: 12px; opacity: 0.85;">Choose your preferred retro audio visual aesthetic:</p>
+            <div class="theme-selection-grid" id="theme-selection-grid">
+              <div class="theme-card-option active" data-theme="matcha">
+                <div class="theme-color-preview matcha"></div>
+                <div class="theme-info">
+                  <span class="theme-name">Sage Matcha</span>
+                  <span class="theme-tag">Default M3</span>
+                </div>
+              </div>
+              <div class="theme-card-option" data-theme="gameboy">
+                <div class="theme-color-preview gameboy"></div>
+                <div class="theme-info">
+                  <span class="theme-name">Game Boy 1989</span>
+                  <span class="theme-tag">4-Tone Green</span>
+                </div>
+              </div>
+              <div class="theme-card-option" data-theme="cyberpunk">
+                <div class="theme-color-preview cyberpunk"></div>
+                <div class="theme-info">
+                  <span class="theme-name">Cyberpunk</span>
+                  <span class="theme-tag">Neon Yellow</span>
+                </div>
+              </div>
+              <div class="theme-card-option" data-theme="synthwave">
+                <div class="theme-color-preview synthwave"></div>
+                <div class="theme-info">
+                  <span class="theme-name">Synthwave</span>
+                  <span class="theme-tag">Hot Pink</span>
+                </div>
+              </div>
+              <div class="theme-card-option" data-theme="amoled">
+                <div class="theme-color-preview amoled"></div>
+                <div class="theme-info">
+                  <span class="theme-name">AMOLED Black</span>
+                  <span class="theme-tag">Laser Cyan</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1853,7 +1939,7 @@
               <span class="info-label">Interface:</span><span class="info-val">Material Design 3</span>
               <span class="info-label">Platform:</span><span id="cap-status" class="info-val">Web Mode</span>
               <span class="info-label">Storage:</span><span class="info-val">IndexedDB Offline Vault</span>
-              <span class="info-label">Version:</span><span id="system-app-version" class="info-val">v1.1.4</span>
+              <span class="info-label">Version:</span><span id="system-app-version" class="info-val">v1.2.0</span>
             </div>
             <div style="margin-top: 14px;">
               <button type="button" id="btn-check-updates" class="m3-accent-pill-btn w-full" style="justify-content: center; gap: 8px;">
