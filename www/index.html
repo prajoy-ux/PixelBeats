@@ -1709,7 +1709,7 @@
                   </span>
                   <div class="creator-link-text">
                     <span class="creator-link-title">Releases & Updates</span>
-                    <span id="creator-app-version" class="creator-link-handle">PixelBeats v1.1.2 APK</span>
+                    <span id="creator-app-version" class="creator-link-handle">PixelBeats v1.1.4 APK</span>
                   </div>
                 </div>
                 <span class="material-symbols-rounded creator-link-arrow">open_in_new</span>
@@ -1748,15 +1748,81 @@
               <h4>Audio Equalizer & Sleep Timer</h4>
             </div>
 
-            <!-- Audio Presets -->
-            <div class="setting-field">
-              <label class="field-label-m3">Audio Equalizer Preset:</label>
-              <div class="preset-pills-row" id="eq-presets-container">
-                <button class="eq-pill active" data-preset="flat">Flat</button>
-                <button class="eq-pill" data-preset="bass_boost">Bass Boost</button>
-                <button class="eq-pill" data-preset="acoustic">Acoustic</button>
-                <button class="eq-pill" data-preset="lofi">Lo-Fi Warmth</button>
-                <button class="eq-pill" data-preset="crisp">Vocal Crisp</button>
+            <!-- 5-Band Graphic Equalizer -->
+            <div class="setting-field eq-graphic-section">
+              <div class="eq-header-row">
+                <div class="eq-header-left">
+                  <label class="field-label-m3" style="margin: 0;">5-Band Graphic Equalizer</label>
+                  <span class="eq-subtitle">Real-time studio acoustic tuning (-12 dB to +12 dB)</span>
+                </div>
+                <button type="button" id="btn-eq-reset" class="eq-reset-btn" title="Reset all bands to flat (0 dB)">
+                  <span class="material-symbols-rounded" style="font-size: 14px;">restart_alt</span>
+                  <span>Flat</span>
+                </button>
+              </div>
+
+              <!-- Graphic Equalizer Sliders Rack -->
+              <div class="eq-sliders-rack">
+                <div class="eq-center-guide-line" title="0 dB Neutral Level"></div>
+                <div class="eq-band-col" data-band-index="0">
+                  <span class="eq-db-val" id="eq-val-0">0dB</span>
+                  <div class="eq-slider-track-wrap" id="eq-wrap-0" data-band="0" title="60 Hz Sub-Bass">
+                    <div class="eq-track-groove">
+                      <div class="eq-track-fill" id="eq-fill-0"></div>
+                      <div class="eq-thumb-knob" id="eq-knob-0"></div>
+                    </div>
+                  </div>
+                  <span class="eq-freq-label">60Hz</span>
+                  <span class="eq-type-label">Sub</span>
+                </div>
+
+                <div class="eq-band-col" data-band-index="1">
+                  <span class="eq-db-val" id="eq-val-1">0dB</span>
+                  <div class="eq-slider-track-wrap" id="eq-wrap-1" data-band="1" title="230 Hz Bass">
+                    <div class="eq-track-groove">
+                      <div class="eq-track-fill" id="eq-fill-1"></div>
+                      <div class="eq-thumb-knob" id="eq-knob-1"></div>
+                    </div>
+                  </div>
+                  <span class="eq-freq-label">230Hz</span>
+                  <span class="eq-type-label">Bass</span>
+                </div>
+
+                <div class="eq-band-col" data-band-index="2">
+                  <span class="eq-db-val" id="eq-val-2">0dB</span>
+                  <div class="eq-slider-track-wrap" id="eq-wrap-2" data-band="2" title="910 Hz Midrange">
+                    <div class="eq-track-groove">
+                      <div class="eq-track-fill" id="eq-fill-2"></div>
+                      <div class="eq-thumb-knob" id="eq-knob-2"></div>
+                    </div>
+                  </div>
+                  <span class="eq-freq-label">910Hz</span>
+                  <span class="eq-type-label">Mid</span>
+                </div>
+
+                <div class="eq-band-col" data-band-index="3">
+                  <span class="eq-db-val" id="eq-val-3">0dB</span>
+                  <div class="eq-slider-track-wrap" id="eq-wrap-3" data-band="3" title="3.6 kHz Presence">
+                    <div class="eq-track-groove">
+                      <div class="eq-track-fill" id="eq-fill-3"></div>
+                      <div class="eq-thumb-knob" id="eq-knob-3"></div>
+                    </div>
+                  </div>
+                  <span class="eq-freq-label">3.6kHz</span>
+                  <span class="eq-type-label">Pres</span>
+                </div>
+
+                <div class="eq-band-col" data-band-index="4">
+                  <span class="eq-db-val" id="eq-val-4">0dB</span>
+                  <div class="eq-slider-track-wrap" id="eq-wrap-4" data-band="4" title="14 kHz Treble">
+                    <div class="eq-track-groove">
+                      <div class="eq-track-fill" id="eq-fill-4"></div>
+                      <div class="eq-thumb-knob" id="eq-knob-4"></div>
+                    </div>
+                  </div>
+                  <span class="eq-freq-label">14kHz</span>
+                  <span class="eq-type-label">Air</span>
+                </div>
               </div>
             </div>
 
@@ -1787,7 +1853,7 @@
               <span class="info-label">Interface:</span><span class="info-val">Material Design 3</span>
               <span class="info-label">Platform:</span><span id="cap-status" class="info-val">Web Mode</span>
               <span class="info-label">Storage:</span><span class="info-val">IndexedDB Offline Vault</span>
-              <span class="info-label">Version:</span><span id="system-app-version" class="info-val">v1.1.2</span>
+              <span class="info-label">Version:</span><span id="system-app-version" class="info-val">v1.1.4</span>
             </div>
             <div style="margin-top: 14px;">
               <button type="button" id="btn-check-updates" class="m3-accent-pill-btn w-full" style="justify-content: center; gap: 8px;">

@@ -68,6 +68,16 @@ const ArchiveTuneBridge = {
     }
     return null;
   },
+  async setEqualizerBands(bands) {
+    if (this.isNative()) {
+      try {
+        return await window.Capacitor.Plugins.ArchiveTune.setEqualizerBands({ bands });
+      } catch (e) {
+        console.warn('[ArchiveTune Native] EQ bands notice:', e);
+      }
+    }
+    return null;
+  },
   async updateMediaSession(details) {
     if (this.isNative()) {
       try {
@@ -1878,40 +1888,52 @@ function initWebAudioEqualizer() {
       }
     }
 
-    // 4-band Parametric EQ: LowShelf (150Hz), Peaking (750Hz), Peaking (3000Hz), HighShelf (7000Hz)
-    const lowShelf = webAudioCtx.createBiquadFilter();
-    lowShelf.type = 'lowshelf';
-    lowShelf.frequency.value = 150;
+    // 5-band Graphic Studio Equalizer (60Hz, 230Hz, 910Hz, 3.6kHz, 14kHz)
+    const b0 = webAudioCtx.createBiquadFilter();
+    b0.type = 'lowshelf';
+    b0.frequency.value = 60;
 
-    const midPeak1 = webAudioCtx.createBiquadFilter();
-    midPeak1.type = 'peaking';
-    midPeak1.frequency.value = 750;
-    midPeak1.Q.value = 1.0;
+    const b1 = webAudioCtx.createBiquadFilter();
+    b1.type = 'peaking';
+    b1.frequency.value = 230;
+    b1.Q.value = 1.0;
 
-    const midPeak2 = webAudioCtx.createBiquadFilter();
-    midPeak2.type = 'peaking';
-    midPeak2.frequency.value = 3000;
-    midPeak2.Q.value = 1.1;
+    const b2 = webAudioCtx.createBiquadFilter();
+    b2.type = 'peaking';
+    b2.frequency.value = 910;
+    b2.Q.value = 1.0;
 
-    const highShelf = webAudioCtx.createBiquadFilter();
-    highShelf.type = 'highshelf';
-    highShelf.frequency.value = 7000;
+    const b3 = webAudioCtx.createBiquadFilter();
+    b3.type = 'peaking';
+    b3.frequency.value = 3600;
+    b3.Q.value = 1.1;
 
-    // Connect audio chain: Source -> LowShelf -> Mid1 -> Mid2 -> HighShelf -> Destination
+    const b4 = webAudioCtx.createBiquadFilter();
+    b4.type = 'highshelf';
+    b4.frequency.value = 14000;
+
+    // Connect audio chain: Source -> b0 -> b1 -> b2 -> b3 -> b4 -> Destination
     try {
       webAudioSource.disconnect();
     } catch (e) { }
 
-    webAudioSource.connect(lowShelf);
-    lowShelf.connect(midPeak1);
-    midPeak1.connect(midPeak2);
-    midPeak2.connect(highShelf);
-    highShelf.connect(webAudioCtx.destination);
+    webAudioSource.connect(b0);
+    b0.connect(b1);
+    b1.connect(b2);
+    b2.connect(b3);
+    b3.connect(b4);
+    b4.connect(webAudioCtx.destination);
 
-    eqBands = { lowShelf, midPeak1, midPeak2, highShelf };
-    console.log('✨ [Equalizer] Web Audio 4-Band Studio Equalizer successfully linked to stream');
+    eqBands = [b0, b1, b2, b3, b4];
+    console.log('✨ [Equalizer] 5-Band Studio Graphic Equalizer linked to audio output');
 
-    applyEqPreset(STATE.eqPreset || 'flat', false);
+    // Apply saved custom bands if available
+    if (Array.isArray(STATE.eqCustomBands)) {
+      for (let i = 0; i < 5; i++) {
+        const g = parseFloat(STATE.eqCustomBands[i]) || 0;
+        eqBands[i].gain.value = g;
+      }
+    }
 
   } catch (err) {
     console.warn('[Equalizer] Pipeline init notice:', err);
@@ -1925,61 +1947,171 @@ async function ensureWebAudioActive() {
   if (webAudioCtx && webAudioCtx.state === 'suspended') {
     try {
       await webAudioCtx.resume();
-      console.log('[Equalizer] AudioContext active, state:', webAudioCtx.state);
     } catch (e) {
       console.warn('[Equalizer] Resume error:', e);
     }
   }
 }
 
-async function applyEqPreset(preset, showUserFeedback = true) {
-  STATE.eqPreset = preset;
-  localStorage.setItem('pixelbeats_eq', preset);
-
-  // Update UI active states
-  document.querySelectorAll('.eq-pill').forEach(pill => {
-    pill.classList.toggle('active', pill.dataset.preset === preset);
-  });
-
-  const config = EQ_PRESETS[preset] || EQ_PRESETS.flat;
-
-  // 1. Android Native Hardware DSP Equalizer & BassBoost
-  try {
-    ArchiveTuneBridge.setEqualizerPreset(preset);
-  } catch (nativeEqErr) {
-    console.warn('[Equalizer] Native EQ notice:', nativeEqErr);
+function applyEqualizerBand(bandIndex, dbGain, updateUI = true) {
+  const numGain = Math.max(-12, Math.min(12, parseFloat(dbGain) || 0));
+  if (!Array.isArray(STATE.eqCustomBands)) {
+    STATE.eqCustomBands = [0, 0, 0, 0, 0];
   }
+  STATE.eqCustomBands[bandIndex] = numGain;
+  localStorage.setItem('pixelbeats_eq_custom_bands', JSON.stringify(STATE.eqCustomBands));
 
-  // 2. Web Audio Pipeline
-  await ensureWebAudioActive();
-
-  if (eqBands && webAudioCtx) {
+  // 1. Web Audio Pipeline
+  ensureWebAudioActive();
+  if (Array.isArray(eqBands) && eqBands[bandIndex] && webAudioCtx) {
     const t = webAudioCtx.currentTime || 0;
     try {
-      eqBands.lowShelf.gain.cancelScheduledValues(t);
-      eqBands.midPeak1.gain.cancelScheduledValues(t);
-      eqBands.midPeak2.gain.cancelScheduledValues(t);
-      eqBands.highShelf.gain.cancelScheduledValues(t);
+      eqBands[bandIndex].gain.cancelScheduledValues(t);
+      eqBands[bandIndex].gain.setValueAtTime(numGain, t);
+      eqBands[bandIndex].gain.value = numGain;
+    } catch (e) { }
+  }
 
-      eqBands.lowShelf.gain.setValueAtTime(config.lowShelf, t);
-      eqBands.midPeak1.gain.setValueAtTime(config.midPeak1, t);
-      eqBands.midPeak2.gain.setValueAtTime(config.midPeak2, t);
-      eqBands.highShelf.gain.setValueAtTime(config.highShelf, t);
+  // 2. Android Hardware DSP
+  try {
+    ArchiveTuneBridge.setEqualizerBands(STATE.eqCustomBands);
+  } catch (e) { }
 
-      eqBands.lowShelf.gain.value = config.lowShelf;
-      eqBands.midPeak1.gain.value = config.midPeak1;
-      eqBands.midPeak2.gain.value = config.midPeak2;
-      eqBands.highShelf.gain.value = config.highShelf;
+  // 3. UI Readout, Fill & Knob positioning
+  if (updateUI) {
+    const pct = ((numGain - (-12)) / 24) * 100;
+    const valElem = document.getElementById(`eq-val-${bandIndex}`);
+    const fillElem = document.getElementById(`eq-fill-${bandIndex}`);
+    const knobElem = document.getElementById(`eq-knob-${bandIndex}`);
 
-      console.log(`[Equalizer] Applied ${config.label}: Low=${config.lowShelf}dB, Mid1=${config.midPeak1}dB, Mid2=${config.midPeak2}dB, High=${config.highShelf}dB`);
-    } catch (eqErr) {
-      console.warn('[Equalizer] Param update notice:', eqErr);
+    if (valElem) {
+      valElem.textContent = numGain > 0 ? `+${numGain}dB` : `${numGain}dB`;
+      valElem.classList.toggle('boost', numGain > 0);
+      valElem.classList.toggle('cut', numGain < 0);
+    }
+    if (fillElem) {
+      fillElem.style.height = `${pct}%`;
+    }
+    if (knobElem) {
+      knobElem.style.bottom = `${pct}%`;
+    }
+  }
+}
+
+function resetEqualizerToFlat() {
+  playHapticSfx('click');
+  STATE.eqCustomBands = [0, 0, 0, 0, 0];
+  localStorage.setItem('pixelbeats_eq_custom_bands', JSON.stringify(STATE.eqCustomBands));
+
+  for (let i = 0; i < 5; i++) {
+    const valElem = document.getElementById(`eq-val-${i}`);
+    const fillElem = document.getElementById(`eq-fill-${i}`);
+    const knobElem = document.getElementById(`eq-knob-${i}`);
+
+    if (valElem) {
+      valElem.textContent = '0dB';
+      valElem.classList.remove('boost', 'cut');
+    }
+    if (fillElem) {
+      fillElem.style.height = '50%';
+    }
+    if (knobElem) {
+      knobElem.style.bottom = '50%';
+    }
+    if (Array.isArray(eqBands) && eqBands[i] && webAudioCtx) {
+      try { eqBands[i].gain.value = 0; } catch (e) { }
     }
   }
 
-  if (showUserFeedback) {
-    showToast(`Equalizer: ${config.label}`, 'graphic_eq');
+  try {
+    ArchiveTuneBridge.setEqualizerBands([0, 0, 0, 0, 0]);
+  } catch (e) { }
+
+  showToast('Equalizer: Flat (0 dB)', 'graphic_eq');
+}
+
+function initEqualizerSliders() {
+  let saved = [0, 0, 0, 0, 0];
+  try {
+    const raw = localStorage.getItem('pixelbeats_eq_custom_bands');
+    if (raw) saved = JSON.parse(raw);
+  } catch (e) { }
+  if (!Array.isArray(saved) || saved.length < 5) saved = [0, 0, 0, 0, 0];
+  STATE.eqCustomBands = saved;
+
+  for (let i = 0; i < 5; i++) {
+    const wrap = document.getElementById(`eq-wrap-${i}`);
+    const valElem = document.getElementById(`eq-val-${i}`);
+    const fillElem = document.getElementById(`eq-fill-${i}`);
+    const knobElem = document.getElementById(`eq-knob-${i}`);
+    const gain = parseFloat(saved[i]) || 0;
+    const pct = ((gain - (-12)) / 24) * 100;
+
+    if (valElem) {
+      valElem.textContent = gain > 0 ? `+${gain}dB` : `${gain}dB`;
+      valElem.classList.toggle('boost', gain > 0);
+      valElem.classList.toggle('cut', gain < 0);
+    }
+    if (fillElem) {
+      fillElem.style.height = `${pct}%`;
+    }
+    if (knobElem) {
+      knobElem.style.bottom = `${pct}%`;
+    }
+
+    if (wrap) {
+      let isDragging = false;
+      let lastVibrateDb = gain;
+
+      const handlePointer = (clientY) => {
+        const groove = wrap.querySelector('.eq-track-groove');
+        if (!groove) return;
+        const rect = groove.getBoundingClientRect();
+        const clampedY = Math.max(rect.top, Math.min(rect.bottom, clientY));
+        const normalized = 1 - ((clampedY - rect.top) / rect.height);
+        let db = -12 + (normalized * 24);
+        db = Math.round(db * 2) / 2;
+        db = Math.max(-12, Math.min(12, db));
+
+        if (Math.abs(db - lastVibrateDb) >= 1) {
+          playHapticSfx('click');
+          lastVibrateDb = db;
+        }
+        applyEqualizerBand(i, db, true);
+      };
+
+      wrap.addEventListener('pointerdown', (e) => {
+        isDragging = true;
+        try { wrap.setPointerCapture(e.pointerId); } catch (err) { }
+        handlePointer(e.clientY);
+      });
+
+      wrap.addEventListener('pointermove', (e) => {
+        if (isDragging) {
+          handlePointer(e.clientY);
+        }
+      });
+
+      const endDrag = (e) => {
+        if (isDragging) {
+          isDragging = false;
+          try { wrap.releasePointerCapture(e.pointerId); } catch (err) { }
+        }
+      };
+
+      wrap.addEventListener('pointerup', endDrag);
+      wrap.addEventListener('pointercancel', endDrag);
+    }
   }
+
+  const btnReset = document.getElementById('btn-eq-reset');
+  if (btnReset) {
+    btnReset.addEventListener('click', resetEqualizerToFlat);
+  }
+
+  try {
+    ArchiveTuneBridge.setEqualizerBands(saved);
+  } catch (e) { }
 }
 
 // ================= SLEEP TIMER WITH ACCURATE BACKGROUND DETECTION =================
@@ -3055,7 +3187,7 @@ async function testBackendHealth(url) {
     return false;
   }
 
-// Auto-detect localhost / hosting server in Web Browser mode
+  // Auto-detect localhost / hosting server in Web Browser mode
   if (typeof window !== 'undefined' && window.location && window.location.protocol.startsWith('http')) {
     const hostOrigin = window.location.origin;
     const originResult = await probeBackendCandidate(hostOrigin);
@@ -3269,7 +3401,7 @@ async function resolveStreamUrl(videoId) {
       }
     }
 
-// 4b. High-Speed Local/Remote Backend Stream Resolver (Instant HD Stream with CORS proxy!)
+    // 4b. High-Speed Local/Remote Backend Stream Resolver (Instant HD Stream with CORS proxy!)
     const effectiveBackend = STATE.backendUrl || (typeof window !== 'undefined' && window.location && window.location.protocol.startsWith('http') ? window.location.origin : '');
     if (effectiveBackend) {
       try {
@@ -5266,15 +5398,8 @@ function setupEventListeners() {
     }, { passive: true });
   }
 
-  // Audio Equalizer Presets
-  document.querySelectorAll('.eq-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      playHapticSfx('click');
-      document.querySelectorAll('.eq-pill').forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-      applyEqPreset(pill.dataset.preset, true);
-    });
-  });
+  // 5-Band Studio Graphic Equalizer Setup
+  initEqualizerSliders();
 
   // Sleep Timer Pills
   document.querySelectorAll('.sleep-pill').forEach(pill => {
@@ -5487,7 +5612,7 @@ function syncCreatorAvatarFromGitHub() {
 }
 
 // ================= IN-APP SELF UPDATER =================
-const APP_VERSION = '1.1.3';
+const APP_VERSION = '1.1.5';
 const GITHUB_REPO = 'prajoy-ux/PixelBeats';
 let pendingUpdateApkUrl = null;
 let isUpdating = false;
@@ -5609,10 +5734,12 @@ async function initApp() {
   if (elements.settingAutoFallback) elements.settingAutoFallback.checked = STATE.autoFallback;
   if (elements.settingBackendUrl) elements.settingBackendUrl.value = STATE.backendUrl;
 
-  // Apply saved EQ preset (Native Android DSP & Web Audio)
-  const savedEq = STATE.eqPreset || 'flat';
-  document.querySelectorAll('.eq-pill').forEach(p => p.classList.toggle('active', p.dataset.preset === savedEq));
-  applyEqPreset(savedEq, false);
+  // 4. Initialize 5-Band Studio Graphic Equalizer (Native Android DSP & Web Audio)
+  if (Array.isArray(STATE.eqCustomBands)) {
+    try {
+      ArchiveTuneBridge.setEqualizerBands(STATE.eqCustomBands);
+    } catch (e) { }
+  }
 
   // 5. Initialize volume & controls from persistent storage
   const initVol = (typeof STATE.currentVolume === 'number' && !isNaN(STATE.currentVolume)) ? STATE.currentVolume : 0.75;
