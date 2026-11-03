@@ -512,150 +512,150 @@ const THEME_NAMES = {
 const THEME_PALETTES = {
   matcha: {
     shellBg: '#363D17',
-    heroBg: '#C8D394',
+    heroBg: 'rgba(200, 211, 148, 0.88)',
     heroText: '#363D17',
     heroSubtext: '#576028',
     playBtnBg: '#576028',
     playBtnText: '#EFF2E1',
-    navBtnBg: '#EFF2E1',
+    navBtnBg: 'rgba(239, 242, 225, 0.92)',
     navBtnText: '#363D17',
     scrubberFill: '#576028',
     scrubberThumb: '#363D17',
-    scrubberEmpty: '#EFF2E1',
-    volPillBg: '#C8D394',
+    scrubberEmpty: 'rgba(239, 242, 225, 0.75)',
+    volPillBg: 'rgba(200, 211, 148, 0.86)',
     volMuteBg: '#576028',
     volMuteIcon: '#EFF2E1',
     volFillBar: '#576028',
     volDivider: '#363D17',
-    volEmptyBar: '#EFF2E1',
-    volCaptionBg: '#EFF2E1',
+    volEmptyBar: 'rgba(239, 242, 225, 0.75)',
+    volCaptionBg: 'rgba(239, 242, 225, 0.92)',
     volCaptionIcon: '#363D17',
     volEqIcon: '#363D17',
-    bentoBg: '#C8D394',
+    bentoBg: 'rgba(200, 211, 148, 0.85)',
     bentoText: '#363D17',
     bentoActiveBg: '#576028',
     bentoActiveText: '#EFF2E1',
-    bottomNavBg: '#C8D394',
+    bottomNavBg: 'rgba(200, 211, 148, 0.88)',
     navIndicatorBg: '#576028',
     navActiveText: '#EFF2E1',
     navInactiveText: '#363D17'
   },
   gameboy: {
     shellBg: '#0f380f',
-    heroBg: '#8bac0f',
+    heroBg: 'rgba(139, 172, 15, 0.88)',
     heroText: '#0f380f',
     heroSubtext: '#306230',
     playBtnBg: '#306230',
     playBtnText: '#9bbc0f',
-    navBtnBg: '#9bbc0f',
+    navBtnBg: 'rgba(155, 188, 15, 0.92)',
     navBtnText: '#0f380f',
     scrubberFill: '#306230',
     scrubberThumb: '#0f380f',
-    scrubberEmpty: '#9bbc0f',
-    volPillBg: '#9bbc0f',
+    scrubberEmpty: 'rgba(155, 188, 15, 0.75)',
+    volPillBg: 'rgba(155, 188, 15, 0.86)',
     volMuteBg: '#306230',
     volMuteIcon: '#9bbc0f',
     volFillBar: '#306230',
     volDivider: '#0f380f',
-    volEmptyBar: '#8bac0f',
-    volCaptionBg: '#8bac0f',
+    volEmptyBar: 'rgba(139, 172, 15, 0.75)',
+    volCaptionBg: 'rgba(139, 172, 15, 0.92)',
     volCaptionIcon: '#0f380f',
     volEqIcon: '#0f380f',
-    bentoBg: '#9bbc0f',
+    bentoBg: 'rgba(155, 188, 15, 0.85)',
     bentoText: '#0f380f',
     bentoActiveBg: '#306230',
     bentoActiveText: '#9bbc0f',
-    bottomNavBg: '#8bac0f',
+    bottomNavBg: 'rgba(139, 172, 15, 0.88)',
     navIndicatorBg: '#306230',
     navActiveText: '#9bbc0f',
     navInactiveText: '#306230'
   },
   cyberpunk: {
     shellBg: '#0B0A1A',
-    heroBg: '#18152E',
+    heroBg: 'rgba(24, 21, 46, 0.86)',
     heroText: '#FFE600',
     heroSubtext: '#00FFFF',
     playBtnBg: '#FF007F',
     playBtnText: '#FFFFFF',
-    navBtnBg: '#252042',
+    navBtnBg: 'rgba(37, 32, 66, 0.92)',
     navBtnText: '#00FFFF',
     scrubberFill: '#FF007F',
     scrubberThumb: '#00FFFF',
-    scrubberEmpty: '#141224',
-    volPillBg: '#252042',
+    scrubberEmpty: 'rgba(20, 18, 36, 0.75)',
+    volPillBg: 'rgba(37, 32, 66, 0.85)',
     volMuteBg: '#FF007F',
     volMuteIcon: '#FFFFFF',
     volFillBar: '#FF007F',
     volDivider: '#00FFFF',
-    volEmptyBar: '#141224',
-    volCaptionBg: '#18152E',
+    volEmptyBar: 'rgba(20, 18, 36, 0.75)',
+    volCaptionBg: 'rgba(24, 21, 46, 0.92)',
     volCaptionIcon: '#00FFFF',
     volEqIcon: '#00FFFF',
-    bentoBg: '#252042',
+    bentoBg: 'rgba(37, 32, 66, 0.85)',
     bentoText: '#FFE600',
     bentoActiveBg: '#FF007F',
     bentoActiveText: '#FFFFFF',
-    bottomNavBg: '#18152E',
+    bottomNavBg: 'rgba(24, 21, 46, 0.88)',
     navIndicatorBg: '#FFE600',
     navActiveText: '#0B0A1A',
     navInactiveText: '#00FFFF'
   },
   synthwave: {
     shellBg: '#150D2A',
-    heroBg: '#251642',
+    heroBg: 'rgba(37, 22, 66, 0.86)',
     heroText: '#FFFFFF',
     heroSubtext: '#05D9E8',
     playBtnBg: '#FF2A85',
     playBtnText: '#FFFFFF',
-    navBtnBg: '#341F5C',
+    navBtnBg: 'rgba(52, 31, 92, 0.92)',
     navBtnText: '#05D9E8',
     scrubberFill: '#FF2A85',
     scrubberThumb: '#05D9E8',
-    scrubberEmpty: '#1D1036',
-    volPillBg: '#341F5C',
+    scrubberEmpty: 'rgba(29, 16, 54, 0.75)',
+    volPillBg: 'rgba(52, 31, 92, 0.85)',
     volMuteBg: '#FF2A85',
     volMuteIcon: '#FFFFFF',
     volFillBar: '#FF2A85',
     volDivider: '#05D9E8',
-    volEmptyBar: '#1D1036',
-    volCaptionBg: '#251642',
+    volEmptyBar: 'rgba(29, 16, 54, 0.75)',
+    volCaptionBg: 'rgba(37, 22, 66, 0.92)',
     volCaptionIcon: '#05D9E8',
     volEqIcon: '#05D9E8',
-    bentoBg: '#341F5C',
+    bentoBg: 'rgba(52, 31, 92, 0.85)',
     bentoText: '#FFFFFF',
     bentoActiveBg: '#FF2A85',
     bentoActiveText: '#FFFFFF',
-    bottomNavBg: '#251642',
+    bottomNavBg: 'rgba(37, 22, 66, 0.88)',
     navIndicatorBg: '#FF2A85',
     navActiveText: '#FFFFFF',
     navInactiveText: '#05D9E8'
   },
   amoled: {
     shellBg: '#000000',
-    heroBg: '#111111',
+    heroBg: 'rgba(17, 17, 19, 0.84)',
     heroText: '#FFFFFF',
     heroSubtext: '#A0A0A0',
     playBtnBg: '#00E5FF',
     playBtnText: '#000000',
-    navBtnBg: '#1C1C1E',
+    navBtnBg: 'rgba(28, 28, 30, 0.92)',
     navBtnText: '#FFFFFF',
     scrubberFill: '#00E5FF',
     scrubberThumb: '#FFFFFF',
-    scrubberEmpty: '#080808',
-    volPillBg: '#1C1C1E',
+    scrubberEmpty: 'rgba(8, 8, 8, 0.75)',
+    volPillBg: 'rgba(28, 28, 30, 0.85)',
     volMuteBg: '#00E5FF',
     volMuteIcon: '#000000',
     volFillBar: '#00E5FF',
     volDivider: '#FFFFFF',
-    volEmptyBar: '#080808',
-    volCaptionBg: '#111111',
+    volEmptyBar: 'rgba(8, 8, 8, 0.75)',
+    volCaptionBg: 'rgba(17, 17, 19, 0.92)',
     volCaptionIcon: '#00E5FF',
     volEqIcon: '#00E5FF',
-    bentoBg: '#1C1C1E',
+    bentoBg: 'rgba(28, 28, 30, 0.85)',
     bentoText: '#FFFFFF',
     bentoActiveBg: '#00E5FF',
     bentoActiveText: '#000000',
-    bottomNavBg: '#111111',
+    bottomNavBg: 'rgba(17, 17, 19, 0.88)',
     navIndicatorBg: '#00E5FF',
     navActiveText: '#000000',
     navInactiveText: '#A0A0A0'
@@ -782,9 +782,13 @@ function enforceSliderStyles() {
   if (heroCard) {
     heroCard.style.setProperty('background', palette.heroBg, 'important');
     heroCard.style.setProperty('background-color', palette.heroBg, 'important');
-    heroCard.style.setProperty('border', 'none', 'important');
+    heroCard.style.setProperty('border', '1px solid rgba(255, 255, 255, 0.22)', 'important');
     heroCard.style.setProperty('border-radius', '28px', 'important');
     heroCard.style.setProperty('color', palette.heroText, 'important');
+    heroCard.style.setProperty('backdrop-filter', 'blur(28px) saturate(180%)', 'important');
+    heroCard.style.setProperty('-webkit-backdrop-filter', 'blur(28px) saturate(180%)', 'important');
+    heroCard.style.setProperty('box-shadow', 'inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.35), 0 16px 40px rgba(0, 0, 0, 0.3)', 'important');
+    if (!heroCard.classList.contains('ios-glass-shimmer')) heroCard.classList.add('ios-glass-shimmer');
   }
 
   // Hero Card Foreground Elements
@@ -915,10 +919,13 @@ function enforceSliderStyles() {
   if (volPill) {
     volPill.style.setProperty('background', palette.volPillBg, 'important');
     volPill.style.setProperty('background-color', palette.volPillBg, 'important');
-    volPill.style.setProperty('border', 'none', 'important');
+    volPill.style.setProperty('border', '1px solid rgba(255, 255, 255, 0.2)', 'important');
     volPill.style.setProperty('border-radius', '999px', 'important');
     volPill.style.setProperty('height', '58px', 'important');
     volPill.style.setProperty('padding', '6px 10px 6px 6px', 'important');
+    volPill.style.setProperty('backdrop-filter', 'blur(24px) saturate(170%)', 'important');
+    volPill.style.setProperty('-webkit-backdrop-filter', 'blur(24px) saturate(170%)', 'important');
+    volPill.style.setProperty('box-shadow', 'inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.35), 0 8px 24px rgba(0, 0, 0, 0.22)', 'important');
   }
   if (volMuteBtn) {
     volMuteBtn.style.setProperty('width', '42px', 'important');
@@ -979,10 +986,13 @@ function enforceSliderStyles() {
 
   // 3. Bento Action Buttons
   document.querySelectorAll('.bento-widget-btn').forEach(btn => {
-    btn.style.setProperty('border', 'none', 'important');
+    btn.style.setProperty('border', '1px solid rgba(255, 255, 255, 0.18)', 'important');
     btn.style.setProperty('border-radius', '20px', 'important');
     btn.style.setProperty('height', '52px', 'important');
     btn.style.setProperty('opacity', '1', 'important');
+    btn.style.setProperty('backdrop-filter', 'blur(18px) saturate(160%)', 'important');
+    btn.style.setProperty('-webkit-backdrop-filter', 'blur(18px) saturate(160%)', 'important');
+    btn.style.setProperty('box-shadow', 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.3), 0 4px 14px rgba(0, 0, 0, 0.18)', 'important');
     const isActive = btn.classList.contains('active');
     if (isActive) {
       btn.style.setProperty('background', palette.bentoActiveBg, 'important');
@@ -1008,7 +1018,7 @@ function enforceSliderStyles() {
     bottomNav.style.setProperty('min-height', '66px', 'important');
     bottomNav.style.setProperty('background', palette.bottomNavBg, 'important');
     bottomNav.style.setProperty('background-color', palette.bottomNavBg, 'important');
-    bottomNav.style.setProperty('border', 'none', 'important');
+    bottomNav.style.setProperty('border', '1px solid rgba(255, 255, 255, 0.22)', 'important');
     bottomNav.style.setProperty('margin', '0 auto 12px auto', 'important');
     bottomNav.style.setProperty('width', 'calc(100% - 32px)', 'important');
     bottomNav.style.setProperty('padding', '0', 'important');
@@ -1018,6 +1028,9 @@ function enforceSliderStyles() {
     bottomNav.style.setProperty('display', 'flex', 'important');
     bottomNav.style.setProperty('align-items', 'center', 'important');
     bottomNav.style.setProperty('justify-content', 'stretch', 'important');
+    bottomNav.style.setProperty('backdrop-filter', 'blur(32px) saturate(190%)', 'important');
+    bottomNav.style.setProperty('-webkit-backdrop-filter', 'blur(32px) saturate(190%)', 'important');
+    bottomNav.style.setProperty('box-shadow', 'inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.4), 0 12px 36px rgba(0, 0, 0, 0.35)', 'important');
   }
   const navIndicator = document.getElementById('nav-indicator-pill');
   if (navIndicator) {
@@ -1320,8 +1333,16 @@ function renderAmbientGlow() {
       const bassOpacity = (0.45 + beatPulse * 0.35).toFixed(2);
       elements.ambientBassGlow.style.setProperty('--bass-scale', bassScale);
       elements.ambientBassGlow.style.setProperty('--bass-opacity', bassOpacity);
+      const liquidDrop = document.querySelector('.ios-liquid-glass-backdrop');
+      if (liquidDrop) {
+        liquidDrop.style.opacity = (0.75 + beatPulse * 0.25).toFixed(2);
+      }
     } else {
       elements.ambientBassGlow.style.setProperty('--bass-opacity', '0');
+      const liquidDrop = document.querySelector('.ios-liquid-glass-backdrop');
+      if (liquidDrop) {
+        liquidDrop.style.opacity = '0.65';
+      }
     }
   }
   if (isAudioPlaying && STATE.lyricsMode) {
