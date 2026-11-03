@@ -256,7 +256,7 @@ const STATE = {
   isPlaying: false,
   isShuffle: false,
   isRepeat: false,
-  backendUrl: localStorage.getItem('pixelbeats_backend_url') || '',
+  backendUrl: localStorage.getItem('pixelbeats_backend_url') || (typeof window !== 'undefined' && window.location && window.location.protocol.startsWith('http') ? window.location.origin : ''),
   isStandalone: true,
   autoFallback: true,
   sfxEnabled: localStorage.getItem('pixelbeats_sfx') !== 'false',
@@ -3055,6 +3055,18 @@ async function testBackendHealth(url) {
     return false;
   }
 
+// Auto-detect localhost / hosting server in Web Browser mode
+  if (typeof window !== 'undefined' && window.location && window.location.protocol.startsWith('http')) {
+    const hostOrigin = window.location.origin;
+    const originResult = await probeBackendCandidate(hostOrigin);
+    if (originResult) {
+      STATE.backendUrl = originResult;
+      STATE.isBackendAlive = true;
+      updateStatusBadge('ONLINE', true);
+      return true;
+    }
+  }
+
   // If a custom remote server was explicitly saved, test it in background
   if (STATE.backendUrl && !STATE.backendUrl.includes('192.168.')) {
     const result = await probeBackendCandidate(STATE.backendUrl);
@@ -3257,24 +3269,33 @@ async function resolveStreamUrl(videoId) {
       }
     }
 
-    // 4b. Optional Custom Remote Proxy (if configured and online)
-    if (STATE.backendUrl && STATE.isBackendAlive) {
+// 4b. High-Speed Local/Remote Backend Stream Resolver (Instant HD Stream with CORS proxy!)
+    const effectiveBackend = STATE.backendUrl || (typeof window !== 'undefined' && window.location && window.location.protocol.startsWith('http') ? window.location.origin : '');
+    if (effectiveBackend) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
-        const resp = await fetch(`${STATE.backendUrl}/api/stream?id=${encodeURIComponent(videoId)}`, { signal: controller.signal });
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        const streamEndpoint = effectiveBackend + '/api/stream?id=' + encodeURIComponent(videoId);
+        const resp = await fetch(streamEndpoint, { signal: controller.signal });
         clearTimeout(timeoutId);
         if (resp.ok) {
           const data = await resp.json();
-          const chosenUrl = data.proxy_url ? `${STATE.backendUrl}${data.proxy_url}` : data.stream_url;
+          STATE.isBackendAlive = true;
+          // In web browser (non-native), prioritize proxy_url to bypass cross-origin audio restrictions
+          const chosenUrl = (!ArchiveTuneBridge.isNative() && data.proxy_url)
+            ? (effectiveBackend + data.proxy_url)
+            : (data.proxy_url ? (effectiveBackend + data.proxy_url) : data.stream_url);
           if (chosenUrl) {
             STATE.prefetchedStreams.set(videoId, chosenUrl);
             warmUpAudioUrl(chosenUrl);
             return chosenUrl;
           }
         }
-      } catch (e) { }
+      } catch (e) {
+        console.warn('[Backend Stream] Error resolving stream:', e);
+      }
     }
+
 
     // 5. High-Speed Standalone Public Mirrors (Piped / Invidious)
     const pipedEndpoints = [
