@@ -59,6 +59,64 @@ import androidx.core.app.NotificationManagerCompat;
 @CapacitorPlugin(name = "ArchiveTune")
 public class ArchiveTunePlugin extends Plugin {
 
+    public static String pendingDeepLinkUrl = null;
+
+    public static void handleIncomingDeepLink(String uriString) {
+        pendingDeepLinkUrl = uriString;
+        if (activeInstance != null) {
+            JSObject data = parseDeepLinkUri(uriString);
+            activeInstance.notifyListeners("deepLinkOpen", data);
+        }
+    }
+
+    @PluginMethod
+    public void getPendingDeepLink(PluginCall call) {
+        if (pendingDeepLinkUrl != null) {
+            JSObject ret = parseDeepLinkUri(pendingDeepLinkUrl);
+            pendingDeepLinkUrl = null;
+            call.resolve(ret);
+        } else {
+            call.resolve(new JSObject());
+        }
+    }
+
+    public static JSObject parseDeepLinkUri(String uriString) {
+        JSObject obj = new JSObject();
+        obj.put("url", uriString);
+        try {
+            Uri uri = Uri.parse(uriString);
+            String videoId = null;
+            if (uri.isHierarchical()) {
+                videoId = uri.getQueryParameter("id");
+                if (videoId == null) videoId = uri.getQueryParameter("v");
+                if (videoId == null) videoId = uri.getQueryParameter("track");
+            }
+            if (videoId == null) {
+                String path = uri.getPath();
+                if (path != null && path.length() > 1) {
+                    videoId = path.startsWith("/") ? path.substring(1) : path;
+                }
+            }
+            obj.put("videoId", videoId != null ? videoId : "");
+            obj.put("title", uri.isHierarchical() && uri.getQueryParameter("title") != null ? uri.getQueryParameter("title") : "");
+            obj.put("artist", uri.isHierarchical() && uri.getQueryParameter("artist") != null ? uri.getQueryParameter("artist") : "");
+        } catch (Exception e) {
+            obj.put("videoId", "");
+            obj.put("title", "");
+            obj.put("artist", "");
+        }
+        return obj;
+    }
+
+    @Override
+    protected void handleOnNewIntent(android.content.Intent intent) {
+        super.handleOnNewIntent(intent);
+        if (intent != null && intent.getData() != null) {
+            handleIncomingDeepLink(intent.getData().toString());
+        }
+    }
+
+
     public static final String NOTIFICATION_CHANNEL_ID = "pixelbeats_playback_channel";
     public static final int NOTIFICATION_ID = 4040;
 
@@ -108,6 +166,29 @@ public class ArchiveTunePlugin extends Plugin {
         ensureProxyServerStarted();
         initNativeAudioEffects();
         initMediaSession();
+    }
+
+    @PluginMethod
+    public void shareTrack(PluginCall call) {
+        String url = call.getString("url", "");
+        String title = call.getString("title", "PixelBeats");
+        String text = call.getString("text", title);
+        if (url.isEmpty()) {
+            call.reject("A song link is required");
+            return;
+        }
+        getActivity().runOnUiThread(() -> {
+            try {
+                Intent sendIntent = new Intent(Intent.ACTION_SEND);
+                sendIntent.setType("text/plain");
+                sendIntent.putExtra(Intent.EXTRA_SUBJECT, title);
+                sendIntent.putExtra(Intent.EXTRA_TEXT, text + "\n" + url);
+                getActivity().startActivity(Intent.createChooser(sendIntent, "Share song"));
+                call.resolve();
+            } catch (Exception error) {
+                call.reject("Unable to open share sheet", error);
+            }
+        });
     }
 
     @Override
@@ -1542,21 +1623,21 @@ public class ArchiveTunePlugin extends Plugin {
         currentPosition = position != null ? position : 0.0;
         currentIsPlaying = isPlaying != null ? isPlaying : false;
 
+        // Immediate notification rebuild ensures foreground service is active in 0ms
+        updateNativeMetadata(currentTitle, currentArtist, currentAlbum, currentDuration, currentArtworkBitmap);
+        updateNativePlaybackStateOnly(currentIsPlaying, currentPosition);
+        rebuildNotification();
+
         if (thumbnail != null && !thumbnail.isEmpty() && !thumbnail.equals(currentThumbnailUrl)) {
             currentThumbnailUrl = thumbnail;
             new Thread(() -> {
                 Bitmap bmp = loadBitmap(thumbnail);
                 if (bmp != null) {
                     currentArtworkBitmap = bmp;
+                    updateNativeMetadata(currentTitle, currentArtist, currentAlbum, currentDuration, currentArtworkBitmap);
+                    rebuildNotification();
                 }
-                updateNativeMetadata(currentTitle, currentArtist, currentAlbum, currentDuration, currentArtworkBitmap);
-                updateNativePlaybackStateOnly(currentIsPlaying, currentPosition);
-                rebuildNotification();
             }, "ArtworkLoader").start();
-        } else {
-            updateNativeMetadata(currentTitle, currentArtist, currentAlbum, currentDuration, currentArtworkBitmap);
-            updateNativePlaybackStateOnly(currentIsPlaying, currentPosition);
-            rebuildNotification();
         }
 
         JSObject ret = new JSObject();

@@ -1,0 +1,14 @@
+{
+  "jdk.jdkhome": "C:\\Users\\Admin PC\\.jdks\\jdk-17",
+  "java.jdt.ls.java.home": "C:\\Users\\Admin PC\\.jdks\\jdk-17",
+  "java.home": "C:\\Users\\Admin PC\\.jdks\\jdk-17",
+  "java.import.gradle.java.home": "C:\\Users\\Admin PC\\.jdks\\jdk-17",
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-17",
+      "path": "C:\\Users\\Admin PC\\.jdks\\jdk-17",
+      "default": true
+    }
+  ],
+  "java.configuration.updateBuildConfiguration": "interactive"
+}

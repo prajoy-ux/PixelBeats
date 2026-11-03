@@ -1073,7 +1073,7 @@ html, body {
 /* ================= BENTO ACTION WIDGETS ROW ================= */
 .bento-actions-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   margin: 0;
   gap: 12px;
   height: 52px;
@@ -1133,6 +1133,19 @@ html, body {
   letter-spacing: 0.3px;
   white-space: nowrap;
   color: #363D17 !important;
+}
+
+.bento-widget-btn:focus-visible {
+  outline: 2px solid #363D17;
+  outline-offset: 3px;
+}
+
+@media (max-width: 380px) {
+  .bento-widget-btn {
+    flex-direction: column;
+    gap: 2px;
+    padding: 0 4px;
+  }
 }
 
 /* Active State (When ON / Saved, e.g. CYCLE active or SAVE VAULT saved): Deep Olive background with Pale Cream text & icon */
@@ -3920,3 +3933,688 @@ html, body {
 }
 
 
+
+/* ================= NEW FEATURES: QUICK THEME, THEME SELECTION & LISTENING HISTORY ================= */
+
+/* 1. Quick Theme Toggle Pill inside Album Art */
+.quick-theme-pill-btn {
+  z-index: 100 !important;
+  pointer-events: auto !important;
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.4, 1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+.quick-theme-pill-btn:hover {
+  transform: scale(1.1) rotate(15deg);
+  background: rgba(0, 0, 0, 0.65);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+.quick-theme-pill-btn:active {
+  transform: scale(0.92);
+}
+.quick-theme-pill-btn .material-symbols-rounded {
+  font-size: 19px;
+  color: #FFFFFF;
+}
+
+/* 2. Library Segmented Control Sizing for 4 Items */
+.m3-segmented-control .m3-segment-btn {
+  padding: 8px 10px !important;
+  font-size: 12px !important;
+  min-width: 0 !important;
+}
+
+/* 3. History Sub-View & Overview Card */
+.history-overview-card {
+  margin-bottom: 8px;
+}
+.history-clear-btn {
+  padding: 8px 14px !important;
+  border-radius: 999px !important;
+  background: rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: inherit !important;
+  font-family: var(--font-brand) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+.history-clear-btn:hover {
+  background: rgba(255, 59, 48, 0.18) !important;
+  color: #ff3b30 !important;
+  border-color: rgba(255, 59, 48, 0.3) !important;
+}
+.history-time-badge {
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.72;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+/* 4. Theme Selection Grid in Settings */
+.theme-selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+.theme-card-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.2, 0.8, 0.4, 1);
+  position: relative;
+  user-select: none;
+}
+.theme-card-option:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.12);
+}
+.theme-card-option:active {
+  transform: scale(0.96);
+}
+.theme-card-option.active {
+  border-color: var(--primary-pill, #576028) !important;
+  background: rgba(200, 211, 148, 0.18) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+.theme-color-preview {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+.theme-color-preview.matcha {
+  background: linear-gradient(135deg, #576028 50%, #C8D394 50%);
+}
+.theme-color-preview.gameboy {
+  background: linear-gradient(135deg, #306230 50%, #8bac0f 50%);
+}
+.theme-color-preview.cyberpunk {
+  background: linear-gradient(135deg, #FFE600 50%, #00FFFF 50%);
+}
+.theme-color-preview.synthwave {
+  background: linear-gradient(135deg, #FF2A85 50%, #05D9E8 50%);
+}
+.theme-color-preview.amoled {
+  background: linear-gradient(135deg, #000000 50%, #00E5FF 50%);
+}
+.theme-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.theme-name {
+  font-family: var(--font-brand);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.theme-tag {
+  font-size: 10px;
+  opacity: 0.68;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ================= THEME 1: SAGE MATCHA (DEFAULT M3) ================= */
+body.theme-matcha {
+  --bg-base: #363D17;
+  --bg-surface: #363D17;
+  --hero-bg: #C8D394;
+  --hero-text: #363D17;
+  --hero-subtext: #576028;
+  --primary-pill: #576028;
+  --primary-pill-text: #EFF2E1;
+  --secondary-pill: #EFF2E1;
+  --nav-bg: #C8D394;
+  --nav-indicator: #576028;
+}
+
+/* ================= THEME 2: GAME BOY RETRO 1989 ================= */
+body.theme-gameboy,
+body.theme-gameboy html,
+body.theme-gameboy .pixel-shell,
+body.theme-gameboy .content-viewport {
+  background: #0f380f !important;
+  background-color: #0f380f !important;
+  color: #9bbc0f !important;
+}
+body.theme-gameboy .hero-media-card,
+body.theme-gameboy .player-card,
+body.theme-gameboy #hero-card {
+  background: #8bac0f !important;
+  background-color: #8bac0f !important;
+  color: #0f380f !important;
+  box-shadow: 0 8px 30px rgba(15, 56, 15, 0.45) !important;
+}
+body.theme-gameboy #track-title,
+body.theme-gameboy .track-title,
+body.theme-gameboy .vault-heading,
+body.theme-gameboy .sheet-title,
+body.theme-gameboy .history-heading {
+  color: #0f380f !important;
+}
+body.theme-gameboy #track-artist,
+body.theme-gameboy .track-artist,
+body.theme-gameboy #time-current,
+body.theme-gameboy #time-duration,
+body.theme-gameboy .time-label,
+body.theme-gameboy .vault-subtext {
+  color: #306230 !important;
+}
+body.theme-gameboy .lossless-icon-svg {
+  fill: #0f380f !important;
+  color: #0f380f !important;
+}
+body.theme-gameboy .lossless-badge span {
+  color: #0f380f !important;
+}
+body.theme-gameboy .m3-stadium-play-btn {
+  background: #306230 !important;
+  background-color: #306230 !important;
+}
+body.theme-gameboy .m3-stadium-play-btn .material-symbols-rounded {
+  color: #9bbc0f !important;
+}
+body.theme-gameboy .transport-nav-btn {
+  background: #9bbc0f !important;
+  background-color: #9bbc0f !important;
+}
+body.theme-gameboy .transport-nav-btn .material-symbols-rounded {
+  color: #0f380f !important;
+}
+body.theme-gameboy .bento-widget-btn {
+  background: #9bbc0f !important;
+  background-color: #9bbc0f !important;
+  color: #0f380f !important;
+}
+body.theme-gameboy .bento-widget-btn .btn-icon-m3 {
+  color: #0f380f !important;
+}
+body.theme-gameboy .pixel-vol-pill {
+  background: #9bbc0f !important;
+  background-color: #9bbc0f !important;
+  color: #0f380f !important;
+}
+body.theme-gameboy .pixel-vol-fill {
+  background: #306230 !important;
+}
+body.theme-gameboy .pixel-vol-empty {
+  background: #8bac0f !important;
+}
+body.theme-gameboy .pixel-vol-divider {
+  background: #0f380f !important;
+}
+body.theme-gameboy .pixel-vol-mute .material-symbols-rounded,
+body.theme-gameboy .pixel-vol-caption .material-symbols-rounded,
+body.theme-gameboy .pixel-vol-eq .material-symbols-rounded {
+  color: #0f380f !important;
+}
+body.theme-gameboy .scrubber-split-track {
+  background: #9bbc0f !important;
+}
+body.theme-gameboy .scrubber-fill-olive {
+  background: #306230 !important;
+}
+body.theme-gameboy .scrubber-handle-line {
+  background: #0f380f !important;
+}
+body.theme-gameboy .m3-bottom-nav {
+  background: #8bac0f !important;
+  background-color: #8bac0f !important;
+}
+body.theme-gameboy .m3-nav-indicator {
+  background: #306230 !important;
+  background-color: #306230 !important;
+}
+body.theme-gameboy .m3-nav-item.active .m3-nav-pill .material-symbols-rounded,
+body.theme-gameboy .m3-nav-item.active .m3-nav-pill .m3-nav-label {
+  color: #9bbc0f !important;
+}
+body.theme-gameboy .m3-nav-item:not(.active) .m3-nav-pill .material-symbols-rounded,
+body.theme-gameboy .m3-nav-item:not(.active) .m3-nav-pill .m3-nav-label {
+  color: #306230 !important;
+}
+body.theme-gameboy .m3-segmented-control {
+  background: #8bac0f !important;
+}
+body.theme-gameboy .m3-segment-btn {
+  color: #0f380f !important;
+}
+body.theme-gameboy .m3-segment-btn.active {
+  background: #9bbc0f !important;
+  color: #0f380f !important;
+}
+body.theme-gameboy .vault-overview-card,
+body.theme-gameboy .m3-settings-card {
+  background: #8bac0f !important;
+  color: #0f380f !important;
+}
+body.theme-gameboy .m3-accent-pill-btn {
+  background: #306230 !important;
+  color: #9bbc0f !important;
+}
+body.theme-gameboy .search-input-wrapper {
+  background: #8bac0f !important;
+  color: #0f380f !important;
+}
+body.theme-gameboy .search-input {
+  color: #0f380f !important;
+}
+
+/* ================= THEME 3: CYBERPUNK NEON ================= */
+body.theme-cyberpunk,
+body.theme-cyberpunk html,
+body.theme-cyberpunk .pixel-shell,
+body.theme-cyberpunk .content-viewport {
+  background: #0B0A1A !important;
+  background-color: #0B0A1A !important;
+  color: #FFE600 !important;
+}
+body.theme-cyberpunk .hero-media-card,
+body.theme-cyberpunk .player-card,
+body.theme-cyberpunk #hero-card {
+  background: #18152E !important;
+  background-color: #18152E !important;
+  border: 1.5px solid #FFE600 !important;
+  color: #FFE600 !important;
+  box-shadow: 0 8px 32px rgba(255, 230, 0, 0.15) !important;
+}
+body.theme-cyberpunk #track-title,
+body.theme-cyberpunk .track-title,
+body.theme-cyberpunk .vault-heading,
+body.theme-cyberpunk .sheet-title,
+body.theme-cyberpunk .history-heading {
+  color: #FFE600 !important;
+}
+body.theme-cyberpunk #track-artist,
+body.theme-cyberpunk .track-artist,
+body.theme-cyberpunk #time-current,
+body.theme-cyberpunk #time-duration,
+body.theme-cyberpunk .time-label,
+body.theme-cyberpunk .vault-subtext {
+  color: #00FFFF !important;
+}
+body.theme-cyberpunk .lossless-icon-svg {
+  fill: #FFE600 !important;
+  color: #FFE600 !important;
+}
+body.theme-cyberpunk .lossless-badge span {
+  color: #FFE600 !important;
+}
+body.theme-cyberpunk .m3-stadium-play-btn {
+  background: #FF007F !important;
+  background-color: #FF007F !important;
+  box-shadow: 0 4px 18px rgba(255, 0, 127, 0.45) !important;
+}
+body.theme-cyberpunk .m3-stadium-play-btn .material-symbols-rounded {
+  color: #FFFFFF !important;
+}
+body.theme-cyberpunk .transport-nav-btn {
+  background: #252042 !important;
+  background-color: #252042 !important;
+}
+body.theme-cyberpunk .transport-nav-btn .material-symbols-rounded {
+  color: #00FFFF !important;
+}
+body.theme-cyberpunk .bento-widget-btn {
+  background: #252042 !important;
+  background-color: #252042 !important;
+  color: #FFE600 !important;
+}
+body.theme-cyberpunk .bento-widget-btn .btn-icon-m3 {
+  color: #00FFFF !important;
+}
+body.theme-cyberpunk .pixel-vol-pill {
+  background: #252042 !important;
+  background-color: #252042 !important;
+  color: #FFE600 !important;
+}
+body.theme-cyberpunk .pixel-vol-fill {
+  background: #FF007F !important;
+}
+body.theme-cyberpunk .pixel-vol-empty {
+  background: #141224 !important;
+}
+body.theme-cyberpunk .pixel-vol-divider {
+  background: #00FFFF !important;
+}
+body.theme-cyberpunk .pixel-vol-mute .material-symbols-rounded,
+body.theme-cyberpunk .pixel-vol-caption .material-symbols-rounded,
+body.theme-cyberpunk .pixel-vol-eq .material-symbols-rounded {
+  color: #00FFFF !important;
+}
+body.theme-cyberpunk .scrubber-split-track {
+  background: #141224 !important;
+}
+body.theme-cyberpunk .scrubber-fill-olive {
+  background: #FF007F !important;
+}
+body.theme-cyberpunk .scrubber-handle-line {
+  background: #00FFFF !important;
+}
+body.theme-cyberpunk .m3-bottom-nav {
+  background: #18152E !important;
+  border: 1px solid rgba(255, 230, 0, 0.3) !important;
+}
+body.theme-cyberpunk .m3-nav-indicator {
+  background: #FFE600 !important;
+}
+body.theme-cyberpunk .m3-nav-item.active .m3-nav-pill .material-symbols-rounded,
+body.theme-cyberpunk .m3-nav-item.active .m3-nav-pill .m3-nav-label {
+  color: #0B0A1A !important;
+}
+body.theme-cyberpunk .m3-nav-item:not(.active) .m3-nav-pill .material-symbols-rounded,
+body.theme-cyberpunk .m3-nav-item:not(.active) .m3-nav-pill .m3-nav-label {
+  color: #00FFFF !important;
+}
+body.theme-cyberpunk .m3-segmented-control {
+  background: #18152E !important;
+  border: 1px solid rgba(0, 255, 255, 0.25) !important;
+}
+body.theme-cyberpunk .m3-segment-btn {
+  color: #FFE600 !important;
+}
+body.theme-cyberpunk .m3-segment-btn.active {
+  background: #FF007F !important;
+  color: #FFFFFF !important;
+}
+body.theme-cyberpunk .vault-overview-card,
+body.theme-cyberpunk .m3-settings-card {
+  background: #18152E !important;
+  border: 1px solid rgba(255, 230, 0, 0.25) !important;
+  color: #FFE600 !important;
+}
+body.theme-cyberpunk .m3-accent-pill-btn {
+  background: #FF007F !important;
+  color: #FFFFFF !important;
+}
+
+/* ================= THEME 4: RETRO SYNTHWAVE / NEON ================= */
+body.theme-synthwave,
+body.theme-synthwave html,
+body.theme-synthwave .pixel-shell,
+body.theme-synthwave .content-viewport {
+  background: #150D2A !important;
+  background-color: #150D2A !important;
+  color: #FFFFFF !important;
+}
+body.theme-synthwave .hero-media-card,
+body.theme-synthwave .player-card,
+body.theme-synthwave #hero-card {
+  background: #251642 !important;
+  background-color: #251642 !important;
+  border: 1.5px solid rgba(255, 42, 133, 0.4) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 8px 32px rgba(255, 42, 133, 0.22) !important;
+}
+body.theme-synthwave #track-title,
+body.theme-synthwave .track-title,
+body.theme-synthwave .vault-heading,
+body.theme-synthwave .sheet-title,
+body.theme-synthwave .history-heading {
+  color: #FFFFFF !important;
+}
+body.theme-synthwave #track-artist,
+body.theme-synthwave .track-artist,
+body.theme-synthwave #time-current,
+body.theme-synthwave #time-duration,
+body.theme-synthwave .time-label,
+body.theme-synthwave .vault-subtext {
+  color: #05D9E8 !important;
+}
+body.theme-synthwave .lossless-icon-svg {
+  fill: #FF2A85 !important;
+  color: #FF2A85 !important;
+}
+body.theme-synthwave .lossless-badge span {
+  color: #05D9E8 !important;
+}
+body.theme-synthwave .m3-stadium-play-btn {
+  background: #FF2A85 !important;
+  background-color: #FF2A85 !important;
+  box-shadow: 0 4px 18px rgba(255, 42, 133, 0.5) !important;
+}
+body.theme-synthwave .m3-stadium-play-btn .material-symbols-rounded {
+  color: #FFFFFF !important;
+}
+body.theme-synthwave .transport-nav-btn {
+  background: #341F5C !important;
+  background-color: #341F5C !important;
+}
+body.theme-synthwave .transport-nav-btn .material-symbols-rounded {
+  color: #05D9E8 !important;
+}
+body.theme-synthwave .bento-widget-btn {
+  background: #341F5C !important;
+  background-color: #341F5C !important;
+  color: #FFFFFF !important;
+}
+body.theme-synthwave .bento-widget-btn .btn-icon-m3 {
+  color: #FF2A85 !important;
+}
+body.theme-synthwave .pixel-vol-pill {
+  background: #341F5C !important;
+  background-color: #341F5C !important;
+  color: #FFFFFF !important;
+}
+body.theme-synthwave .pixel-vol-fill {
+  background: #FF2A85 !important;
+}
+body.theme-synthwave .pixel-vol-empty {
+  background: #1D1036 !important;
+}
+body.theme-synthwave .pixel-vol-divider {
+  background: #05D9E8 !important;
+}
+body.theme-synthwave .pixel-vol-mute .material-symbols-rounded,
+body.theme-synthwave .pixel-vol-caption .material-symbols-rounded,
+body.theme-synthwave .pixel-vol-eq .material-symbols-rounded {
+  color: #05D9E8 !important;
+}
+body.theme-synthwave .scrubber-split-track {
+  background: #1D1036 !important;
+}
+body.theme-synthwave .scrubber-fill-olive {
+  background: #FF2A85 !important;
+}
+body.theme-synthwave .scrubber-handle-line {
+  background: #05D9E8 !important;
+}
+body.theme-synthwave .m3-bottom-nav {
+  background: #251642 !important;
+  border: 1px solid rgba(255, 42, 133, 0.3) !important;
+}
+body.theme-synthwave .m3-nav-indicator {
+  background: #FF2A85 !important;
+}
+body.theme-synthwave .m3-nav-item.active .m3-nav-pill .material-symbols-rounded,
+body.theme-synthwave .m3-nav-item.active .m3-nav-pill .m3-nav-label {
+  color: #FFFFFF !important;
+}
+body.theme-synthwave .m3-nav-item:not(.active) .m3-nav-pill .material-symbols-rounded,
+body.theme-synthwave .m3-nav-item:not(.active) .m3-nav-pill .m3-nav-label {
+  color: #05D9E8 !important;
+}
+body.theme-synthwave .m3-segmented-control {
+  background: #251642 !important;
+}
+body.theme-synthwave .m3-segment-btn {
+  color: #FFFFFF !important;
+}
+body.theme-synthwave .m3-segment-btn.active {
+  background: #FF2A85 !important;
+  color: #FFFFFF !important;
+}
+body.theme-synthwave .vault-overview-card,
+body.theme-synthwave .m3-settings-card {
+  background: #251642 !important;
+  border: 1px solid rgba(255, 42, 133, 0.22) !important;
+  color: #FFFFFF !important;
+}
+body.theme-synthwave .m3-accent-pill-btn {
+  background: #FF2A85 !important;
+  color: #FFFFFF !important;
+}
+
+/* ================= THEME 5: AMOLED PITCH BLACK ================= */
+body.theme-amoled,
+body.theme-amoled html,
+body.theme-amoled .pixel-shell,
+body.theme-amoled .content-viewport {
+  background: #000000 !important;
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+}
+body.theme-amoled .hero-media-card,
+body.theme-amoled .player-card,
+body.theme-amoled #hero-card {
+  background: #111111 !important;
+  background-color: #111111 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9) !important;
+}
+body.theme-amoled #track-title,
+body.theme-amoled .track-title,
+body.theme-amoled .vault-heading,
+body.theme-amoled .sheet-title,
+body.theme-amoled .history-heading {
+  color: #FFFFFF !important;
+}
+body.theme-amoled #track-artist,
+body.theme-amoled .track-artist,
+body.theme-amoled #time-current,
+body.theme-amoled #time-duration,
+body.theme-amoled .time-label,
+body.theme-amoled .vault-subtext {
+  color: #A0A0A0 !important;
+}
+body.theme-amoled .lossless-icon-svg {
+  fill: #00E5FF !important;
+  color: #00E5FF !important;
+}
+body.theme-amoled .lossless-badge span {
+  color: #00E5FF !important;
+}
+body.theme-amoled .m3-stadium-play-btn {
+  background: #00E5FF !important;
+  background-color: #00E5FF !important;
+  box-shadow: 0 4px 18px rgba(0, 229, 255, 0.4) !important;
+}
+body.theme-amoled .m3-stadium-play-btn .material-symbols-rounded {
+  color: #000000 !important;
+}
+body.theme-amoled .transport-nav-btn {
+  background: #1C1C1E !important;
+  background-color: #1C1C1E !important;
+}
+body.theme-amoled .transport-nav-btn .material-symbols-rounded {
+  color: #FFFFFF !important;
+}
+body.theme-amoled .bento-widget-btn {
+  background: #1C1C1E !important;
+  background-color: #1C1C1E !important;
+  color: #FFFFFF !important;
+}
+body.theme-amoled .bento-widget-btn .btn-icon-m3 {
+  color: #00E5FF !important;
+}
+body.theme-amoled .pixel-vol-pill {
+  background: #1C1C1E !important;
+  background-color: #1C1C1E !important;
+  color: #FFFFFF !important;
+}
+body.theme-amoled .pixel-vol-fill {
+  background: #00E5FF !important;
+}
+body.theme-amoled .pixel-vol-empty {
+  background: #080808 !important;
+}
+body.theme-amoled .pixel-vol-divider {
+  background: #FFFFFF !important;
+}
+body.theme-amoled .pixel-vol-mute .material-symbols-rounded,
+body.theme-amoled .pixel-vol-caption .material-symbols-rounded,
+body.theme-amoled .pixel-vol-eq .material-symbols-rounded {
+  color: #00E5FF !important;
+}
+body.theme-amoled .scrubber-split-track {
+  background: #080808 !important;
+}
+body.theme-amoled .scrubber-fill-olive {
+  background: #00E5FF !important;
+}
+body.theme-amoled .scrubber-handle-line {
+  background: #FFFFFF !important;
+}
+body.theme-amoled .m3-bottom-nav {
+  background: #111111 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+body.theme-amoled .m3-nav-indicator {
+  background: #00E5FF !important;
+}
+body.theme-amoled .m3-nav-item.active .m3-nav-pill .material-symbols-rounded,
+body.theme-amoled .m3-nav-item.active .m3-nav-pill .m3-nav-label {
+  color: #000000 !important;
+}
+body.theme-amoled .m3-nav-item:not(.active) .m3-nav-pill .material-symbols-rounded,
+body.theme-amoled .m3-nav-item:not(.active) .m3-nav-pill .m3-nav-label {
+  color: #A0A0A0 !important;
+}
+body.theme-amoled .m3-segmented-control {
+  background: #111111 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+body.theme-amoled .m3-segment-btn {
+  color: #A0A0A0 !important;
+}
+body.theme-amoled .m3-segment-btn.active {
+  background: #00E5FF !important;
+  color: #000000 !important;
+}
+body.theme-amoled .vault-overview-card,
+body.theme-amoled .m3-settings-card {
+  background: #111111 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #FFFFFF !important;
+}
+body.theme-amoled .m3-accent-pill-btn {
+  background: #00E5FF !important;
+  color: #000000 !important;
+}
