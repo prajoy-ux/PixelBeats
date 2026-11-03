@@ -4986,14 +4986,28 @@ function setupNativeMediaControls() {
   });
 }
 
+function syncCreatorAvatarFromGitHub() {
+  try {
+    const avatarImg = document.getElementById('creator-avatar-img');
+    if (!avatarImg) return;
+    const liveAvatarUrl = 'https://github.com/prajoy-ux.png';
+    const imgLoader = new Image();
+    imgLoader.onload = () => {
+      avatarImg.src = liveAvatarUrl;
+    };
+    imgLoader.src = liveAvatarUrl;
+  } catch (e) {}
+}
+
 // ================= APP INITIALIZATION =================
 async function initApp() {
   console.log('✨ Initializing PixelMusic Material You Audio Engine...');
 
-  // 1. Setup UI listeners and native media session controls
+  // 1. Setup UI listeners, native media session controls, and creator avatar sync
   try {
     setupEventListeners();
     setupNativeMediaControls();
+    syncCreatorAvatarFromGitHub();
   } catch (err) {
     console.error('[Init] Listener error:', err);
   }
