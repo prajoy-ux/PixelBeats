@@ -441,7 +441,9 @@ const elements = {
   btnInstallText: document.getElementById('btn-install-text'),
   btnDismissUpdate: document.getElementById('btn-dismiss-update'),
   btnCheckUpdates: document.getElementById('btn-check-updates'),
-  btnCheckUpdatesText: document.getElementById('btn-check-updates-text')
+  btnCheckUpdatesText: document.getElementById('btn-check-updates-text'),
+  systemAppVersion: document.getElementById('system-app-version'),
+  creatorAppVersion: document.getElementById('creator-app-version')
 };
 
 // ================= MATERIAL FLOATING TOAST =================
@@ -5416,7 +5418,7 @@ function syncCreatorAvatarFromGitHub() {
 }
 
 // ================= IN-APP SELF UPDATER =================
-const APP_VERSION = '1.1.1';
+const APP_VERSION = '1.1.2';
 const GITHUB_REPO = 'prajoy-ux/PixelBeats';
 let pendingUpdateApkUrl = null;
 let isUpdating = false;
@@ -5555,13 +5557,19 @@ async function initApp() {
   if (elements.autoCycleLabel) elements.autoCycleLabel.textContent = 'CYCLE';
   enforceSliderStyles();
 
-  // 6. Detect Capacitor Platform
+  // 6. Detect Capacitor Platform & Display App Version
   if (elements.capStatus) {
     if (window.Capacitor && window.Capacitor.isNativePlatform()) {
       elements.capStatus.textContent = `Android Native (${window.Capacitor.getPlatform()})`;
     } else {
       elements.capStatus.textContent = 'Web / PWA Mode';
     }
+  }
+  if (elements.systemAppVersion) {
+    elements.systemAppVersion.textContent = `v${APP_VERSION}`;
+  }
+  if (elements.creatorAppVersion) {
+    elements.creatorAppVersion.textContent = `PixelBeats v${APP_VERSION} APK`;
   }
 
   // 7. Initialize Offline Vault
