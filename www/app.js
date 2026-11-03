@@ -92,7 +92,7 @@ const ArchiveTuneBridge = {
     if (this.isNative()) {
       try {
         return await window.Capacitor.Plugins.ArchiveTune.hideMediaNotification();
-      } catch (e) {}
+      } catch (e) { }
     }
     return null;
   },
@@ -102,7 +102,7 @@ const ArchiveTuneBridge = {
       if (typeof onProgress === 'function') {
         try {
           listenerHandle = await window.Capacitor.Plugins.ArchiveTune.addListener('updateDownloadProgress', onProgress);
-        } catch (le) {}
+        } catch (le) { }
       }
       try {
         return await window.Capacitor.Plugins.ArchiveTune.downloadAndInstallUpdate({ url: apkUrl });
@@ -111,7 +111,7 @@ const ArchiveTuneBridge = {
         throw e;
       } finally {
         if (listenerHandle && listenerHandle.remove) {
-          try { listenerHandle.remove(); } catch (re) {}
+          try { listenerHandle.remove(); } catch (re) { }
         }
       }
     }
@@ -333,6 +333,7 @@ const elements = {
   btnDownloadTrack: document.getElementById('btn-download-track'),
   downloadBtnLabel: document.getElementById('download-btn-label'),
   btnPlayerAddPlaylist: document.getElementById('btn-player-add-playlist'),
+  btnShareTrack: document.getElementById('btn-share-track'),
   btnAutoCycle: document.getElementById('btn-auto-cycle'),
   autoCycleLabel: document.getElementById('auto-cycle-label'),
   pixelVolPill: document.getElementById('pixel-vol-pill'),
@@ -972,7 +973,7 @@ function playHapticSfx(type = 'click') {
       osc.start(now);
       osc.stop(now + 0.09);
     }
-  } catch (e) {}
+  } catch (e) { }
 }
 
 // ================= MODERN PILL PROGRESS SCRUBBER =================
@@ -1074,7 +1075,7 @@ function initScrubberInteractions() {
 
   container.addEventListener('pointerdown', (e) => {
     startDrag();
-    try { container.setPointerCapture(e.pointerId); } catch (_) {}
+    try { container.setPointerCapture(e.pointerId); } catch (_) { }
     handlePointerTrack(e);
   });
 
@@ -1086,7 +1087,7 @@ function initScrubberInteractions() {
 
   const stopPointerDrag = (e) => {
     if (isUserScrubbing) {
-      try { container.releasePointerCapture(e.pointerId); } catch (_) {}
+      try { container.releasePointerCapture(e.pointerId); } catch (_) { }
       endDrag();
     }
   };
@@ -1420,7 +1421,7 @@ async function fetchLyricsForSong(song) {
         return diskData;
       }
     }
-  } catch (e) {}
+  } catch (e) { }
 
   // 3. Deduplicate concurrent in-flight requests
   if (STATE.inFlightLyricsPromises.has(song.videoId)) {
@@ -1440,7 +1441,7 @@ async function fetchLyricsForSong(song) {
         if (result.length > 0) {
           localStorage.setItem('pixelbeats_lyrics_' + song.videoId, JSON.stringify(result));
         }
-      } catch (e) {}
+      } catch (e) { }
       return result;
     };
 
@@ -1481,7 +1482,7 @@ async function fetchLyricsForSong(song) {
               return { lines: bData.lines, isSynced: hasSynced, score: 95 };
             }
           }
-        } catch (e) {}
+        } catch (e) { }
         return null;
       })());
     }
@@ -1510,7 +1511,7 @@ async function fetchLyricsForSong(song) {
               }
             }
           }
-        } catch (e) {}
+        } catch (e) { }
         return null;
       })());
     }
@@ -1539,7 +1540,7 @@ async function fetchLyricsForSong(song) {
               }
             }
           }
-        } catch (e) {}
+        } catch (e) { }
         return null;
       })());
     }
@@ -1586,7 +1587,7 @@ async function fetchLyricsForSong(song) {
               }
             }
           }
-        } catch (e) {}
+        } catch (e) { }
         return null;
       })());
     }
@@ -1678,7 +1679,7 @@ async function fetchLyricsForCurrentTrack() {
           STATE.lyricsCache.set(song.videoId, diskData);
         }
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   if (STATE.lyricsCache.has(song.videoId)) {
@@ -1899,7 +1900,7 @@ function initWebAudioEqualizer() {
     // Connect audio chain: Source -> LowShelf -> Mid1 -> Mid2 -> HighShelf -> Destination
     try {
       webAudioSource.disconnect();
-    } catch (e) {}
+    } catch (e) { }
 
     webAudioSource.connect(lowShelf);
     lowShelf.connect(midPeak1);
@@ -1993,7 +1994,7 @@ function setSleepTimer(mode) {
     clearInterval(sleepTimerInterval);
     sleepTimerInterval = null;
   }
-  
+
   // If we were in the middle of fading out, restore original volume
   if (isFadingOut && originalPreFadeVolume !== null && elements.audio) {
     elements.audio.volume = originalPreFadeVolume;
@@ -2384,6 +2385,51 @@ async function downloadSongToVault(track) {
   }
 }
 
+async function shareCurrentTrack() {
+  const song = STATE.queue[STATE.currentIndex];
+  if (!song || !song.videoId) {
+    showToast('Play a song first to share', 'info');
+    return;
+  }
+  if (elements.btnShareTrack.disabled) return;
+
+  const title = song.title || 'Listen on PixelBeats';
+  const text = song.artist ? `${title} - ${song.artist}` : title;
+  // Share the public song page, since stream and offline URLs are temporary or local.
+  const url = `https://www.youtube.com/watch?v=${encodeURIComponent(song.videoId)}`;
+  elements.btnShareTrack.disabled = true;
+  try {
+    if (ArchiveTuneBridge.isNative()) {
+      await window.Capacitor.Plugins.ArchiveTune.shareTrack({ title, text, url });
+      return;
+    }
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title, text, url });
+        return;
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+        // Browsers may expose sharing but block it on this page.
+      }
+    }
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast('Song link copied', 'content_copy');
+        return;
+      } catch (error) {
+        // Keep the link available when clipboard permission is denied.
+      }
+    }
+    window.prompt('Copy this song link to share:', url);
+  } catch (error) {
+    console.warn('[Share] Unable to open share sheet:', error);
+    showToast('Could not share song. Please try again.', 'error');
+  } finally {
+    elements.btnShareTrack.disabled = false;
+  }
+}
+
 async function updatePlayerVaultButtonState() {
   if (!elements.downloadBtnLabel || !elements.btnDownloadTrack) return;
   if (STATE.currentIndex >= 0 && STATE.currentIndex < STATE.queue.length) {
@@ -2511,7 +2557,7 @@ const PlaylistsManager = {
     try {
       const raw = localStorage.getItem('pixelbeats_playlists');
       if (raw) return JSON.parse(raw);
-    } catch (e) {}
+    } catch (e) { }
     const initial = [
       { id: 'favorites', name: 'Favorites', tracks: [], createdAt: Date.now() }
     ];
@@ -3148,7 +3194,7 @@ function warmUpAudioUrl(url) {
         preloader.src = '';
       }
     }, 60000);
-  } catch (e) {}
+  } catch (e) { }
 }
 
 function prefetchTrackAudioAndLyrics(song) {
@@ -3158,12 +3204,12 @@ function prefetchTrackAudioAndLyrics(song) {
   if (!STATE.prefetchedStreams.has(song.videoId) && !STATE.inFlightStreamPromises.has(song.videoId)) {
     resolveStreamUrl(song.videoId).then(url => {
       if (url) warmUpAudioUrl(url);
-    }).catch(() => {});
+    }).catch(() => { });
   }
 
   // 2. Resolve Live Synced Lyrics in parallel
   if (!STATE.lyricsCache.has(song.videoId) && !STATE.inFlightLyricsPromises.has(song.videoId)) {
-    fetchLyricsForSong(song).catch(() => {});
+    fetchLyricsForSong(song).catch(() => { });
   }
 }
 
@@ -3180,7 +3226,7 @@ async function resolveStreamUrl(videoId) {
       showToast('Playing from Offline Vault', 'cloud_done', 1800);
       return blobUrl;
     }
-  } catch (vaultErr) {}
+  } catch (vaultErr) { }
 
   // 2. Prefetch Cache (Instant 0ms start!)
   if (STATE.prefetchedStreams.has(videoId)) {
@@ -3227,7 +3273,7 @@ async function resolveStreamUrl(videoId) {
             return chosenUrl;
           }
         }
-      } catch (e) {}
+      } catch (e) { }
     }
 
     // 5. High-Speed Standalone Public Mirrors (Piped / Invidious)
@@ -3277,7 +3323,7 @@ async function resolveStreamUrl(videoId) {
           return best;
         }
       }
-    } catch (e) {}
+    } catch (e) { }
 
     throw new Error('Could not resolve audio stream. Please check your internet connection.');
   })().finally(() => {
@@ -3296,7 +3342,7 @@ async function prefetchNextSong() {
       if (elements.prefetchIndicator) elements.prefetchIndicator.classList.remove('hidden');
       try {
         prefetchTrackAudioAndLyrics(nextSong);
-      } catch (e) {}
+      } catch (e) { }
     }
   } else {
     if (elements.prefetchIndicator) elements.prefetchIndicator.classList.add('hidden');
@@ -3309,7 +3355,7 @@ async function prefetchNextSong() {
     if (afterSong) {
       try {
         prefetchTrackAudioAndLyrics(afterSong);
-      } catch (e) {}
+      } catch (e) { }
     }
   }
 }
@@ -3328,7 +3374,7 @@ async function playTrackAtIndex(index) {
   if (elements.audio) {
     try {
       elements.audio.pause();
-    } catch (e) {}
+    } catch (e) { }
   }
   STATE.isPlaying = false;
   updatePlayPauseUI(false);
@@ -3371,7 +3417,7 @@ async function playTrackAtIndex(index) {
           STATE.lyricsCache.set(song.videoId, diskData);
         }
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   if (STATE.lyricsCache.has(song.videoId)) {
@@ -3555,7 +3601,7 @@ function updatePlayPauseUI(isPlaying) {
   if ('mediaSession' in navigator) {
     try {
       navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
-    } catch (e) {}
+    } catch (e) { }
   }
 
   if (ArchiveTuneBridge.isNative()) {
@@ -3733,7 +3779,7 @@ function updateMediaSessionPositionState() {
           playbackRate: elements.audio.playbackRate || 1.0,
           position: Math.min(elements.audio.currentTime || 0, elements.audio.duration)
         });
-      } catch (e) {}
+      } catch (e) { }
     }
 
     if (ArchiveTuneBridge.isNative()) {
@@ -3977,7 +4023,7 @@ function renderSearchResults(songs, headerTitle = null) {
         dlBtn.style.background = '#EFF2E1';
         dlBtn.style.color = '#363D17';
       }
-    }).catch(() => {});
+    }).catch(() => { });
 
     card.addEventListener('click', () => {
       playHapticSfx('play');
@@ -3997,7 +4043,7 @@ async function playSongWithAutoQueue(song) {
 
   // 1. Immediately abort any in-flight recommendations/cycle fetches from prior songs
   if (queueAbortController) {
-    try { queueAbortController.abort(); } catch (e) {}
+    try { queueAbortController.abort(); } catch (e) { }
   }
   queueAbortController = new AbortController();
   const session = ++activeQueueSessionId;
@@ -4119,7 +4165,7 @@ async function loadTrendingTracks() {
         if (nativeTracks && nativeTracks.length > 0) {
           songs = nativeTracks;
         }
-      } catch (e) {}
+      } catch (e) { }
     }
 
     // 2. Optional remote proxy
@@ -4141,7 +4187,7 @@ async function loadTrendingTracks() {
     if (!songs || songs.length === 0) {
       const cached = localStorage.getItem('pixelbeats_cached_trending');
       if (cached) {
-        try { songs = JSON.parse(cached); } catch (e) {}
+        try { songs = JSON.parse(cached); } catch (e) { }
       }
     }
 
@@ -4330,7 +4376,7 @@ async function loadPlaylistFromUrl(url) {
                 thumbnail: oData.thumbnail_url || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
               }];
             }
-          } catch (oeErr) {}
+          } catch (oeErr) { }
         }
       }
     }
@@ -4345,7 +4391,7 @@ async function loadPlaylistFromUrl(url) {
             tracks = data.tracks;
           }
         }
-      } catch (bErr) {}
+      } catch (bErr) { }
     }
 
     // 4. Handle Result
@@ -4453,7 +4499,7 @@ function updateVolumeVisuals(percent) {
   STATE.currentVolume = percent;
   try {
     localStorage.setItem('pixelbeats_volume', percent.toString());
-  } catch (_) {}
+  } catch (_) { }
 
   const audioPlayer = elements.audio;
   if (audioPlayer) {
@@ -4558,7 +4604,7 @@ function initSplitTrackVolumePill() {
 
     volTrackArea.addEventListener('pointerdown', (e) => {
       isDraggingVol = true;
-      try { volTrackArea.setPointerCapture(e.pointerId); } catch (_) {}
+      try { volTrackArea.setPointerCapture(e.pointerId); } catch (_) { }
       updateVolumeFromPointer(e);
     });
 
@@ -4571,7 +4617,7 @@ function initSplitTrackVolumePill() {
     const endVolDrag = (e) => {
       if (isDraggingVol) {
         isDraggingVol = false;
-        try { volTrackArea.releasePointerCapture(e.pointerId); } catch (_) {}
+        try { volTrackArea.releasePointerCapture(e.pointerId); } catch (_) { }
       }
     };
 
@@ -4731,6 +4777,8 @@ function setupEventListeners() {
     }
   });
 
+  elements.btnShareTrack.addEventListener('click', shareCurrentTrack);
+
   // Lossless Audio Quality Badge Info
   const losslessBadge = document.getElementById('lossless-badge');
   if (losslessBadge) {
@@ -4771,7 +4819,7 @@ function setupEventListeners() {
         console.warn('[Audio Watchdog] Buffering stalled > 3.5s, auto-resuming...');
         const ct = elements.audio.currentTime;
         elements.audio.currentTime = Math.max(0, ct - 0.1);
-        elements.audio.play().catch(() => {});
+        elements.audio.play().catch(() => { });
       }
     }, 3500);
   });
@@ -4792,7 +4840,7 @@ function setupEventListeners() {
   elements.audio.addEventListener('canplay', () => {
     clearTimeout(audioStallRecoveryTimer);
     if (STATE.isPlaying && elements.audio.paused) {
-      elements.audio.play().catch(() => {});
+      elements.audio.play().catch(() => { });
     }
   });
 
@@ -5414,11 +5462,11 @@ function syncCreatorAvatarFromGitHub() {
       avatarImg.src = liveAvatarUrl;
     };
     imgLoader.src = liveAvatarUrl;
-  } catch (e) {}
+  } catch (e) { }
 }
 
 // ================= IN-APP SELF UPDATER =================
-const APP_VERSION = '1.1.2';
+const APP_VERSION = '1.1.3';
 const GITHUB_REPO = 'prajoy-ux/PixelBeats';
 let pendingUpdateApkUrl = null;
 let isUpdating = false;
@@ -5583,7 +5631,7 @@ async function initApp() {
   // 8. Start Ambient Glow Animation Loop
   try {
     renderAmbientGlow();
-  } catch (err) {}
+  } catch (err) { }
 
   // 9. INSTANT COLD-START RENDER (0ms latency!)
   // Immediately populate the UI with cached or pre-packaged seed tracks
@@ -5594,7 +5642,7 @@ async function initApp() {
       try {
         const parsed = JSON.parse(rawCached);
         if (Array.isArray(parsed) && parsed.length > 0) initialTracks = parsed;
-      } catch (pe) {}
+      } catch (pe) { }
     }
     STATE.trendingTracks = initialTracks;
     renderSearchResults(initialTracks, 'Trending & Handpicked');
@@ -5613,10 +5661,10 @@ async function initApp() {
   (async () => {
     try {
       await testBackendHealth();
-    } catch (e) {}
+    } catch (e) { }
     try {
       await loadTrendingTracks();
-    } catch (e) {}
+    } catch (e) { }
   })();
 
   // 12. Automatic In-App Self-Update Check on Startup
