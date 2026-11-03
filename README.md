@@ -1,72 +1,251 @@
-# PixelBeats 🎵
+<div align="center">
 
-PixelBeats is a modern, Material Design 3-inspired mobile music streaming application built with web technologies, Capacitor, and an intelligent Python backend proxy with offline caching, synchronized lyrics, audio presets, and background playback.
+  <img src="assets/logo.jpg" width="160" height="160" alt="PixelBeats Logo" style="border-radius: 28%; box-shadow: 0 8px 24px rgba(0,0,0,0.25);" />
+
+  <h1>PixelBeats</h1>
+
+  <p align="center">
+    <strong>Redefining the Material You Music Experience on Android.</strong>
+    <br />
+    <em>High-performance, privacy-focused, Material Design 3 streaming audio player with an offline vault.</em>
+  </p>
+
+  <p align="center">
+    <a href="#-features"><b>Features</b></a> •
+    <a href="#-architecture"><b>Architecture</b></a> •
+    <a href="#-download"><b>Download</b></a> •
+    <a href="#-getting-started"><b>Getting Started</b></a> •
+    <a href="#-tech-stack"><b>Tech Stack</b></a> •
+    <a href="#-license"><b>License</b></a>
+  </p>
+
+  <div align="center">
+    <img src="https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white&labelColor=1e1e2e" alt="Platform" />
+    <img src="https://img.shields.io/badge/UI-Material%20Design%203-576028?style=for-the-badge&logo=materialdesign&logoColor=white&labelColor=1e1e2e" alt="Design" />
+    <img src="https://img.shields.io/badge/Framework-Capacitor%206-119EFF?style=for-the-badge&logo=capacitor&logoColor=white&labelColor=1e1e2e" alt="Capacitor" />
+    <img src="https://img.shields.io/badge/Backend-Python%20FastAPI-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=1e1e2e" alt="Python" />
+    <img src="https://img.shields.io/github/license/prajoy-ux/PixelBeats?style=for-the-badge&color=576028&labelColor=1e1e2e" alt="License" />
+  </div>
+
+</div>
+
+<br />
+
+---
+
+> [!TIP]
+> **Ad-free, privacy-focused, and open source.** PixelBeats delivers uninterrupted listening with high-fidelity streams, intelligent local proxying, synchronized live lyrics, and an offline encrypted vault.
+
+---
 
 ## ✨ Features
 
-- **Material You Design**: Earthy olive / matcha aesthetic with stadium floating bottom navigation and floating mini-player pill.
-- **Audio Streaming & Offline Vault**: Stream high-quality tracks and save favorite tracks into the IndexedDB offline vault.
-- **Synchronized Lyrics**: Live, time-synced lyrics viewer.
-- **Audio Equalizer & Presets**: Built-in Web Audio API parametric EQ (Flat, Bass Boost, Acoustic, Lo-Fi Warmth, Vocal Crisp).
-- **Sleep Timer**: Auto-pause playback after 5, 15, 30, 60 minutes or at the end of the song.
-- **Android Native Integration**: Packaged with Capacitor with full background playback support and media controls.
+<div align="center" id="features">
 
-## 🛠️ Project Structure
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <div align="left">
+        <h3>🎵 Playback & Streaming</h3>
+        <ul>
+          <li>Ad-free continuous music streaming</li>
+          <li>Lossless ALAC / FLAC high-res audio format indicator</li>
+          <li>Background playback with native Android media notification controls</li>
+          <li>Seamless Queue management & next-track auto-prefetch</li>
+          <li>Hardware media button & headset remote integration</li>
+        </ul>
+      </div>
+    </td>
+    <td width="50%" valign="top">
+      <div align="left">
+        <h3>🎛️ Audio Engine & Presets</h3>
+        <ul>
+          <li>Web Audio API parametric 5-band equalizer</li>
+          <li>Presets: <b>Flat</b>, <b>Bass Boost</b>, <b>Acoustic</b>, <b>Lo-Fi Warmth</b>, <b>Vocal Crisp</b></li>
+          <li>Persistent volume calibration across track switches</li>
+          <li>Ultra-low latency audio buffer pipeline</li>
+        </ul>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <div align="left">
+        <h3>📜 Synchronized Lyrics</h3>
+        <ul>
+          <li>Live time-synced lyrics overlay</li>
+          <li>Real-time autoscrolling with active line highlight</li>
+          <li>Tap-to-jump playback scrubbing via lyrics lines</li>
+          <li>Cached lyric synchronization for offline playback</li>
+        </ul>
+      </div>
+    </td>
+    <td width="50%" valign="top">
+      <div align="left">
+        <h3>💾 Offline Music Vault</h3>
+        <ul>
+          <li>One-tap offline caching to client-side IndexedDB vault</li>
+          <li>Listen to full cached songs anywhere without internet</li>
+          <li>Custom user playlist creation and batch export</li>
+          <li>Track favoriting directly into Library</li>
+        </ul>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <div align="left">
+        <h3>🎨 Material You Interface</h3>
+        <ul>
+          <li>Authentic Material Design 3 (M3) Earthy Olive / Matcha palette</li>
+          <li>Floating stadium navigation dock with spring pill animation</li>
+          <li>Persistent floating mini-player pill accessible across all tabs</li>
+          <li>Lossless metadata badges and adaptive album art glow</li>
+        </ul>
+      </div>
+    </td>
+    <td width="50%" valign="top">
+      <div align="left">
+        <h3>⏱️ Utilities & Smart Controls</h3>
+        <ul>
+          <li>Configurable Sleep Timer: 5, 15, 30, 60 minutes or End of Song</li>
+          <li>Instant autocomplete search engine</li>
+          <li>YouTube Music & JioSaavn stream resolution</li>
+          <li>Lightweight installation footprint (&lt;6 MB APK)</li>
+        </ul>
+      </div>
+    </td>
+  </tr>
+</table>
 
+</div>
+
+---
+
+## 🏛️ Architecture
+
+PixelBeats is engineered as a hybrid client-proxy architecture designed to bypass streaming throttles and guarantee background playback reliability on Android:
+
+```mermaid
+graph TD
+    A[PixelBeats Android / Web App] -->|HTML5 Audio / Web Audio API| B(Local Streaming Proxy)
+    B -->|Innertube Signature Decryption| C[YouTube Music Engine]
+    B -->|Deobfuscator Provider| D[JioSaavn / CDNs]
+    A -->|IndexedDB Vault| E[Offline Audio Storage]
+    A -->|Capacitor Plugins| F[Android MediaSession & Notifications]
 ```
-pixelbeats/
-├── android/          # Capacitor Android native project & Gradle build
-├── backend/          # Python streaming & proxy server
-│   ├── main.py       # FastAPI backend & streaming proxy
-│   └── requirements.txt
-├── www/              # Frontend web application (HTML5, Vanilla CSS, JS)
-│   ├── app.js        # Core player logic, UI controls & audio engine
-│   ├── index.html    # Single-page Material 3 application
-│   └── style.css     # Design system & responsive layout
-└── capacitor.config.json
-```
+
+- **Frontend**: Single-page application built with vanilla HTML5, CSS tokens, and JavaScript without heavy framework overhead.
+- **Native Bridge**: Capacitor 6 with custom plugins for hardware media keys, audio focus, and background execution.
+- **Backend Stream Engine**: FastAPI micro-service utilizing custom player decrypters and LRU chunk caching.
+
+---
+
+## 📥 Download
+
+<div align="center" id="download">
+
+<table>
+  <thead>
+    <tr>
+      <th align="center">Official GitHub Releases</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center">
+        <a href="https://github.com/prajoy-ux/PixelBeats/releases/latest">
+          <img src="https://img.shields.io/badge/Download-PixelBeats.apk-576028?style=for-the-badge&logo=android&logoColor=white" height="42" alt="Download APK" />
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js (v18+)
-- Python (v3.10+)
-- Android Studio / Android SDK (for building the Android APK)
+- **Node.js**: v18 or later
+- **Python**: v3.10 or later
+- **Android Studio / Android SDK** (for compiling native Android builds)
 
-### 1. Run the Backend Proxy
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/prajoy-ux/PixelBeats.git
+cd PixelBeats
+```
+
+### 2. Start the Backend Proxy
 
 ```bash
 cd backend
 python -m venv venv
-venv\Scripts\activate       # On Windows (source venv/bin/activate on macOS/Linux)
+
+# Windows:
+venv\Scripts\activate
+# macOS / Linux:
+source venv/bin/activate
+
 pip install -r requirements.txt
 python main.py
 ```
+*The proxy will be accessible at `http://127.0.0.1:8000`.*
 
-The streaming proxy will run at `http://127.0.0.1:8000`.
+### 3. Run the Frontend (Web Mode)
 
-### 2. Run / Preview Frontend
-
-Serve the `www` folder using any local HTTP server (or Live Server):
-
+In a new terminal window:
 ```bash
+# Serve the www directory
 npx serve www
 ```
 
-### 3. Build Android APK
+### 4. Build the Android APK
 
 ```bash
-# Sync web assets to Android
+# Sync frontend assets into the Android native project
 npx cap sync android
 
-# Build Debug APK
+# Compile Debug APK
 cd android
-./gradlew assembleDebug      # .\gradlew.bat assembleDebug on Windows
+./gradlew assembleDebug      # Windows: .\gradlew.bat assembleDebug
 ```
+*The compiled APK will be located at: `android/app/build/outputs/apk/debug/app-debug.apk`.*
 
-The APK will be generated at `android/app/build/outputs/apk/debug/app-debug.apk`.
+---
+
+## 🛠️ Tech Stack
+
+| Component | Technology | Description |
+|---|---|---|
+| **Interface** | HTML5, CSS3, ES2024 | Vanilla Material Design 3 tokens & zero-dependency UI |
+| **Audio Pipeline** | Web Audio API | 5-band parametric equalizer & biquad filters |
+| **Mobile Runtime** | Capacitor 6 | Android WebView container with native bridge |
+| **Local Storage** | IndexedDB | Offline audio track and playlist persistence |
+| **Streaming Backend** | Python 3, FastAPI, Uvicorn | Reverse streaming proxy with signature cipher solving |
+
+---
+
+## ⚖️ Legal Disclaimer
+
+PixelBeats is an independent third-party client developed for educational and personal use:
+- It is not affiliated with, endorsed by, or sponsored by Google LLC or YouTube.
+- It does not bypass technical protections or host proprietary media files.
+- Users are encouraged to support their favorite artists through official music platforms.
+
+---
 
 ## 📄 License
 
-MIT License
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+
+<br />
+
+<div align="center">
+  <p><b>If PixelBeats elevated your music experience, please consider giving the repository a ⭐!</b></p>
+</div>
