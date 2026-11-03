@@ -1683,5 +1683,246 @@ public class ArchiveTunePlugin extends Plugin {
             return false;
         }
     }
+
+    @PluginMethod
+    public void importPlaylist(PluginCall call) {
+        String inputUrl = call.getString("url");
+        if (inputUrl == null || inputUrl.trim().isEmpty()) {
+            call.reject("URL or ID is required");
+            return;
+        }
+
+        final String query = inputUrl.trim();
+
+        new Thread(() -> {
+            try {
+                // 1. Check if it contains a playlist ID
+                String playlistId = null;
+                Pattern pList = Pattern.compile("(?:list=|/playlist\\?list=)([a-zA-Z0-9_-]+)");
+                Matcher mList = pList.matcher(query);
+                if (mList.find()) {
+                    playlistId = mList.group(1);
+                } else if (query.startsWith("PL") || query.startsWith("VL") || query.startsWith("OLAK") || query.startsWith("RD")) {
+                    playlistId = query;
+                }
+
+                if (playlistId != null) {
+                    String browseId = playlistId.startsWith("VL") ? playlistId : "VL" + playlistId;
+
+                    JSONObject payload = new JSONObject();
+                    JSONObject context = new JSONObject();
+                    JSONObject client = new JSONObject();
+                    client.put("clientName", "WEB_REMIX");
+                    client.put("clientVersion", "1.20240101.01.00");
+                    client.put("hl", "en");
+                    client.put("gl", "US");
+                    context.put("client", client);
+                    payload.put("context", context);
+                    payload.put("browseId", browseId);
+
+                    URL u = new URL("https://music.youtube.com/youtubei/v1/browse?prettyPrint=false");
+                    HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("Content-Type", "application/json");
+                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
+                    conn.setDoOutput(true);
+                    conn.setConnectTimeout(12000);
+                    conn.setReadTimeout(18000);
+
+                    try (OutputStream os = conn.getOutputStream()) {
+                        os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
+                    }
+
+                    if (conn.getResponseCode() == 200) {
+                        String body = readStream(conn.getInputStream());
+                        JSONObject root = new JSONObject(body);
+
+                        JSArray tracksArray = new JSArray();
+                        extractTracksFromBrowseJson(root, tracksArray);
+
+                        if (tracksArray.length() > 0) {
+                            JSObject ret = new JSObject();
+                            ret.put("success", true);
+                            ret.put("type", "playlist");
+                            ret.put("tracks", tracksArray);
+                            call.resolve(ret);
+                            return;
+                        }
+                    }
+                }
+
+                // 2. Check if it's a single video URL
+                String videoId = null;
+                Pattern pVideo = Pattern.compile("(?:v=|youtu\\.be/|embed/|shorts/|watch/)([a-zA-Z0-9_-]{11})");
+                Matcher mVideo = pVideo.matcher(query);
+                if (mVideo.find()) {
+                    videoId = mVideo.group(1);
+                } else if (query.matches("^[a-zA-Z0-9_-]{11}$")) {
+                    videoId = query;
+                }
+
+                if (videoId != null) {
+                    StreamDetails details = fetchStreamFromInnerTube(videoId);
+                    if (details != null && details.title != null) {
+                        JSArray singleList = new JSArray();
+                        JSObject trackObj = new JSObject();
+                        trackObj.put("videoId", videoId);
+                        trackObj.put("title", details.title);
+                        trackObj.put("artist", details.artist != null ? details.artist : "YouTube");
+                        trackObj.put("duration", details.duration != null ? details.duration : "03:00");
+                        trackObj.put("thumbnail", details.thumbnail != null ? details.thumbnail : "https://i.ytimg.com/vi/" + videoId + "/hqdefault.jpg");
+                        singleList.put(trackObj);
+
+                        JSObject ret = new JSObject();
+                        ret.put("success", true);
+                        ret.put("type", "video");
+                        ret.put("tracks", singleList);
+                        call.resolve(ret);
+                        return;
+                    }
+                }
+
+                call.reject("Could not find any playlist or video from the provided link");
+
+            } catch (Exception e) {
+                call.reject("Failed to import playlist: " + e.getMessage(), e);
+            }
+        }).start();
+    }
+
+    private void extractTracksFromBrowseJson(Object obj, JSArray results) {
+        if (obj instanceof JSONObject) {
+            JSONObject json = (JSONObject) obj;
+            if (json.has("musicResponsiveListItemRenderer")) {
+                try {
+                    JSONObject item = json.getJSONObject("musicResponsiveListItemRenderer");
+                    String vid = null;
+                    if (item.has("playlistItemData")) {
+                        vid = item.optJSONObject("playlistItemData").optString("videoId", null);
+                    }
+                    if (vid == null && item.has("doubleTapCommand")) {
+                        vid = item.optJSONObject("doubleTapCommand")
+                                .optJSONObject("watchEndpoint")
+                                .optString("videoId", null);
+                    }
+                    if (vid == null && item.has("navigationEndpoint")) {
+                        vid = item.optJSONObject("navigationEndpoint")
+                                .optJSONObject("watchEndpoint")
+                                .optString("videoId", null);
+                    }
+                    if (vid == null && item.has("overlay")) {
+                        try {
+                            vid = item.optJSONObject("overlay")
+                                    .optJSONObject("musicItemThumbnailOverlayRenderer")
+                                    .optJSONObject("content")
+                                    .optJSONObject("musicPlayButtonRenderer")
+                                    .optJSONObject("playNavigationEndpoint")
+                                    .optJSONObject("watchEndpoint")
+                                    .optString("videoId", null);
+                        } catch (Exception ignored) {}
+                    }
+
+                    JSONArray flex = item.optJSONArray("flexColumns");
+                    String title = "";
+                    String artist = "Unknown Artist";
+                    if (flex != null && flex.length() > 0) {
+                        JSONArray titleRuns = flex.optJSONObject(0)
+                                .optJSONObject("musicResponsiveListItemFlexColumnRenderer")
+                                .optJSONObject("text")
+                                .optJSONArray("runs");
+                        if (titleRuns != null && titleRuns.length() > 0) {
+                            title = titleRuns.optJSONObject(0).optString("text", "");
+                        }
+                    }
+                    if (flex != null && flex.length() > 1) {
+                        JSONArray artistRuns = flex.optJSONObject(1)
+                                .optJSONObject("musicResponsiveListItemFlexColumnRenderer")
+                                .optJSONObject("text")
+                                .optJSONArray("runs");
+                        if (artistRuns != null && artistRuns.length() > 0) {
+                            artist = artistRuns.optJSONObject(0).optString("text", "Unknown Artist");
+                        }
+                    }
+
+                    if (vid == null && flex != null) {
+                        for (int f = 0; f < flex.length(); f++) {
+                            JSONObject col = flex.optJSONObject(f);
+                            if (col != null && col.has("musicResponsiveListItemFlexColumnRenderer")) {
+                                JSONObject textObj = col.optJSONObject("musicResponsiveListItemFlexColumnRenderer").optJSONObject("text");
+                                if (textObj != null && textObj.has("runs")) {
+                                    JSONArray runs = textObj.optJSONArray("runs");
+                                    if (runs != null) {
+                                        for (int r = 0; r < runs.length(); r++) {
+                                            JSONObject runObj = runs.optJSONObject(r);
+                                            if (runObj != null && runObj.has("navigationEndpoint")) {
+                                                JSONObject ep = runObj.optJSONObject("navigationEndpoint");
+                                                if (ep != null && ep.has("watchEndpoint")) {
+                                                    String epVid = ep.optJSONObject("watchEndpoint").optString("videoId", null);
+                                                    if (epVid != null && !epVid.isEmpty()) {
+                                                        vid = epVid;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (vid != null) break;
+                        }
+                    }
+
+                    String duration = "03:30";
+                    JSONArray fixed = item.optJSONArray("fixedColumns");
+                    if (fixed != null && fixed.length() > 0) {
+                        JSONArray durRuns = fixed.optJSONObject(0)
+                                .optJSONObject("musicResponsiveListItemFixedColumnRenderer")
+                                .optJSONObject("text")
+                                .optJSONArray("runs");
+                        if (durRuns != null && durRuns.length() > 0) {
+                            duration = durRuns.optJSONObject(0).optString("text", "03:30");
+                        }
+                    }
+
+                    String thumbnail = "https://i.ytimg.com/vi/" + vid + "/hqdefault.jpg";
+                    JSONObject thumbObj = item.optJSONObject("thumbnail");
+                    if (thumbObj != null) {
+                        JSONArray thumbs = thumbObj.optJSONObject("musicThumbnailRenderer")
+                                .optJSONObject("thumbnail")
+                                .optJSONArray("thumbnails");
+                        if (thumbs != null && thumbs.length() > 0) {
+                            thumbnail = thumbs.optJSONObject(thumbs.length() - 1).optString("url", thumbnail);
+                        }
+                    }
+
+                    if (vid != null && !vid.isEmpty() && !title.isEmpty()) {
+                        JSObject t = new JSObject();
+                        t.put("videoId", vid);
+                        t.put("title", title);
+                        t.put("artist", artist);
+                        t.put("duration", duration);
+                        t.put("thumbnail", thumbnail);
+                        results.put(t);
+                    }
+                } catch (Exception ignored) {}
+            } else {
+                for (java.util.Iterator<String> it = json.keys(); it.hasNext(); ) {
+                    String k = it.next();
+                    Object val = json.opt(k);
+                    if (val != null) {
+                        extractTracksFromBrowseJson(val, results);
+                    }
+                }
+            }
+        } else if (obj instanceof JSONArray) {
+            JSONArray arr = (JSONArray) obj;
+            for (int i = 0; i < arr.length(); i++) {
+                Object item = arr.opt(i);
+                if (item != null) {
+                    extractTracksFromBrowseJson(item, results);
+                }
+            }
+        }
+    }
 }
 
