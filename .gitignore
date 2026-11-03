@@ -25,6 +25,8 @@ captures/
 # Compiled APKs (Keep git repository light; upload APKs to GitHub Releases)
 *.apk
 PixelBeats*.apk
+PixelBeats*.zip
+*.zip
 
 # OS generated files
 .DS_Store
