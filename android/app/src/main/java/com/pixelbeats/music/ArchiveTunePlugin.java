@@ -924,8 +924,8 @@ public class ArchiveTunePlugin extends Plugin {
                     URL lrcUrl = new URL(getUrl);
                     HttpURLConnection lrcConn = (HttpURLConnection) lrcUrl.openConnection();
                     lrcConn.setRequestProperty("User-Agent", "ArchiveTune/1.0");
-                    lrcConn.setConnectTimeout(4000);
-                    lrcConn.setReadTimeout(5000);
+                    lrcConn.setConnectTimeout(2500);
+                    lrcConn.setReadTimeout(3000);
 
                     if (lrcConn.getResponseCode() == 200) {
                         String body = readStream(lrcConn.getInputStream());
@@ -962,8 +962,8 @@ public class ArchiveTunePlugin extends Plugin {
                     URL searchUrl = new URL(sUrl);
                     HttpURLConnection sConn = (HttpURLConnection) searchUrl.openConnection();
                     sConn.setRequestProperty("User-Agent", "ArchiveTune/1.0");
-                    sConn.setConnectTimeout(4000);
-                    sConn.setReadTimeout(5000);
+                    sConn.setConnectTimeout(2500);
+                    sConn.setReadTimeout(3000);
 
                     if (sConn.getResponseCode() == 200) {
                         String body = readStream(sConn.getInputStream());

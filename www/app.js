@@ -1353,9 +1353,25 @@ function parsePlainLyrics(plainText) {
 
 async function fetchLyricsForSong(song) {
   if (!song || !song.videoId) return [];
+
+  // 1. In-memory cache check (0ms)
   if (STATE.lyricsCache.has(song.videoId)) {
     return STATE.lyricsCache.get(song.videoId);
   }
+
+  // 2. Persistent storage cache check (0ms)
+  try {
+    const diskRaw = localStorage.getItem('pixelbeats_lyrics_' + song.videoId);
+    if (diskRaw) {
+      const diskData = JSON.parse(diskRaw);
+      if (Array.isArray(diskData)) {
+        STATE.lyricsCache.set(song.videoId, diskData);
+        return diskData;
+      }
+    }
+  } catch (e) {}
+
+  // 3. Deduplicate concurrent in-flight requests
   if (STATE.inFlightLyricsPromises.has(song.videoId)) {
     return STATE.inFlightLyricsPromises.get(song.videoId);
   }
@@ -1365,158 +1381,234 @@ async function fetchLyricsForSong(song) {
     const targetDurationSec = parseDurationToSeconds(song.duration);
     const fetchHeaders = { 'Accept': 'application/json' };
 
-    // Step 0: ArchiveTune Native On-Device Lyrics
-    if (ArchiveTuneBridge.isNative()) {
+    // Helper to commit results to memory and persistent disk cache
+    const commitLyrics = (lines) => {
+      const result = Array.isArray(lines) ? lines : [];
+      STATE.lyricsCache.set(song.videoId, result);
       try {
-        const nativeLyrics = await ArchiveTuneBridge.getLyrics(
+        if (result.length > 0) {
+          localStorage.setItem('pixelbeats_lyrics_' + song.videoId, JSON.stringify(result));
+        }
+      } catch (e) {}
+      return result;
+    };
+
+    // Parallel fetch tasks: launch all candidate sources simultaneously
+    const tasks = [];
+
+    // Task 1: ArchiveTune Native Android Plugin
+    if (ArchiveTuneBridge.isNative()) {
+      tasks.push(
+        ArchiveTuneBridge.getLyrics(
           song.videoId,
           song.title,
           song.artist,
           targetDurationSec
-        );
-        if (nativeLyrics && Array.isArray(nativeLyrics.lines) && nativeLyrics.lines.length > 0) {
-          console.log(`[Lyrics] Loaded ${nativeLyrics.lines.length} lines via ArchiveTune Native (${nativeLyrics.source})`);
-          STATE.lyricsCache.set(song.videoId, nativeLyrics.lines);
-          return nativeLyrics.lines;
-        }
-      } catch (nativeErr) {
-        console.warn('[ArchiveTune Native] Lyrics notice:', nativeErr);
-      }
+        ).then(res => {
+          if (res && Array.isArray(res.lines) && res.lines.length > 0) {
+            const hasSynced = res.lines.some(l => l.time >= 0);
+            return { lines: res.lines, isSynced: hasSynced, score: 99 };
+          }
+          return null;
+        }).catch(() => null)
+      );
     }
 
-    // Step 0b: Optional Custom Backend Lyrics API (if configured)
+    // Task 2: Custom Backend (if alive and configured)
     if (STATE.backendUrl && STATE.isBackendAlive) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
-        const backendLyricsUrl = `${STATE.backendUrl}/api/lyrics?id=${encodeURIComponent(song.videoId)}&title=${encodeURIComponent(song.title || '')}&artist=${encodeURIComponent(song.artist || '')}&duration=${encodeURIComponent(song.duration || '')}`;
-        const bResp = await fetch(backendLyricsUrl, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        if (bResp.ok) {
-          const bData = await bResp.json();
-          if (bData && Array.isArray(bData.lines) && bData.lines.length > 0) {
-            console.log(`[Lyrics] Loaded ${bData.lines.length} lines via Custom Backend (${bData.source})`);
-            STATE.lyricsCache.set(song.videoId, bData.lines);
-            return bData.lines;
-          }
-        }
-      } catch (backendErr) {
-        // Fallback to client-side LRCLib
-      }
-    }
-
-    // Step 1: Direct LRCLIB /api/get lookup (Instant 200ms exact match)
-    if (targetInfo.superClean && targetInfo.primaryArtist) {
-      try {
-        let directUrl = `https://lrclib.net/api/get?track_name=${encodeURIComponent(targetInfo.superClean)}&artist_name=${encodeURIComponent(targetInfo.primaryArtist)}`;
-        if (targetDurationSec > 0) {
-          directUrl += `&duration=${targetDurationSec}`;
-        }
-        const directResp = await fetch(directUrl, { headers: fetchHeaders });
-        if (directResp.ok) {
-          const directData = await directResp.json();
-          if (directData && (directData.syncedLyrics || directData.plainLyrics || directData.instrumental)) {
-            if (directData.instrumental) {
-              const res = [{ time: 0, text: '♪ Instrumental ♪' }];
-              STATE.lyricsCache.set(song.videoId, res);
-              return res;
-            }
-            let parsed = [];
-            if (directData.syncedLyrics && directData.syncedLyrics.trim().length > 0) {
-              parsed = parseLrcLyrics(directData.syncedLyrics);
-            } else if (directData.plainLyrics && directData.plainLyrics.trim().length > 0) {
-              parsed = parsePlainLyrics(directData.plainLyrics);
-            }
-            if (parsed && parsed.length > 0) {
-              STATE.lyricsCache.set(song.videoId, parsed);
-              return parsed;
-            }
-          }
-        }
-      } catch (err) {
-        // Continue to search endpoint
-      }
-    }
-
-    // Step 2: Search queries across candidate endpoints
-    const queryUrls = [];
-    if (targetInfo.superClean && targetInfo.primaryArtist) {
-      queryUrls.push(`https://lrclib.net/api/search?track_name=${encodeURIComponent(targetInfo.superClean)}&artist_name=${encodeURIComponent(targetInfo.primaryArtist)}`);
-    }
-    if (targetInfo.cleanTitle && targetInfo.primaryArtist && targetInfo.cleanTitle !== targetInfo.superClean) {
-      queryUrls.push(`https://lrclib.net/api/search?track_name=${encodeURIComponent(targetInfo.cleanTitle)}&artist_name=${encodeURIComponent(targetInfo.primaryArtist)}`);
-    }
-    if (targetInfo.superClean && targetInfo.primaryArtist) {
-      queryUrls.push(`https://lrclib.net/api/search?q=${encodeURIComponent(targetInfo.superClean + ' ' + targetInfo.primaryArtist)}`);
-    }
-    queryUrls.push(`https://lrclib.net/api/search?q=${encodeURIComponent(targetInfo.superClean || targetInfo.cleanTitle)}`);
-
-    try {
-      let allCandidates = [];
-
-      for (const url of queryUrls) {
+      tasks.push((async () => {
         try {
-          const resp = await fetch(url, { headers: fetchHeaders });
-          if (!resp.ok) continue;
-          const data = await resp.json();
-          if (Array.isArray(data) && data.length > 0) {
-            allCandidates = allCandidates.concat(data);
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 2000);
+          const backendLyricsUrl = `${STATE.backendUrl}/api/lyrics?id=${encodeURIComponent(song.videoId)}&title=${encodeURIComponent(song.title || '')}&artist=${encodeURIComponent(song.artist || '')}&duration=${encodeURIComponent(song.duration || '')}`;
+          const bResp = await fetch(backendLyricsUrl, { signal: ctrl.signal });
+          clearTimeout(timer);
+          if (bResp.ok) {
+            const bData = await bResp.json();
+            if (bData && Array.isArray(bData.lines) && bData.lines.length > 0) {
+              const hasSynced = bData.lines.some(l => l.time >= 0);
+              return { lines: bData.lines, isSynced: hasSynced, score: 95 };
+            }
           }
-        } catch (innerErr) {}
-        if (allCandidates.length >= 8) break;
-      }
-
-      // Deduplicate candidates by id
-      const seenIds = new Set();
-      const uniqueCandidates = [];
-      for (const c of allCandidates) {
-        if (!seenIds.has(c.id)) {
-          seenIds.add(c.id);
-          uniqueCandidates.push(c);
-        }
-      }
-
-      // Score candidates strictly against target song
-      const scored = uniqueCandidates.map(c => ({
-        candidate: c,
-        score: scoreCandidateForLyrics(c, targetInfo, targetDurationSec)
-      })).sort((a, b) => b.score - a.score);
-
-      const best = scored.find(s => s.score >= 25);
-
-      if (best) {
-        const match = best.candidate;
-        if (match.instrumental) {
-          const instrumentalLine = [{ time: 0, text: '♪ Instrumental ♪' }];
-          STATE.lyricsCache.set(song.videoId, instrumentalLine);
-          return instrumentalLine;
-        }
-
-        let parsed = [];
-        if (match.syncedLyrics && match.syncedLyrics.trim().length > 0) {
-          parsed = parseLrcLyrics(match.syncedLyrics);
-        } else if (match.plainLyrics && match.plainLyrics.trim().length > 0) {
-          parsed = parsePlainLyrics(match.plainLyrics);
-        }
-
-        if (parsed && parsed.length > 0) {
-          STATE.lyricsCache.set(song.videoId, parsed);
-          return parsed;
-        }
-      }
-
-      // If no candidate met threshold, return empty
-      STATE.lyricsCache.set(song.videoId, []);
-      return [];
-    } catch (err) {
-      console.warn('[Lyrics] Fetch failed for track:', song.title, err);
-      return [];
-    } finally {
-      STATE.inFlightLyricsPromises.delete(song.videoId);
+        } catch (e) {}
+        return null;
+      })());
     }
+
+    // Task 3: Direct LRCLIB /api/get (exact track + primary artist, no duration lock)
+    if (targetInfo.superClean && targetInfo.primaryArtist) {
+      tasks.push((async () => {
+        try {
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 2500);
+          const url = `https://lrclib.net/api/get?track_name=${encodeURIComponent(targetInfo.superClean)}&artist_name=${encodeURIComponent(targetInfo.primaryArtist)}`;
+          const resp = await fetch(url, { headers: fetchHeaders, signal: ctrl.signal });
+          clearTimeout(timer);
+          if (resp.ok) {
+            const data = await resp.json();
+            if (data) {
+              if (data.instrumental) {
+                return { lines: [{ time: 0, text: '♪ Instrumental ♪' }], isSynced: true, score: 90 };
+              }
+              if (data.syncedLyrics && data.syncedLyrics.trim().length > 0) {
+                const parsed = parseLrcLyrics(data.syncedLyrics);
+                if (parsed.length > 0) return { lines: parsed, isSynced: true, score: 95 };
+              } else if (data.plainLyrics && data.plainLyrics.trim().length > 0) {
+                const parsed = parsePlainLyrics(data.plainLyrics);
+                if (parsed.length > 0) return { lines: parsed, isSynced: false, score: 60 };
+              }
+            }
+          }
+        } catch (e) {}
+        return null;
+      })());
+    }
+
+    // Task 4: Direct LRCLIB /api/get with duration (if duration known)
+    if (targetInfo.superClean && targetInfo.primaryArtist && targetDurationSec > 0) {
+      tasks.push((async () => {
+        try {
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 2500);
+          const url = `https://lrclib.net/api/get?track_name=${encodeURIComponent(targetInfo.superClean)}&artist_name=${encodeURIComponent(targetInfo.primaryArtist)}&duration=${targetDurationSec}`;
+          const resp = await fetch(url, { headers: fetchHeaders, signal: ctrl.signal });
+          clearTimeout(timer);
+          if (resp.ok) {
+            const data = await resp.json();
+            if (data) {
+              if (data.instrumental) {
+                return { lines: [{ time: 0, text: '♪ Instrumental ♪' }], isSynced: true, score: 95 };
+              }
+              if (data.syncedLyrics && data.syncedLyrics.trim().length > 0) {
+                const parsed = parseLrcLyrics(data.syncedLyrics);
+                if (parsed.length > 0) return { lines: parsed, isSynced: true, score: 100 };
+              } else if (data.plainLyrics && data.plainLyrics.trim().length > 0) {
+                const parsed = parsePlainLyrics(data.plainLyrics);
+                if (parsed.length > 0) return { lines: parsed, isSynced: false, score: 65 };
+              }
+            }
+          }
+        } catch (e) {}
+        return null;
+      })());
+    }
+
+    // Task 5: Parallel LRCLIB searches (track + artist, and combined text)
+    const searchUrls = [];
+    if (targetInfo.superClean && targetInfo.primaryArtist) {
+      searchUrls.push(`https://lrclib.net/api/search?track_name=${encodeURIComponent(targetInfo.superClean)}&artist_name=${encodeURIComponent(targetInfo.primaryArtist)}`);
+      searchUrls.push(`https://lrclib.net/api/search?q=${encodeURIComponent(targetInfo.superClean + ' ' + targetInfo.primaryArtist)}`);
+    } else {
+      searchUrls.push(`https://lrclib.net/api/search?q=${encodeURIComponent(targetInfo.superClean || targetInfo.cleanTitle || song.title)}`);
+    }
+
+    for (const sUrl of searchUrls) {
+      tasks.push((async () => {
+        try {
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 2500);
+          const resp = await fetch(sUrl, { headers: fetchHeaders, signal: ctrl.signal });
+          clearTimeout(timer);
+          if (resp.ok) {
+            const candidates = await resp.json();
+            if (Array.isArray(candidates) && candidates.length > 0) {
+              const scored = candidates
+                .map(c => ({
+                  candidate: c,
+                  score: scoreCandidateForLyrics(c, targetInfo, targetDurationSec)
+                }))
+                .filter(s => s.score >= 25)
+                .sort((a, b) => b.score - a.score);
+
+              if (scored.length > 0) {
+                const best = scored[0].candidate;
+                if (best.instrumental) {
+                  return { lines: [{ time: 0, text: '♪ Instrumental ♪' }], isSynced: true, score: 90 };
+                }
+                if (best.syncedLyrics && best.syncedLyrics.trim().length > 0) {
+                  const parsed = parseLrcLyrics(best.syncedLyrics);
+                  if (parsed.length > 0) return { lines: parsed, isSynced: true, score: scored[0].score + 10 };
+                } else if (best.plainLyrics && best.plainLyrics.trim().length > 0) {
+                  const parsed = parsePlainLyrics(best.plainLyrics);
+                  if (parsed.length > 0) return { lines: parsed, isSynced: false, score: scored[0].score };
+                }
+              }
+            }
+          }
+        } catch (e) {}
+        return null;
+      })());
+    }
+
+    // Fast Race: resolve immediately upon first synced lyrics match
+    return new Promise((resolve) => {
+      let resolved = false;
+      let plainFallback = null;
+      let remaining = tasks.length;
+      let fallbackTimer = null;
+
+      const finish = (result) => {
+        if (resolved) return;
+        resolved = true;
+        if (fallbackTimer) clearTimeout(fallbackTimer);
+        resolve(commitLyrics(result ? result.lines : []));
+      };
+
+      if (tasks.length === 0) {
+        return finish(null);
+      }
+
+      tasks.forEach(taskPromise => {
+        taskPromise.then(res => {
+          if (resolved) return;
+          remaining--;
+
+          if (res && res.lines && res.lines.length > 0) {
+            if (res.isSynced) {
+              // Instant winner! Synced lyrics found in 200-400ms
+              return finish(res);
+            } else if (!plainFallback) {
+              plainFallback = res;
+              // Give other tasks 350ms to deliver synced lyrics before settling on plain
+              fallbackTimer = setTimeout(() => {
+                if (!resolved && plainFallback) {
+                  finish(plainFallback);
+                }
+              }, 350);
+            }
+          }
+
+          if (remaining <= 0) {
+            if (plainFallback) {
+              finish(plainFallback);
+            } else {
+              finish(null);
+            }
+          }
+        }).catch(() => {
+          if (resolved) return;
+          remaining--;
+          if (remaining <= 0) {
+            if (plainFallback) finish(plainFallback);
+            else finish(null);
+          }
+        });
+      });
+
+      // Overall hard cutoff at 3.5 seconds
+      setTimeout(() => {
+        if (!resolved) {
+          if (plainFallback) finish(plainFallback);
+          else finish(null);
+        }
+      }, 3500);
+    });
   })();
 
   STATE.inFlightLyricsPromises.set(song.videoId, promise);
+  promise.finally(() => {
+    STATE.inFlightLyricsPromises.delete(song.videoId);
+  });
   return promise;
 }
 
@@ -1525,6 +1617,18 @@ async function fetchLyricsForCurrentTrack() {
   const song = STATE.queue[STATE.currentIndex];
   STATE.lyricsLoadedForSongId = song.videoId;
   STATE.activeLyricIndex = -1;
+
+  if (!STATE.lyricsCache.has(song.videoId)) {
+    try {
+      const diskRaw = localStorage.getItem('pixelbeats_lyrics_' + song.videoId);
+      if (diskRaw) {
+        const diskData = JSON.parse(diskRaw);
+        if (Array.isArray(diskData)) {
+          STATE.lyricsCache.set(song.videoId, diskData);
+        }
+      }
+    } catch (e) {}
+  }
 
   if (STATE.lyricsCache.has(song.videoId)) {
     const cached = STATE.lyricsCache.get(song.videoId);
@@ -3147,12 +3251,14 @@ async function prefetchNextSong() {
     if (elements.prefetchIndicator) elements.prefetchIndicator.classList.add('hidden');
   }
 
-  // Pre-resolve 2 tracks ahead for zero-gap playback
+  // Pre-resolve 2 tracks ahead for zero-gap playback and instant lyrics
   const afterNextIdx = STATE.currentIndex + 2;
   if (afterNextIdx < STATE.queue.length) {
     const afterSong = STATE.queue[afterNextIdx];
-    if (afterSong && !STATE.prefetchedStreams.has(afterSong.videoId) && !STATE.inFlightStreamPromises.has(afterSong.videoId)) {
-      resolveStreamUrl(afterSong.videoId).catch(() => {});
+    if (afterSong) {
+      try {
+        prefetchTrackAudioAndLyrics(afterSong);
+      } catch (e) {}
     }
   }
 }
@@ -3204,7 +3310,19 @@ async function playTrackAtIndex(index) {
     if (elements.lyricsStatusText) elements.lyricsStatusText.textContent = 'Searching LRCLIB for live lyrics...';
   }
 
-  // 5. Check cache or start parallel live lyrics fetch
+  // 5. Check in-memory & persistent cache or start parallel live lyrics fetch
+  if (!STATE.lyricsCache.has(song.videoId)) {
+    try {
+      const diskRaw = localStorage.getItem('pixelbeats_lyrics_' + song.videoId);
+      if (diskRaw) {
+        const diskData = JSON.parse(diskRaw);
+        if (Array.isArray(diskData)) {
+          STATE.lyricsCache.set(song.videoId, diskData);
+        }
+      }
+    } catch (e) {}
+  }
+
   if (STATE.lyricsCache.has(song.videoId)) {
     const cached = STATE.lyricsCache.get(song.videoId);
     STATE.lyricsLoadedForSongId = song.videoId;
