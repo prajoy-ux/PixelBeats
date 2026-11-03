@@ -6053,7 +6053,7 @@ function syncCreatorAvatarFromGitHub() {
 
 // ================= IN-APP SELF UPDATER =================
 const APP_VERSION = '1.2.1';
-const GITHUB_REPO = 'prajoy-ux/PixelBeats';
+const GITHUB_REPO = 'roni69k/PixelBeats';
 let pendingUpdateApkUrl = null;
 let isUpdating = false;
 
