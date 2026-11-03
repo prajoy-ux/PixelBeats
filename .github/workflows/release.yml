@@ -45,11 +45,13 @@ jobs:
       - name: Prepare Release Artifacts
         run: |
           # Copy APK with clean official name
-          find android/app/build/outputs/apk/release -name "*.apk" -exec cp {} PixelBeats.apk \;
+          cp android/app/build/outputs/apk/release/*.apk PixelBeats.apk
+          ls -la PixelBeats.apk
           # Package Source Code Zip
           RELEASE_TAG="${{ github.ref_name }}"
           if [ -z "$RELEASE_TAG" ]; then RELEASE_TAG="v1.1.5"; fi
           git archive --format=zip --output=PixelBeats-${RELEASE_TAG}-source.zip HEAD
+          ls -la PixelBeats-${RELEASE_TAG}-source.zip
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
