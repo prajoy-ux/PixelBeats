@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="assets/logo.jpg" width="160" height="160" alt="PixelBeats Logo" style="border-radius: 28%; box-shadow: 0 8px 24px rgba(0,0,0,0.25);" />
+  <img src="assets/logo.png" width="160" height="160" alt="PixelBeats Logo" style="border-radius: 28%; box-shadow: 0 8px 24px rgba(0,0,0,0.25);" />
 
   <h1>PixelBeats</h1>
 
@@ -14,7 +14,6 @@
     <a href="#-features"><b>Features</b></a> •
     <a href="#-architecture"><b>Architecture</b></a> •
     <a href="#-download"><b>Download</b></a> •
-    <a href="#-getting-started"><b>Getting Started</b></a> •
     <a href="#-tech-stack"><b>Tech Stack</b></a> •
     <a href="#-license"><b>License</b></a>
   </p>
@@ -163,59 +162,6 @@ graph TD
 </table>
 
 </div>
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- **Node.js**: v18 or later
-- **Python**: v3.10 or later
-- **Android Studio / Android SDK** (for compiling native Android builds)
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/prajoy-ux/PixelBeats.git
-cd PixelBeats
-```
-
-### 2. Start the Backend Proxy
-
-```bash
-cd backend
-python -m venv venv
-
-# Windows:
-venv\Scripts\activate
-# macOS / Linux:
-source venv/bin/activate
-
-pip install -r requirements.txt
-python main.py
-```
-*The proxy will be accessible at `http://127.0.0.1:8000`.*
-
-### 3. Run the Frontend (Web Mode)
-
-In a new terminal window:
-```bash
-# Serve the www directory
-npx serve www
-```
-
-### 4. Build the Android APK
-
-```bash
-# Sync frontend assets into the Android native project
-npx cap sync android
-
-# Compile Debug APK
-cd android
-./gradlew assembleDebug      # Windows: .\gradlew.bat assembleDebug
-```
-*The compiled APK will be located at: `android/app/build/outputs/apk/debug/app-debug.apk`.*
 
 ---
 
