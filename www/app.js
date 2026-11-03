@@ -137,6 +137,16 @@ const ArchiveTuneBridge = {
       }
     }
     return null;
+  },
+  async getPendingDeepLink() {
+    if (this.isNative()) {
+      try {
+        return await window.Capacitor.Plugins.ArchiveTune.getPendingDeepLink();
+      } catch (e) {
+        console.warn('[ArchiveTune Native] getPendingDeepLink notice:', e);
+      }
+    }
+    return null;
   }
 };
 
@@ -2517,48 +2527,98 @@ async function downloadSongToVault(track) {
   }
 }
 
+async function handleIncomingDeepLink(data) {
+  if (!data || !data.videoId) return;
+  const rawId = String(data.videoId).trim();
+  if (!rawId) return;
+
+  console.log('[DeepLink] Opening shared track in PixelBeats:', data);
+  const title = data.title ? decodeURIComponent(data.title) : 'Shared Song';
+  const artist = data.artist ? decodeURIComponent(data.artist) : 'PixelBeats';
+
+  const song = {
+    videoId: rawId,
+    title: title,
+    artist: artist,
+    album: 'Shared Track',
+    duration: '--:--',
+    thumbnail: `https://i.ytimg.com/vi/${rawId}/hqdefault.jpg`
+  };
+
+  showToast(`Opening: ${song.title}`, 'music_note', 3500);
+  switchTab('tab-player');
+
+  const existingIdx = STATE.queue.findIndex(s => s.videoId === rawId);
+  if (existingIdx !== -1) {
+    await playTrackAtIndex(existingIdx);
+  } else {
+    STATE.queue.unshift(song);
+    renderQueueList();
+    await playTrackAtIndex(0);
+  }
+}
+
 async function shareCurrentTrack() {
   const song = STATE.queue[STATE.currentIndex];
   if (!song || !song.videoId) {
     showToast('Play a song first to share', 'info');
     return;
   }
-  if (elements.btnShareTrack.disabled) return;
+  if (elements.btnShareTrack && elements.btnShareTrack.disabled) return;
 
   const title = song.title || 'Listen on PixelBeats';
-  const text = song.artist ? `${title} - ${song.artist}` : title;
-  // Share the public song page, since stream and offline URLs are temporary or local.
-  const url = `https://www.youtube.com/watch?v=${encodeURIComponent(song.videoId)}`;
-  elements.btnShareTrack.disabled = true;
+  const artist = song.artist || '';
+  const trackLabel = artist ? `${title} - ${artist}` : title;
+
+  // Custom App Deep Link (opens directly in PixelBeats for anyone with the app installed)
+  const appDeepLink = `pixelbeats://track?id=${encodeURIComponent(song.videoId)}&title=${encodeURIComponent(title)}&artist=${encodeURIComponent(artist)}`;
+  // Fallback public web link for recipients without the app
+  const webFallbackUrl = `https://youtu.be/${encodeURIComponent(song.videoId)}`;
+
+  // Formatted share message with both app deep link and web link
+  const shareMessage = `🎵 Listen to "${title}" ${artist ? 'by ' + artist : ''} on PixelBeats!
+
+📲 Open in App:
+${appDeepLink}
+
+🌐 Web Link:
+${webFallbackUrl}`;
+
+  if (elements.btnShareTrack) elements.btnShareTrack.disabled = true;
   try {
     if (ArchiveTuneBridge.isNative()) {
-      await window.Capacitor.Plugins.ArchiveTune.shareTrack({ title, text, url });
+      await window.Capacitor.Plugins.ArchiveTune.shareTrack({
+        title: trackLabel,
+        text: shareMessage,
+        url: appDeepLink
+      });
       return;
     }
     if (typeof navigator.share === 'function') {
       try {
-        await navigator.share({ title, text, url });
+        await navigator.share({
+          title: trackLabel,
+          text: shareMessage,
+          url: appDeepLink
+        });
         return;
       } catch (error) {
         if (error.name === 'AbortError') return;
-        // Browsers may expose sharing but block it on this page.
       }
     }
     if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
       try {
-        await navigator.clipboard.writeText(url);
-        showToast('Song link copied', 'content_copy');
+        await navigator.clipboard.writeText(shareMessage);
+        showToast('App link copied to clipboard!', 'content_copy', 2500);
         return;
-      } catch (error) {
-        // Keep the link available when clipboard permission is denied.
-      }
+      } catch (error) { }
     }
-    window.prompt('Copy this song link to share:', url);
+    window.prompt('Copy this PixelBeats app link to share:', appDeepLink);
   } catch (error) {
     console.warn('[Share] Unable to open share sheet:', error);
     showToast('Could not share song. Please try again.', 'error');
   } finally {
-    elements.btnShareTrack.disabled = false;
+    if (elements.btnShareTrack) elements.btnShareTrack.disabled = false;
   }
 }
 
@@ -5819,6 +5879,37 @@ async function initApp() {
   setTimeout(() => {
     checkForAppUpdates(false);
   }, 2200);
+
+  // 13. Deep Linking: Receive shared track links on Native Android & Web
+  if (ArchiveTuneBridge.isNative() && window.Capacitor.Plugins.ArchiveTune) {
+    try {
+      window.Capacitor.Plugins.ArchiveTune.addListener('deepLinkOpen', (data) => {
+        handleIncomingDeepLink(data);
+      });
+      ArchiveTuneBridge.getPendingDeepLink().then(pending => {
+        if (pending && pending.videoId) {
+          handleIncomingDeepLink(pending);
+        }
+      });
+    } catch (dlErr) {
+      console.warn('[DeepLink] Native listener setup notice:', dlErr);
+    }
+  }
+
+  // Web URL query param handler: ?track=VIDEO_ID or ?id=VIDEO_ID
+  if (typeof window !== 'undefined' && window.location) {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const sharedId = params.get('track') || params.get('id') || params.get('v');
+      if (sharedId) {
+        handleIncomingDeepLink({
+          videoId: sharedId,
+          title: params.get('title') || '',
+          artist: params.get('artist') || ''
+        });
+      }
+    } catch (e) { }
+  }
 }
 
 // Window resize & orientation handlers to keep spring indicator snapped

@@ -16,6 +16,11 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(ArchiveTunePlugin.class);
         super.onCreate(savedInstanceState);
+
+        if (getIntent() != null && getIntent().getData() != null) {
+            ArchiveTunePlugin.pendingDeepLinkUrl = getIntent().getData().toString();
+        }
+
         try {
             WebView webView = getBridge().getWebView();
             if (webView != null) {
@@ -90,4 +95,13 @@ public class MainActivity extends BridgeActivity {
             e.printStackTrace();
         }
     }
+
+    @Override
+    protected void onNewIntent(android.content.Intent intent) {
+        super.onNewIntent(intent);
+        if (intent != null && intent.getData() != null) {
+            ArchiveTunePlugin.handleIncomingDeepLink(intent.getData().toString());
+        }
+    }
+
 }
