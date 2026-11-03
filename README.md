@@ -11,6 +11,7 @@
   </p>
 
   <p align="center">
+    <a href="#-showcase"><b>Showcase</b></a> •
     <a href="#-features"><b>Features</b></a> •
     <a href="#-architecture"><b>Architecture</b></a> •
     <a href="#-download"><b>Download</b></a> •
@@ -34,6 +35,35 @@
 
 > [!TIP]
 > **Ad-free, privacy-focused, and open source.** PixelBeats delivers uninterrupted listening with high-fidelity streams, intelligent local proxying, synchronized live lyrics, and an offline encrypted vault.
+
+---
+
+## 📸 Showcase
+
+<div align="center" id="showcase">
+
+<table style="border: none; background: transparent;">
+  <tr>
+    <td align="center" width="25%" style="border: none;">
+      <img src="assets/screenshots/screenshot_player.jpg" alt="Player Screen" width="100%" style="border-radius: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.25);" />
+      <br /><sub><b>Player Screen</b></sub>
+    </td>
+    <td align="center" width="25%" style="border: none;">
+      <img src="assets/screenshots/screenshot_lyrics.jpg" alt="Live Lyrics Overlay" width="100%" style="border-radius: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.25);" />
+      <br /><sub><b>Live Synced Lyrics</b></sub>
+    </td>
+    <td align="center" width="25%" style="border: none;">
+      <img src="assets/screenshots/screenshot_library.jpg" alt="Offline Library" width="100%" style="border-radius: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.25);" />
+      <br /><sub><b>Library & Mini Player</b></sub>
+    </td>
+    <td align="center" width="25%" style="border: none;">
+      <img src="assets/screenshots/screenshot_queue.jpg" alt="Up Next Queue" width="100%" style="border-radius: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.25);" />
+      <br /><sub><b>Up Next Queue</b></sub>
+    </td>
+  </tr>
+</table>
+
+</div>
 
 ---
 
