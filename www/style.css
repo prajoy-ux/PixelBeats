@@ -2197,9 +2197,9 @@ html, body {
   position: absolute;
   left: 14px;
   right: 14px;
-  top: 48%;
+  top: 96px;
   height: 1px;
-  border-top: 1px dashed rgba(54, 61, 23, 0.24);
+  border-top: 1px dashed rgba(54, 61, 23, 0.28);
   pointer-events: none;
   z-index: 0;
 }
@@ -2233,46 +2233,63 @@ html, body {
 }
 
 .eq-slider-track-wrap {
-  height: 120px;
+  height: 124px;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-}
-
-.eq-vertical-slider {
-  writing-mode: vertical-lr;
-  direction: rtl;
-  -webkit-appearance: slider-vertical;
-  appearance: slider-vertical;
-  width: 28px;
-  height: 110px;
   cursor: pointer;
-  accent-color: #576028;
-  margin: 0;
   touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  position: relative;
+  padding: 6px 0;
 }
 
-.eq-vertical-slider::-webkit-slider-thumb {
+.eq-track-groove {
+  position: relative;
+  width: 8px;
+  height: 110px;
+  border-radius: 99px;
+  background: rgba(54, 61, 23, 0.22);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  pointer-events: none;
+}
+
+.eq-track-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 8px;
+  border-radius: 99px;
+  background: #576028;
+  height: 50%;
+  pointer-events: none;
+}
+
+.eq-thumb-knob {
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  transform: translate(-50%, 50%);
   width: 22px;
   height: 22px;
   border-radius: 50%;
   background: #576028;
   border: 2.5px solid #EFF2E1;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-  cursor: grab;
-  transition: transform 0.1s ease;
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  z-index: 2;
 }
 
-.eq-vertical-slider:active::-webkit-slider-thumb {
-  transform: scale(1.15);
-  cursor: grabbing;
-}
-
-.eq-vertical-slider::-webkit-slider-runnable-track {
-  width: 6px;
-  border-radius: 99px;
-  background: rgba(54, 61, 23, 0.22);
+.eq-slider-track-wrap:active .eq-thumb-knob {
+  transform: translate(-50%, 50%) scale(1.18);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.42);
 }
 
 .eq-freq-label {

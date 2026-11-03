@@ -1976,13 +1976,23 @@ function applyEqualizerBand(bandIndex, dbGain, updateUI = true) {
     ArchiveTuneBridge.setEqualizerBands(STATE.eqCustomBands);
   } catch (e) {}
 
-  // 3. UI Readout
+  // 3. UI Readout, Fill & Knob positioning
   if (updateUI) {
+    const pct = ((numGain - (-12)) / 24) * 100;
     const valElem = document.getElementById(`eq-val-${bandIndex}`);
+    const fillElem = document.getElementById(`eq-fill-${bandIndex}`);
+    const knobElem = document.getElementById(`eq-knob-${bandIndex}`);
+
     if (valElem) {
       valElem.textContent = numGain > 0 ? `+${numGain}dB` : `${numGain}dB`;
       valElem.classList.toggle('boost', numGain > 0);
       valElem.classList.toggle('cut', numGain < 0);
+    }
+    if (fillElem) {
+      fillElem.style.height = `${pct}%`;
+    }
+    if (knobElem) {
+      knobElem.style.bottom = `${pct}%`;
     }
   }
 }
@@ -1993,12 +2003,19 @@ function resetEqualizerToFlat() {
   localStorage.setItem('pixelbeats_eq_custom_bands', JSON.stringify(STATE.eqCustomBands));
 
   for (let i = 0; i < 5; i++) {
-    const slider = document.getElementById(`eq-band-${i}`);
-    if (slider) slider.value = 0;
     const valElem = document.getElementById(`eq-val-${i}`);
+    const fillElem = document.getElementById(`eq-fill-${i}`);
+    const knobElem = document.getElementById(`eq-knob-${i}`);
+
     if (valElem) {
       valElem.textContent = '0dB';
       valElem.classList.remove('boost', 'cut');
+    }
+    if (fillElem) {
+      fillElem.style.height = '50%';
+    }
+    if (knobElem) {
+      knobElem.style.bottom = '50%';
     }
     if (Array.isArray(eqBands) && eqBands[i] && webAudioCtx) {
       try { eqBands[i].gain.value = 0; } catch (e) {}
@@ -2022,23 +2039,67 @@ function initEqualizerSliders() {
   STATE.eqCustomBands = saved;
 
   for (let i = 0; i < 5; i++) {
-    const slider = document.getElementById(`eq-band-${i}`);
+    const wrap = document.getElementById(`eq-wrap-${i}`);
     const valElem = document.getElementById(`eq-val-${i}`);
+    const fillElem = document.getElementById(`eq-fill-${i}`);
+    const knobElem = document.getElementById(`eq-knob-${i}`);
     const gain = parseFloat(saved[i]) || 0;
-    if (slider) {
-      slider.value = gain;
-      slider.addEventListener('input', (e) => {
-        applyEqualizerBand(i, e.target.value, true);
-      });
-      slider.addEventListener('change', (e) => {
-        playHapticSfx('click');
-        applyEqualizerBand(i, e.target.value, true);
-      });
-    }
+    const pct = ((gain - (-12)) / 24) * 100;
+
     if (valElem) {
       valElem.textContent = gain > 0 ? `+${gain}dB` : `${gain}dB`;
       valElem.classList.toggle('boost', gain > 0);
       valElem.classList.toggle('cut', gain < 0);
+    }
+    if (fillElem) {
+      fillElem.style.height = `${pct}%`;
+    }
+    if (knobElem) {
+      knobElem.style.bottom = `${pct}%`;
+    }
+
+    if (wrap) {
+      let isDragging = false;
+      let lastVibrateDb = gain;
+
+      const handlePointer = (clientY) => {
+        const groove = wrap.querySelector('.eq-track-groove');
+        if (!groove) return;
+        const rect = groove.getBoundingClientRect();
+        const clampedY = Math.max(rect.top, Math.min(rect.bottom, clientY));
+        const normalized = 1 - ((clampedY - rect.top) / rect.height);
+        let db = -12 + (normalized * 24);
+        db = Math.round(db * 2) / 2;
+        db = Math.max(-12, Math.min(12, db));
+
+        if (Math.abs(db - lastVibrateDb) >= 1) {
+          playHapticSfx('click');
+          lastVibrateDb = db;
+        }
+        applyEqualizerBand(i, db, true);
+      };
+
+      wrap.addEventListener('pointerdown', (e) => {
+        isDragging = true;
+        try { wrap.setPointerCapture(e.pointerId); } catch (err) {}
+        handlePointer(e.clientY);
+      });
+
+      wrap.addEventListener('pointermove', (e) => {
+        if (isDragging) {
+          handlePointer(e.clientY);
+        }
+      });
+
+      const endDrag = (e) => {
+        if (isDragging) {
+          isDragging = false;
+          try { wrap.releasePointerCapture(e.pointerId); } catch (err) {}
+        }
+      };
+
+      wrap.addEventListener('pointerup', endDrag);
+      wrap.addEventListener('pointercancel', endDrag);
     }
   }
 
@@ -5482,7 +5543,7 @@ function syncCreatorAvatarFromGitHub() {
 }
 
 // ================= IN-APP SELF UPDATER =================
-const APP_VERSION = '1.1.3';
+const APP_VERSION = '1.1.4';
 const GITHUB_REPO = 'prajoy-ux/PixelBeats';
 let pendingUpdateApkUrl = null;
 let isUpdating = false;

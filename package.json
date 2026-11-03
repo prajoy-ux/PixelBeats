@@ -1,6 +1,6 @@
 {
   "name": "pixelbeats",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "Retro Pixel-Art Music Streaming App",
   "scripts": {
     "start": "python backend/main.py",
