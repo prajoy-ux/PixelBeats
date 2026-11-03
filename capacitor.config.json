@@ -1,0 +1,17 @@
+{
+  "appId": "com.pixelbeats.music",
+  "appName": "PixelBeats",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "http",
+    "cleartext": true,
+    "allowNavigation": [
+      "*"
+    ]
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
+}

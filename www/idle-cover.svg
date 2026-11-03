@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1D2614" />
+      <stop offset="60%" stop-color="#141B0F" />
+      <stop offset="100%" stop-color="#0A0E08" />
+    </linearGradient>
+    <radialGradient id="discGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2D3B1C" />
+      <stop offset="65%" stop-color="#1D2614" />
+      <stop offset="100%" stop-color="#10170A" />
+    </radialGradient>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Modern Organic Background -->
+  <rect width="400" height="400" rx="36" fill="url(#bgGrad)" />
+
+  <!-- Organic Topographic Contour Curves in #3C4B25 and #7A9153 -->
+  <path d="M-20 110 C90 50, 160 170, 270 100 C340 40, 410 110, 440 70" fill="none" stroke="#3C4B25" stroke-width="2.5" opacity="0.6" />
+  <path d="M-20 170 C100 110, 190 230, 300 160 C370 110, 410 180, 440 140" fill="none" stroke="#3C4B25" stroke-width="2" opacity="0.45" />
+  <path d="M-20 240 C110 190, 170 310, 320 230 C390 180, 420 270, 440 220" fill="none" stroke="#3C4B25" stroke-width="2.5" opacity="0.5" />
+  <path d="M-20 310 C100 260, 210 360, 330 290 C400 250, 420 330, 440 300" fill="none" stroke="#7A9153" stroke-width="1.8" opacity="0.4" />
+
+  <!-- Outer Vinyl Disc with Cream Matcha rim -->
+  <circle cx="200" cy="200" r="142" fill="url(#discGrad)" stroke="#E1ECC8" stroke-width="3" />
+
+  <!-- Concentric Vinyl Sound Grooves in Cream Matcha (#E1ECC8) -->
+  <circle cx="200" cy="200" r="126" fill="none" stroke="#E1ECC8" stroke-width="0.8" opacity="0.32" stroke-dasharray="10 5" />
+  <circle cx="200" cy="200" r="110" fill="none" stroke="#E1ECC8" stroke-width="0.8" opacity="0.28" stroke-dasharray="14 6" />
+  <circle cx="200" cy="200" r="92" fill="none" stroke="#E1ECC8" stroke-width="0.8" opacity="0.22" stroke-dasharray="8 4" />
+  <circle cx="200" cy="200" r="74" fill="none" stroke="#E1ECC8" stroke-width="1.2" opacity="0.38" />
+
+  <!-- Amber Ochre (#E8B838) Center Spindle Label -->
+  <circle cx="200" cy="200" r="50" fill="#E8B838" filter="url(#softGlow)" />
+  <circle cx="200" cy="200" r="50" fill="#E8B838" />
+
+  <!-- Spindle Hole in #1D2614 -->
+  <circle cx="200" cy="200" r="14" fill="#1D2614" />
+
+  <!-- Botanical Leaf / Soundwave Center Glyph in #1D2614 -->
+  <path d="M190 192 C190 178, 202 170, 214 170 C214 184, 202 192, 190 192 Z" fill="#1D2614" />
+  <circle cx="200" cy="200" r="28" fill="none" stroke="#1D2614" stroke-width="1.6" stroke-dasharray="3 3" opacity="0.65" />
+</svg>

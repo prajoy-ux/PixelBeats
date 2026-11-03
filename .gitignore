@@ -1,0 +1,31 @@
+# Node dependencies
+node_modules/
+package-lock.json
+
+# Python virtual environment & cache
+backend/venv/
+backend/.venv/
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Android Gradle build & cache
+.gradle/
+**/build/
+android/.gradle/
+android/app/build/
+android/capacitor-cordova-android-plugins/build/
+android/local.properties
+*.iml
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Compiled APKs (Keep git repository light; upload APKs to GitHub Releases)
+*.apk
+PixelBeats*.apk
+
+# OS generated files
+.DS_Store
+Thumbs.db

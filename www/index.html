@@ -1,0 +1,1907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>PixelMusic // Material You Audio</title>
+  
+  <!-- Google Fonts: Plus Jakarta Sans & Outfit (Google Pixel Material Design 3) - Asynchronous Instant Paint -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" media="print" onload="this.media='all'">
+  <noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+  </noscript>
+  
+  <!-- App Icon & Favicon -->
+  <link rel="icon" type="image/jpeg" href="icon.jpg">
+  
+  <!-- Material You Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- High-Contrast Material You Overrides -->
+  <style id="slider-override">
+
+    /* 0. MAIN HERO PLAYER CARD (100% Soft Sage #C8D394 Floating Card) */
+    .hero-media-card,
+    .player-card,
+    .hero-card,
+    #hero-card {
+      background: #C8D394 !important;
+      background-color: #C8D394 !important;
+      border: none !important;
+      border-radius: 28px !important;
+      color: #363D17 !important;
+    }
+
+    /* Track Metadata inside Hero Card */
+    #track-title,
+    .track-title {
+      color: #363D17 !important;
+    }
+    #track-artist,
+    .track-artist {
+      color: #576028 !important;
+    }
+    #time-current,
+    #time-duration,
+    .time-label {
+      color: #576028 !important;
+    }
+
+    .time-row {
+      position: relative;
+      min-height: 22px;
+    }
+
+    /* Pure Typography & Vector Apple Music-Style Lossless Logo */
+    .lossless-badge {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 0 !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      border: none !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s cubic-bezier(0.2, 0.8, 0.4, 1);
+      outline: none !important;
+      line-height: 1;
+      text-decoration: none;
+    }
+
+    .lossless-badge:hover {
+      opacity: 0.82;
+      transform: translate(-50%, -50%) scale(1.05);
+    }
+
+    .lossless-badge:active {
+      transform: translate(-50%, -50%) scale(0.96);
+    }
+
+    .lossless-icon-svg {
+      width: 14.5px;
+      height: 9px;
+      display: block;
+      fill: #141A02 !important;
+      color: #141A02 !important;
+      flex-shrink: 0;
+    }
+
+    .lossless-icon-svg path {
+      fill: #141A02 !important;
+    }
+
+    .lossless-text {
+      font-family: var(--font-brand);
+      font-size: 10.5px;
+      font-weight: 850;
+      color: #141A02 !important;
+      letter-spacing: 0.1px;
+      line-height: 1;
+    }
+
+    /* Transport Controls inside Hero Card */
+    .m3-hero-play-btn,
+    #btn-play {
+      background: #576028 !important;
+      background-color: #576028 !important;
+      color: #EFF2E1 !important;
+      border: none !important;
+    }
+    .m3-hero-play-btn .material-symbols-rounded,
+    #btn-play .material-symbols-rounded,
+    #play-icon {
+      color: #EFF2E1 !important;
+    }
+
+    .m3-pill-btn.transport-nav-btn,
+    #btn-prev,
+    #btn-next {
+      background: #EFF2E1 !important;
+      background-color: #EFF2E1 !important;
+      color: #363D17 !important;
+      border: none !important;
+    }
+    .m3-pill-btn.transport-nav-btn .material-symbols-rounded,
+    #btn-prev .material-symbols-rounded,
+    #btn-next .material-symbols-rounded {
+      color: #363D17 !important;
+    }
+
+    /* Shuffle & Repeat Buttons inside Hero Card */
+    .transport-sub-btn,
+    .m3-icon-btn.transport-sub-btn,
+    #btn-shuffle,
+    #btn-repeat {
+      color: #363D17 !important;
+      background: rgba(54, 61, 23, 0.1) !important;
+      background-color: rgba(54, 61, 23, 0.1) !important;
+      border: none !important;
+      border-radius: 50% !important;
+      opacity: 1 !important;
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+    }
+    .transport-sub-btn .material-symbols-rounded,
+    .m3-icon-btn.transport-sub-btn .material-symbols-rounded,
+    #btn-shuffle .material-symbols-rounded,
+    #btn-repeat .material-symbols-rounded {
+      color: #363D17 !important;
+      opacity: 1 !important;
+    }
+    .transport-sub-btn:hover,
+    .m3-icon-btn.transport-sub-btn:hover,
+    #btn-shuffle:hover,
+    #btn-repeat:hover {
+      background: rgba(54, 61, 23, 0.18) !important;
+      background-color: rgba(54, 61, 23, 0.18) !important;
+    }
+    .transport-sub-btn.active,
+    .m3-icon-btn.transport-sub-btn.active,
+    #btn-shuffle.active,
+    #btn-repeat.active {
+      background: #576028 !important;
+      background-color: #576028 !important;
+      color: #EFF2E1 !important;
+      border: none !important;
+      opacity: 1 !important;
+      box-shadow: 0 2px 8px rgba(54, 61, 23, 0.28) !important;
+    }
+    .transport-sub-btn.active .material-symbols-rounded,
+    .m3-icon-btn.transport-sub-btn.active .material-symbols-rounded,
+    #btn-shuffle.active .material-symbols-rounded,
+    #btn-repeat.active .material-symbols-rounded {
+      color: #EFF2E1 !important;
+      opacity: 1 !important;
+    }
+
+    /* 1. MUSIC PROGRESS SCRUBBER */
+    .scrubber-container,
+    .scrubber-split-track,
+    #scrubber-track {
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+    }
+    .scrubber-container::before,
+    .scrubber-container::after,
+    .scrubber-split-track::before,
+    .scrubber-split-track::after,
+    #scrubber-track::before,
+    #scrubber-track::after {
+      content: none !important;
+      display: none !important;
+      border: none !important;
+    }
+
+    .scrubber-split-track,
+    #scrubber-track {
+      width: 100% !important;
+      height: 10px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 0 !important;
+      position: relative !important;
+      overflow: visible !important;
+    }
+    .scrubber-container:hover .scrubber-split-track,
+    .scrubber-container:active .scrubber-split-track,
+    .scrubber-container.is-dragging .scrubber-split-track {
+      height: 16px !important;
+    }
+
+    /* Left Played Bar (0:00 to thumb) - Deep Olive Fill */
+    .scrubber-fill-olive,
+    #scrubber-fill {
+      background: #576028 !important;
+      background-color: #576028 !important;
+      height: 10px !important;
+      border-radius: 99px 3px 3px 99px !important;
+      border: none !important;
+      outline: none !important;
+      min-width: 0 !important;
+      pointer-events: none !important;
+      transition: width 0.05s linear, height 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+    }
+    .scrubber-container:hover .scrubber-fill-olive,
+    .scrubber-container:hover #scrubber-fill,
+    .scrubber-container:active .scrubber-fill-olive,
+    .scrubber-container:active #scrubber-fill,
+    .scrubber-container.is-dragging .scrubber-fill-olive,
+    .scrubber-container.is-dragging #scrubber-fill {
+      height: 16px !important;
+    }
+
+    /* Middle Vertical Divider Stick (Thumb) - Dark Forest Olive */
+    .scrubber-handle-line,
+    #scrubber-thumb {
+      background: #363D17 !important;
+      background-color: #363D17 !important;
+      width: 4px !important;
+      height: 24px !important;
+      border-radius: 99px !important;
+      margin: 0 4px !important;
+      flex-shrink: 0 !important;
+      pointer-events: none !important;
+      box-shadow: none !important;
+      transition: height 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+    }
+    .scrubber-container:hover .scrubber-handle-line,
+    .scrubber-container:hover #scrubber-thumb,
+    .scrubber-container:active .scrubber-handle-line,
+    .scrubber-container:active #scrubber-thumb,
+    .scrubber-container.is-dragging .scrubber-handle-line,
+    .scrubber-container.is-dragging #scrubber-thumb {
+      height: 28px !important;
+    }
+
+    /* Right Unplayed Bar (thumb to end) - Pale Cream Fill */
+    .scrubber-empty-cream,
+    #scrubber-empty {
+      background: #EFF2E1 !important;
+      background-color: #EFF2E1 !important;
+      height: 10px !important;
+      border-radius: 3px 99px 99px 3px !important;
+      flex: 1 !important;
+      pointer-events: none !important;
+      transition: height 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+    }
+    .scrubber-container:hover .scrubber-empty-cream,
+    .scrubber-container:hover #scrubber-empty,
+    .scrubber-container:active .scrubber-empty-cream,
+    .scrubber-container:active #scrubber-empty,
+    .scrubber-container.is-dragging .scrubber-empty-cream,
+    .scrubber-container.is-dragging #scrubber-empty {
+      height: 16px !important;
+    }
+
+    /* 2. GOOGLE PIXEL SPLIT-TRACK VOLUME PILL */
+    /* Outer Volume Pill Shell */
+    .pixel-vol-pill,
+    #pixel-vol-pill,
+    .pixel-volume-shell {
+      background: #C8D394 !important;
+      background-color: #C8D394 !important;
+      padding: 6px 10px 6px 6px !important;
+      height: 58px !important;
+      border-radius: 999px !important;
+      border: none !important;
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 8px !important;
+      box-sizing: border-box !important;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.16) !important;
+      flex-shrink: 0 !important;
+    }
+
+    /* 1. Left Mute Circle Button */
+    .pixel-vol-mute,
+    #vol-mute-btn,
+    .vol-circle-btn {
+      width: 42px !important;
+      height: 42px !important;
+      min-width: 42px !important;
+      border-radius: 50% !important;
+      background: #576028 !important;
+      background-color: #576028 !important;
+      color: #EFF2E1 !important;
+      border: none !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+      padding: 0 !important;
+      flex-shrink: 0 !important;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+    }
+    .pixel-vol-mute .material-symbols-rounded,
+    #vol-mute-btn .material-symbols-rounded,
+    .vol-circle-btn .material-symbols-rounded {
+      color: #EFF2E1 !important;
+      font-size: 22px !important;
+    }
+
+    /* Track Container */
+    .pixel-vol-track,
+    #vol-track-area,
+    .vol-split-track {
+      flex: 1 !important;
+      height: 40px !important;
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      gap: 0 !important;
+      cursor: pointer !important;
+      user-select: none !important;
+      position: relative !important;
+      overflow: visible !important;
+      min-width: 0 !important;
+    }
+
+    /* 2. Left Filled Volume Segment - Dark Olive Fill */
+    .pixel-vol-fill,
+    #vol-fill-bar,
+    .vol-fill-olive {
+      background: #576028 !important;
+      background-color: #576028 !important;
+      height: 40px !important;
+      border-radius: 16px 4px 4px 16px !important;
+      transition: width 0.05s linear !important;
+      min-width: 0px !important;
+      pointer-events: none !important;
+    }
+
+    /* 3. Middle Taller Divider Stick - Dark Forest Olive */
+    .pixel-vol-divider,
+    #vol-divider,
+    .vol-handle-line {
+      background: #363D17 !important;
+      background-color: #363D17 !important;
+      width: 4px !important;
+      height: 44px !important;
+      border-radius: 99px !important;
+      margin: 0 3px !important;
+      flex-shrink: 0 !important;
+      pointer-events: none !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    /* 4. Right Unfilled Volume Segment - Bright Pale Cream without icon */
+    .pixel-vol-empty,
+    #vol-empty-bar,
+    .vol-empty-cream {
+      background: #EFF2E1 !important;
+      background-color: #EFF2E1 !important;
+      height: 40px !important;
+      border-radius: 4px 16px 16px 4px !important;
+      flex: 1 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-end !important;
+      padding: 0 !important;
+      min-width: 0px !important;
+      overflow: hidden !important;
+      color: #363D17 !important;
+      pointer-events: none !important;
+    }
+    .pixel-vol-empty .material-symbols-rounded,
+    #vol-empty-bar .material-symbols-rounded,
+    .vol-empty-cream .material-symbols-rounded {
+      display: none !important;
+    }
+
+    /* 5. Right Caption Square Button */
+    .pixel-vol-caption,
+    #vol-lyrics-btn,
+    .vol-square-btn {
+      width: 38px !important;
+      height: 38px !important;
+      min-width: 38px !important;
+      border-radius: 12px !important;
+      background: #EFF2E1 !important;
+      background-color: #EFF2E1 !important;
+      color: #363D17 !important;
+      border: none !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+      padding: 0 !important;
+      flex-shrink: 0 !important;
+    }
+    .pixel-vol-caption .material-symbols-rounded,
+    #vol-lyrics-btn .material-symbols-rounded,
+    .vol-square-btn .material-symbols-rounded {
+      color: #363D17 !important;
+      font-size: 20px !important;
+    }
+
+    /* 6. Far-Right Equalizer Button */
+    .pixel-vol-eq,
+    #vol-eq-btn {
+      width: 34px !important;
+      height: 38px !important;
+      min-width: 34px !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      color: #363D17 !important;
+      border: none !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+      padding: 0 !important;
+      flex-shrink: 0 !important;
+    }
+    .pixel-vol-eq .material-symbols-rounded,
+    #vol-eq-btn .material-symbols-rounded {
+      color: #363D17 !important;
+      font-size: 20px !important;
+    }
+
+    .bento-actions-grid {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 10px !important;
+      height: 52px !important;
+    }
+
+    /* 7. Bento Action Buttons (Soft Sage Normal, Deep Olive Active) */
+    .bento-widget-btn,
+    #btn-download-track,
+    #btn-player-add-playlist,
+    #btn-auto-cycle,
+    #btn-vault,
+    #btn-playlist,
+    #btn-cycle {
+      background: #C8D394 !important;
+      background-color: #C8D394 !important;
+      color: #363D17 !important;
+      border: none !important;
+      border-radius: 20px !important;
+      height: 52px !important;
+      opacity: 1 !important;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  border-radius 0.3s ease,
+                  background 0.2s ease,
+                  color 0.2s ease,
+                  box-shadow 0.2s ease !important;
+    }
+    .bento-widget-btn span,
+    .bento-widget-btn .material-symbols-rounded,
+    .bento-widget-btn .btn-icon-m3,
+    .bento-widget-btn .btn-text,
+    #btn-download-track span,
+    #btn-download-track .material-symbols-rounded,
+    #btn-download-track .btn-icon-m3,
+    #btn-download-track .btn-text,
+    #btn-player-add-playlist span,
+    #btn-player-add-playlist .material-symbols-rounded,
+    #btn-player-add-playlist .btn-icon-m3,
+    #btn-player-add-playlist .btn-text,
+    #btn-auto-cycle span,
+    #btn-auto-cycle .material-symbols-rounded,
+    #btn-auto-cycle .btn-icon-m3,
+    #btn-auto-cycle .btn-text,
+    #btn-vault span,
+    #btn-vault .material-symbols-rounded,
+    #btn-vault .btn-text,
+    #btn-playlist span,
+    #btn-playlist .material-symbols-rounded,
+    #btn-playlist .btn-text,
+    #btn-cycle span,
+    #btn-cycle .material-symbols-rounded,
+    #btn-cycle .btn-text {
+      color: #363D17 !important;
+      font-weight: 700 !important;
+    }
+    .bento-widget-btn:hover,
+    #btn-download-track:hover,
+    #btn-player-add-playlist:hover,
+    #btn-auto-cycle:hover,
+    #btn-vault:hover,
+    #btn-playlist:hover,
+    #btn-cycle:hover {
+      background: #EFF2E1 !important;
+      background-color: #EFF2E1 !important;
+      color: #363D17 !important;
+      border-radius: 18px !important;
+    }
+    .bento-widget-btn:active,
+    #btn-download-track:active,
+    #btn-player-add-playlist:active,
+    #btn-auto-cycle:active,
+    #btn-vault:active,
+    #btn-playlist:active,
+    #btn-cycle:active {
+      transform: scale(0.94) !important;
+      border-radius: 16px !important;
+    }
+    .bento-widget-btn.active,
+    #btn-download-track.active,
+    #btn-player-add-playlist.active,
+    #btn-auto-cycle.active,
+    #btn-vault.active,
+    #btn-playlist.active,
+    #btn-cycle.active {
+      background: #576028 !important;
+      background-color: #576028 !important;
+      color: #EFF2E1 !important;
+      border: none !important;
+      opacity: 1 !important;
+    }
+    .bento-widget-btn.active:hover,
+    #btn-download-track.active:hover,
+    #btn-player-add-playlist.active:hover,
+    #btn-auto-cycle.active:hover,
+    #btn-vault.active:hover,
+    #btn-playlist.active:hover,
+    #btn-cycle.active:hover {
+      background: #363D17 !important;
+      background-color: #363D17 !important;
+      color: #EFF2E1 !important;
+    }
+    .bento-widget-btn.active span,
+    .bento-widget-btn.active .material-symbols-rounded,
+    .bento-widget-btn.active .btn-icon-m3,
+    .bento-widget-btn.active .btn-text,
+    #btn-download-track.active span,
+    #btn-download-track.active .material-symbols-rounded,
+    #btn-download-track.active .btn-icon-m3,
+    #btn-download-track.active .btn-text,
+    #btn-player-add-playlist.active span,
+    #btn-player-add-playlist.active .material-symbols-rounded,
+    #btn-player-add-playlist.active .btn-icon-m3,
+    #btn-player-add-playlist.active .btn-text,
+    #btn-auto-cycle.active span,
+    #btn-auto-cycle.active .material-symbols-rounded,
+    #btn-auto-cycle.active .btn-icon-m3,
+    #btn-auto-cycle.active .btn-text,
+    #btn-vault.active span,
+    #btn-vault.active .material-symbols-rounded,
+    #btn-vault.active .btn-text,
+    #btn-playlist.active span,
+    #btn-playlist.active .material-symbols-rounded,
+    #btn-playlist.active .btn-text,
+    #btn-cycle.active span,
+    #btn-cycle.active .material-symbols-rounded,
+    #btn-cycle.active .btn-text {
+      color: #EFF2E1 !important;
+      font-weight: 700 !important;
+    }
+
+    /* 8. MATERIAL 3 FLOATING BOTTOM NAVIGATION BAR (Soft Sage #C8D394) */
+    .m3-bottom-nav {
+      position: relative !important;
+      margin: 0 auto 12px auto !important;
+      width: calc(100% - 32px) !important;
+      max-width: 500px !important;
+      border-radius: 999px !important;
+      flex-shrink: 0 !important;
+      height: 66px !important;
+      min-height: 66px !important;
+      padding: 0 !important;
+      background: #C8D394 !important;
+      background-color: #C8D394 !important;
+      border: none !important;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: stretch !important;
+      z-index: 100 !important;
+      overflow: hidden !important;
+      box-sizing: border-box !important;
+    }
+
+    /* Apple Music-Style Morphing Active Spring Pill Indicator */
+    .m3-nav-indicator {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      background: #576028 !important;
+      background-color: #576028 !important;
+      border-radius: 999px !important;
+      box-shadow: 0 3px 10px rgba(54, 61, 23, 0.28) !important;
+      pointer-events: none !important;
+      z-index: 1 !important;
+      will-change: transform, width, height !important;
+      opacity: 0;
+      transform: translate3d(0, 0, 0);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  height 0.3s ease,
+                  opacity 0.25s ease !important;
+    }
+
+    /* All nav items, buttons, unselected slots, active/hover/focus states strictly transparent and equal 25% */
+    .m3-bottom-nav button,
+    .m3-nav-item,
+    .m3-nav-btn,
+    .m3-nav-item.active,
+    .m3-nav-item:not(.active),
+    .m3-nav-item:hover,
+    .m3-nav-item:focus,
+    .m3-nav-item:focus-visible,
+    .m3-nav-item:active,
+    .m3-nav-item.active:hover,
+    .m3-nav-item.active:focus,
+    .m3-nav-item.active:focus-visible,
+    .m3-nav-item.active:active {
+      position: relative !important;
+      z-index: 2 !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      flex: 1 1 0 !important;
+      min-width: 0 !important;
+      max-width: 25% !important;
+      width: 25% !important;
+      height: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      left: auto !important;
+      right: auto !important;
+      transform: none !important;
+      cursor: pointer !important;
+      text-align: center !important;
+      -webkit-tap-highlight-color: transparent !important;
+      -webkit-touch-callout: none !important;
+      user-select: none !important;
+      box-sizing: border-box !important;
+    }
+
+    .m3-nav-item:active .m3-nav-pill {
+      transform: scale(0.92) !important;
+    }
+
+    .m3-nav-pill {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      margin: 0 auto !important;
+      width: 100% !important;
+      max-width: 76px !important;
+      min-width: 58px !important;
+      height: 54px !important;
+      padding: 4px 8px !important;
+      box-sizing: border-box !important;
+      border-radius: 999px !important;
+      gap: 2px !important;
+      position: relative !important;
+      z-index: 2 !important;
+      left: auto !important;
+      right: auto !important;
+      transform: none !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      box-shadow: none !important;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s ease, width 0.3s ease !important;
+    }
+
+    .m3-nav-pill .material-symbols-rounded {
+      font-size: 22px !important;
+      line-height: 1 !important;
+      color: #363D17 !important;
+      opacity: 0.75 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      margin: 0 auto !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      padding: 0 !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      width: 24px !important;
+      height: 24px !important;
+      transform: none !important;
+      transform-origin: center center !important;
+      transition: color 0.25s ease, opacity 0.25s ease, transform 0.3s ease !important;
+    }
+
+    .m3-nav-label {
+      font-family: var(--font-brand) !important;
+      font-size: 10.5px !important;
+      font-weight: 600 !important;
+      line-height: 1.1 !important;
+      color: #363D17 !important;
+      opacity: 0.75 !important;
+      display: block !important;
+      width: 100% !important;
+      text-align: center !important;
+      margin: 0 auto !important;
+      padding: 0 !important;
+      white-space: nowrap !important;
+      overflow: visible !important;
+      text-overflow: clip !important;
+      letter-spacing: 0 !important;
+      transition: color 0.25s ease, opacity 0.25s ease, font-weight 0.25s ease !important;
+    }
+
+    /* Active Item: Centered Pale Cream icon and text; sliding indicator handles dark olive capsule */
+    .m3-nav-item.active .m3-nav-pill {
+      background: transparent !important;
+      background-color: transparent !important;
+      box-shadow: none !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      margin: 0 auto !important;
+      width: 100% !important;
+      max-width: 72px !important;
+      min-width: 52px !important;
+      height: 48px !important;
+      padding: 4px 6px !important;
+      box-sizing: border-box !important;
+      border-radius: 999px !important;
+      left: auto !important;
+      right: auto !important;
+      transform: none !important;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s ease, width 0.3s ease !important;
+    }
+
+    .m3-nav-item.active .m3-nav-pill .material-symbols-rounded {
+      color: #EFF2E1 !important;
+      opacity: 1 !important;
+      transform: scale(1.05) translate(0, 0) !important;
+      transform-origin: center center !important;
+      margin: 0 auto !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      padding: 0 !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      text-align: center !important;
+    }
+
+    .m3-nav-item.active .m3-nav-label,
+    .m3-nav-item.active .m3-nav-pill .m3-nav-label {
+      color: #EFF2E1 !important;
+      font-weight: 700 !important;
+      opacity: 1 !important;
+      display: block !important;
+      width: 100% !important;
+      text-align: center !important;
+      margin: 0 auto !important;
+      padding: 0 !important;
+      white-space: nowrap !important;
+      overflow: visible !important;
+      text-overflow: clip !important;
+      letter-spacing: 0 !important;
+    }
+
+    /* Unselected and active item pills guarantee transparent container - only sliding indicator has deep olive */
+    .m3-nav-item .m3-nav-pill,
+    .m3-nav-item.active .m3-nav-pill {
+      background: transparent !important;
+      background-color: transparent !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+
+    .m3-nav-badge {
+      display: none !important;
+    }
+
+    /* Centered & Bolder Live Synced Lyrics */
+    .lyrics-scroll-list {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      text-align: center !important;
+    }
+
+    .lyric-line,
+    .lyric-item,
+    .lyrics-scroll-list .lyric-line,
+    .lyrics-scroll-list .lyric-item {
+      text-align: center !important;
+      font-weight: 700 !important;
+      transform-origin: center center !important;
+      margin: 0 auto !important;
+      width: 100% !important;
+      max-width: 92% !important;
+    }
+
+    .lyric-line:hover,
+    .lyric-item:hover {
+      text-align: center !important;
+      font-weight: 700 !important;
+      transform-origin: center center !important;
+    }
+
+    .lyric-line.active,
+    .lyric-item.active,
+    .lyrics-scroll-list .lyric-line.active,
+    .lyrics-scroll-list .lyric-item.active {
+      text-align: center !important;
+      font-weight: 850 !important;
+      transform-origin: center center !important;
+    }
+
+    .lyric-line.passed,
+    .lyric-item.passed {
+      text-align: center !important;
+      font-weight: 700 !important;
+      transform-origin: center center !important;
+    }
+
+    /* ================= APPLE MUSIC-STYLE TAB PANEL GLIDE ANIMATION ================= */
+    .tab-panel {
+      display: none;
+      width: 100%;
+    }
+
+    .tab-panel.active {
+      display: flex !important;
+      will-change: transform, opacity;
+      animation: iosTabGlideRight 0.38s cubic-bezier(0.25, 1, 0.5, 1) both;
+    }
+
+    .tab-panel.active.initial-load {
+      animation: none !important;
+    }
+
+    .tab-panel.active.slide-from-right {
+      animation: iosTabGlideRight 0.38s cubic-bezier(0.25, 1, 0.5, 1) both !important;
+    }
+
+    .tab-panel.active.slide-from-left {
+      animation: iosTabGlideLeft 0.38s cubic-bezier(0.25, 1, 0.5, 1) both !important;
+    }
+
+    @keyframes iosTabGlideRight {
+      0% {
+        opacity: 0;
+        transform: scale(0.94) translateX(28px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateX(0);
+      }
+    }
+
+    @keyframes iosTabGlideLeft {
+      0% {
+        opacity: 0;
+        transform: scale(0.94) translateX(-28px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateX(0);
+      }
+    }
+
+    /* 9. SEARCH, LIBRARY, & QUEUE PANELS (Soft Sage #C8D394 Material You System) */
+    .tab-panel:not(#tab-player) {
+      padding: max(14px, env(safe-area-inset-top, 14px)) 16px 96px 16px !important;
+      gap: 14px !important;
+    }
+
+    /* Primary Titles & Subtitles */
+    .browse-title,
+    .section-action-header h3,
+    #queue-count,
+    .card-header-row h4,
+    .trending-header,
+    .sheet-title {
+      color: #EFF2E1 !important;
+      font-family: var(--font-brand) !important;
+      font-weight: 800 !important;
+      letter-spacing: -0.2px !important;
+    }
+
+    .browse-sub,
+    .header-sub,
+    .setting-desc {
+      color: #C8D394 !important;
+      font-weight: 600 !important;
+      opacity: 0.85 !important;
+    }
+
+    /* Segmented Controls (Search & Library) */
+    .m3-segmented-control {
+      background: #C8D394 !important;
+      background-color: #C8D394 !important;
+      border: none !important;
+      padding: 4px !important;
+      border-radius: 999px !important;
+      gap: 4px !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16) !important;
+    }
+    .m3-segment-btn {
+      background: transparent !important;
+      border: none !important;
+      border-radius: 999px !important;
+      padding: 9px 14px !important;
+      color: #363D17 !important;
+      opacity: 0.75 !important;
+      font-weight: 700 !important;
+      transition: all 0.25s cubic-bezier(0.2, 0, 0, 1) !important;
+    }
+    .m3-segment-btn .material-symbols-rounded {
+      color: #363D17 !important;
+      opacity: 0.75 !important;
+      font-size: 19px !important;
+    }
+    .m3-segment-btn.active {
+      background: #EFF2E1 !important;
+      background-color: #EFF2E1 !important;
+      color: #283416 !important;
+      opacity: 1 !important;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.22) !important;
+    }
+    .m3-segment-btn.active .material-symbols-rounded {
+      color: #283416 !important;
+      opacity: 1 !important;
+    }
+
+    /* Search Bar & Import Bar */
+    .m3-search-bar {
+      background: #EFF2E1 !important;
+      background-color: #EFF2E1 !important;
+      border: none !important;
+      border-radius: 999px !important;
+      padding: 6px 8px 6px 18px !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16) !important;
+    }
+    .m3-search-bar .search-icon {
+      color: #363D17 !important;
+      font-size: 22px !important;
+    }
+    .m3-search-input {
+      color: #363D17 !important;
+      font-weight: 600 !important;
+      font-size: 14px !important;
+    }
+    .m3-search-input::placeholder {
+      color: rgba(54, 61, 23, 0.6) !important;
+    }
+    .m3-search-submit-btn {
+      background: #576028 !important;
+      background-color: #576028 !important;
+      color: #EFF2E1 !important;
+      border-radius: 50% !important;
+      border: none !important;
+    }
+    .m3-search-submit-btn .material-symbols-rounded {
+      color: #EFF2E1 !important;
+    }
+    .m3-search-clear-btn {
+      color: #363D17 !important;
+    }
+    .m3-search-clear-btn .material-symbols-rounded {
+      color: #363D17 !important;
+    }
+
+    .m3-import-bar {
+      background: #C8D394 !important;
+      background-color: #C8D394 !important;
+      border: none !important;
+      border-radius: 999px !important;
+      padding: 5px 6px 5px 16px !important;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14) !important;
+    }
+    .m3-import-bar .import-icon {
+      color: #363D17 !important;
+    }
+    .m3-import-input {
+      color: #363D17 !important;
+      font-weight: 600 !important;
+    }
+    .m3-import-input::placeholder {
+      color: rgba(54, 61, 23, 0.65) !important;
+    }
+    .m3-pill-action-btn {
+      background: #576028 !important;
+      background-color: #576028 !important;
+      color: #EFF2E1 !important;
+      border-radius: 999px !important;
+      border: none !important;
+      font-weight: 700 !important;
+    }
+
+    /* Browse Tiles */
+    .browse-tile {
+      background: #C8D394 !important;
+      border-radius: 20px !important;
+      border: none !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16) !important;
+    }
+    .browse-tile .tile-gradient {
+      background: linear-gradient(180deg, rgba(200, 211, 148, 0.15) 0%, rgba(54, 61, 23, 0.88) 100%) !important;
+    }
+    .browse-tile .tile-badge {
+      color: #C8D394 !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.6px !important;
+    }
+    .browse-tile .tile-title {
+      color: #EFF2E1 !important;
+      font-weight: 800 !important;
+    }
+
+    /* Song Cards & Queue Items */
+    .song-card,
+    .queue-item {
+      background: #C8D394 !important;
+      background-color: #C8D394 !important;
+      border: none !important;
+      border-radius: 999px !important;
+      padding: 8px 14px 8px 8px !important;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.14) !important;
+    }
+    .song-card:hover,
+    .queue-item:hover {
+      background: #EFF2E1 !important;
+      background-color: #EFF2E1 !important;
+      transform: translateX(4px);
+    }
+    .song-card .song-title,
+    .queue-item .queue-title {
+      color: #363D17 !important;
+      font-weight: 700 !important;
+    }
+    .song-card .song-meta,
+    .queue-item .queue-artist {
+      color: #576028 !important;
+      font-weight: 600 !important;
+    }
+    .queue-index {
+      color: #576028 !important;
+      font-weight: 800 !important;
+    }
+    .song-action-btn,
+    .queue-btn-action {
+      background: #576028 !important;
+      background-color: #576028 !important;
+      color: #EFF2E1 !important;
+      border: none !important;
+      border-radius: 50% !important;
+    }
+    .song-action-btn .material-symbols-rounded,
+    .queue-btn-action .material-symbols-rounded {
+      color: #EFF2E1 !important;
+    }
+    .song-action-btn:hover,
+    .queue-btn-action:hover {
+      background: #363D17 !important;
+      background-color: #363D17 !important;
+    }
+
+    /* Active / Playing State */
+    .song-card.playing,
+    .song-card.now-playing,
+    .queue-item.playing {
+      background: #EFF2E1 !important;
+      background-color: #EFF2E1 !important;
+      border: 1.5px solid #576028 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14) !important;
+    }
+    .queue-now-badge {
+      background: #576028 !important;
+      background-color: #576028 !important;
+      color: #EFF2E1 !important;
+      font-weight: 800 !important;
+    }
+
+    /* Library Overview Card */
+    .vault-overview-card {
+      background: #C8D394 !important;
+      background-color: #C8D394 !important;
+      border: none !important;
+      border-radius: 28px !important;
+      padding: 18px 20px !important;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16) !important;
+    }
+    .vault-title-row .material-symbols-rounded {
+      color: #576028 !important;
+      font-size: 24px !important;
+    }
+    .vault-heading {
+      color: #363D17 !important;
+      font-weight: 800 !important;
+      font-size: 16px !important;
+    }
+    .vault-subtext {
+      color: #576028 !important;
+      font-weight: 600 !important;
+      font-size: 12px !important;
+    }
+    #btn-vault-play-all,
+    .m3-accent-pill-btn {
+      background: #576028 !important;
+      background-color: #576028 !important;
+      color: #EFF2E1 !important;
+      border: none !important;
+      border-radius: 999px !important;
+      font-weight: 700 !important;
+      padding: 8px 18px !important;
+    }
+    .m3-accent-pill-btn .material-symbols-rounded {
+      color: #EFF2E1 !important;
+    }
+
+    /* Action Buttons in Section Headers */
+    .section-action-header .m3-accent-pill-btn,
+    #btn-create-playlist,
+    #btn-clear-queue,
+    .m3-tonal-pill-btn {
+      background: #C8D394 !important;
+      background-color: #C8D394 !important;
+      color: #363D17 !important;
+      border: none !important;
+      border-radius: 999px !important;
+      font-weight: 700 !important;
+      padding: 8px 18px !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+    }
+    #btn-create-playlist .material-symbols-rounded,
+    #btn-clear-queue .material-symbols-rounded,
+    .m3-tonal-pill-btn .material-symbols-rounded {
+      color: #363D17 !important;
+    }
+
+    /* Album Cards & Playlist Cards */
+    .album-card,
+    .playlist-card {
+      background: #C8D394 !important;
+      background-color: #C8D394 !important;
+      border: none !important;
+      border-radius: 24px !important;
+      padding: 12px !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16) !important;
+    }
+    .album-card-thumb,
+    .playlist-card-cover {
+      border-radius: 16px !important;
+    }
+    .album-card-title,
+    .playlist-card-title {
+      color: #363D17 !important;
+      font-weight: 800 !important;
+      font-size: 13.5px !important;
+    }
+    .album-card-artist,
+    .playlist-card-count {
+      color: #576028 !important;
+      font-weight: 600 !important;
+      font-size: 11.5px !important;
+    }
+    .album-card-year {
+      color: #576028 !important;
+      font-weight: 700 !important;
+    }
+
+    /* Empty States */
+    .empty-state {
+      background: #C8D394 !important;
+      background-color: #C8D394 !important;
+      border-radius: 28px !important;
+      padding: 36px 20px !important;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16) !important;
+      border: none !important;
+    }
+    .empty-icon {
+      color: #576028 !important;
+    }
+    .empty-state h3 {
+      color: #363D17 !important;
+      font-weight: 800 !important;
+    }
+    .empty-state p {
+      color: #576028 !important;
+      font-weight: 600 !important;
+    }
+
+    /* Settings Cards */
+    .m3-settings-card {
+      background: #C8D394 !important;
+      background-color: #C8D394 !important;
+      border-radius: 28px !important;
+      border: none !important;
+      padding: 20px !important;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16) !important;
+    }
+    .card-header-row .card-icon {
+      color: #576028 !important;
+    }
+    .card-header-row h4 {
+      color: #363D17 !important;
+      font-weight: 800 !important;
+    }
+    .setting-desc {
+      color: #576028 !important;
+      font-weight: 600 !important;
+    }
+    .theme-card-option {
+      background: #EFF2E1 !important;
+      background-color: #EFF2E1 !important;
+      border-radius: 16px !important;
+      border: 2px solid transparent !important;
+      color: #363D17 !important;
+    }
+    .theme-card-option.active {
+      border-color: #576028 !important;
+      box-shadow: 0 3px 10px rgba(87, 96, 40, 0.3) !important;
+    }
+    .theme-card-title {
+      color: #363D17 !important;
+      font-weight: 700 !important;
+    }
+    .theme-card-desc {
+      color: #576028 !important;
+    }
+    .system-info-grid .info-label {
+      color: #576028 !important;
+      font-weight: 600 !important;
+    }
+    .system-info-grid .info-val {
+      color: #363D17 !important;
+      font-weight: 800 !important;
+    }
+    .eq-pill,
+    .sleep-pill {
+      background: #EFF2E1 !important;
+      background-color: #EFF2E1 !important;
+      color: #363D17 !important;
+      border: none !important;
+      border-radius: 999px !important;
+      font-weight: 700 !important;
+    }
+    .eq-pill.active,
+    .sleep-pill.active {
+      background: #576028 !important;
+      background-color: #576028 !important;
+      color: #EFF2E1 !important;
+    }
+
+    /* Modal Bottom Sheet */
+    .m3-bottom-sheet {
+      background: #EFF2E1 !important;
+      background-color: #EFF2E1 !important;
+      border-radius: 32px 32px 0 0 !important;
+      border: none !important;
+    }
+    .sheet-title {
+      color: #363D17 !important;
+    }
+    .album-title {
+      color: #363D17 !important;
+    }
+    .album-artist,
+    .album-meta {
+      color: #576028 !important;
+    }
+  </style>
+</head>
+<body class="theme-matcha">
+
+  <!-- Material Floating Toast Notification -->
+  <div id="retro-toast" class="m3-toast hidden">
+    <span id="toast-icon" class="material-symbols-rounded">graphic_eq</span>
+    <span id="toast-message">PixelMusic Ready</span>
+  </div>
+
+  <!-- Main Mobile / Desktop Shell -->
+  <div class="pixel-shell">
+
+    <!-- Main Viewport -->
+    <main class="content-viewport">
+      
+      <!-- ================= TAB 1: PLAYER ================= -->
+      <section id="tab-player" class="tab-panel active initial-load">
+        
+        <!-- Hero Media Bento Card (Soft Sage Material You Hero Card) -->
+        <div class="hero-media-card player-card hero-card" id="hero-card">
+          
+          <!-- HD Album Art Container (Tap to Toggle Lyrics) -->
+          <div class="album-art-wrapper" id="album-art-wrapper" title="Tap to toggle live lyrics">
+            <div class="ambient-bass-glow" id="ambient-bass-glow"></div>
+            <img id="player-cover-art" class="player-cover-art" src="idle-cover.jpg" alt="Album Cover" onerror="this.src='idle-cover.jpg'">
+            <div id="art-loading" class="art-loading hidden">
+              <div class="m3-spinner"></div>
+            </div>
+            <!-- Live Time-Synced Lyrics Overlay -->
+            <div id="lyrics-container" class="lyrics-container hidden">
+              <div class="lyrics-header-row">
+                <span class="lyrics-pill-title">
+                  <span class="material-symbols-rounded" style="font-size: 14px;">lyrics</span>
+                  <span>Live Lyrics</span>
+                </span>
+                <button type="button" id="btn-close-lyrics" class="m3-icon-btn lyrics-close-btn" title="Close Lyrics">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+              </div>
+              <div id="lyrics-status" class="lyrics-status">
+                <span class="material-symbols-rounded lyrics-status-icon">music_note</span>
+                <span id="lyrics-status-text">Tap to view live lyrics</span>
+              </div>
+              <div id="lyrics-scroll-list" class="lyrics-scroll-list"></div>
+            </div>
+          </div>
+
+          <!-- Track Metadata -->
+          <div class="track-info-section">
+            <div class="title-marquee-container">
+              <h2 id="track-title" class="track-title">Ready to Play</h2>
+            </div>
+            <p id="track-artist" class="track-artist">Select a song to start listening</p>
+          </div>
+
+          <!-- Modern Material 3 Split-Track Pill Scrubber -->
+          <div class="scrubber-section">
+            <div class="scrubber-container" id="scrubber-container">
+              <div class="scrubber-split-track" id="scrubber-track">
+                <div class="scrubber-fill-olive" id="scrubber-fill" style="width: 0%;"></div>
+                <div class="scrubber-handle-line" id="scrubber-thumb"></div>
+                <div class="scrubber-empty-cream" id="scrubber-empty"></div>
+              </div>
+              <input type="range" id="seek-slider" min="0" max="100" value="0" step="0.1" class="seek-slider" aria-label="Seek track">
+            </div>
+            <div class="time-row">
+              <span id="time-current" class="time-label">00:00</span>
+              <div id="lossless-badge" class="lossless-badge" role="button" tabindex="0" title="Lossless Audio: 24-bit/48 kHz ALAC Quality">
+                <svg class="lossless-icon-svg" viewBox="0 0 15 9" width="14" height="9" aria-hidden="true">
+                  <path fill="#141A02" d="M8.184,0.35C9.944,0.35 10.703,3.296 11.338,5.238C11.673,3.842 11.497,3.542 11.857,3.542C11.99,3.542 12.126,3.633 12.126,3.798C12.126,3.809 12.123,3.839 12.117,3.883L12.091,4.058C12.02,4.522 11.845,5.494 11.654,6.144C13.198,10.191 14.345,4.861 14.474,3.772C14.493,3.615 14.612,3.542 14.731,3.542C14.891,3.542 15.022,3.662 14.997,3.843C14.72,5.605 14.295,8.35 12.547,8.35C11.582,8.35 11.04,7.595 10.611,6.73C9.54,4.626 9.047,1.093 7.997,1.093C7.66,1.093 7.411,1.444 7.394,1.444C7.362,1.444 7.337,1.301 7.023,0.909C7.322,0.567 7.734,0.35 8.184,0.35ZM2.458,0.354C5.211,0.354 5.456,7.618 7.014,7.618C7.197,7.618 7.394,7.507 7.61,7.256C7.729,7.458 7.851,7.638 7.978,7.796C7.667,8.151 7.28,8.35 6.795,8.35C5.054,8.349 4.306,5.434 3.663,3.466C3.511,4.097 3.432,4.669 3.402,4.925C3.382,5.088 3.263,5.163 3.143,5.163C3.009,5.163 2.874,5.071 2.874,4.908L2.874,4.908L2.877,4.87C2.966,4.223 3.146,3.243 3.347,2.56C3.079,1.858 2.745,1.091 2.252,1.091C1.257,1.091 0.687,3.591 0.527,4.925C0.508,5.088 0.388,5.163 0.268,5.163C0.135,5.163 0,5.071 0,4.908C0,4.896 0.001,4.883 0.002,4.87C0.283,2.836 0.808,0.354 2.458,0.354ZM5.315,0.35C5.809,0.35 6.339,0.608 6.797,1.211C6.822,1.241 7.078,1.639 7.159,1.777C8.277,3.802 8.818,7.627 9.881,7.627C10.065,7.627 10.264,7.513 10.484,7.256C10.604,7.458 10.726,7.638 10.852,7.796C10.542,8.15 10.155,8.35 9.67,8.35C6.933,8.349 6.636,1.09 5.128,1.09C4.788,1.09 4.536,1.444 4.519,1.444C4.487,1.444 4.462,1.301 4.148,0.909C4.455,0.558 4.87,0.35 5.315,0.35Z"/>
+                </svg>
+                <span class="lossless-text">Lossless</span>
+              </div>
+              <span id="time-duration" class="time-label">00:00</span>
+            </div>
+          </div>
+
+          <!-- Morphing Pill Transport Controls -->
+          <div class="transport-controls-row">
+            <button id="btn-shuffle" class="m3-icon-btn transport-sub-btn" title="Shuffle">
+              <span class="material-symbols-rounded">shuffle</span>
+            </button>
+            <button id="btn-prev" class="m3-pill-btn transport-nav-btn" title="Previous Track">
+              <span class="material-symbols-rounded">skip_previous</span>
+            </button>
+            <button id="btn-play" class="m3-hero-play-btn" title="Play or Pause">
+              <span id="play-icon" class="material-symbols-rounded">play_arrow</span>
+            </button>
+            <button id="btn-next" class="m3-pill-btn transport-nav-btn" title="Next Track">
+              <span class="material-symbols-rounded">skip_next</span>
+            </button>
+            <button id="btn-repeat" class="m3-icon-btn transport-sub-btn" title="Repeat">
+              <span class="material-symbols-rounded">repeat</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Bento Widget Action Row: Save to Vault & Add to Playlist -->
+        <div class="bento-actions-grid">
+          <button id="btn-download-track" class="bento-widget-btn" title="Save track to offline vault">
+            <span class="material-symbols-rounded btn-icon-m3">download_done</span>
+            <span id="download-btn-label" class="btn-text">SAVE</span>
+          </button>
+          <button id="btn-player-add-playlist" class="bento-widget-btn" title="Add track to custom playlist">
+            <span class="material-symbols-rounded btn-icon-m3">playlist_add</span>
+            <span class="btn-text">PLAYLIST</span>
+          </button>
+        </div>
+
+        <!-- Google Pixel Material 3 Split-Track Volume Pill -->
+        <div class="pixel-vol-pill" id="pixel-vol-pill">
+          <button type="button" class="pixel-vol-mute btn-player-favorite" id="vol-mute-btn" title="Add to Favorites">
+            <span class="material-symbols-rounded" id="vol-mode-icon">favorite_border</span>
+          </button>
+
+          <div class="pixel-vol-track" id="vol-track-area">
+            <div class="pixel-vol-fill" id="vol-fill-bar" style="width: 75%;"></div>
+            <div class="pixel-vol-divider" id="vol-divider"></div>
+            <div class="pixel-vol-empty" id="vol-empty-bar"></div>
+          </div>
+
+          <button type="button" class="pixel-vol-caption" id="vol-lyrics-btn" title="Toggle Lyrics">
+            <span class="material-symbols-rounded">closed_caption</span>
+          </button>
+
+          <button type="button" class="pixel-vol-eq" id="vol-eq-btn" title="Audio Settings">
+            <span class="material-symbols-rounded">tune</span>
+          </button>
+        </div>
+
+      </section>
+
+      <!-- ================= TAB 2: SEARCH ================= -->
+      <section id="tab-search" class="tab-panel">
+        
+        <div class="search-container">
+          
+          <!-- Segmented Filter Buttons: Songs vs Albums -->
+          <div class="m3-segmented-control">
+            <button id="search-mode-songs" class="m3-segment-btn active">
+              <span class="material-symbols-rounded">music_note</span>
+              <span>Songs</span>
+            </button>
+            <button id="search-mode-albums" class="m3-segment-btn">
+              <span class="material-symbols-rounded">album</span>
+              <span>Albums</span>
+            </button>
+          </div>
+
+          <!-- Material 3 Pill Search Bar with Clear Button -->
+          <div class="m3-search-bar">
+            <span class="material-symbols-rounded search-icon">search</span>
+            <input type="text" id="search-input" class="m3-search-input" placeholder="Search songs, artists, or albums..." value="">
+            <button id="btn-search-clear" class="m3-search-clear-btn hidden" title="Clear search text">
+              <span class="material-symbols-rounded">close</span>
+            </button>
+            <button id="btn-search" class="m3-search-submit-btn" title="Search">
+              <span class="material-symbols-rounded">arrow_forward</span>
+            </button>
+          </div>
+
+          <!-- YouTube/Soundcloud Playlist URL Importer -->
+          <div class="m3-import-bar">
+            <span class="material-symbols-rounded import-icon">link</span>
+            <input type="text" id="playlist-input" class="m3-import-input" placeholder="Or paste YouTube playlist URL...">
+            <button id="btn-import-playlist" class="m3-pill-action-btn">
+              <span>Import</span>
+            </button>
+          </div>
+
+          <!-- Apple Music-Style Visual Browse Tiles -->
+          <div class="browse-tiles-section">
+            <div class="browse-tiles-header">
+              <h3 class="browse-title">Browse Categories</h3>
+              <span class="browse-sub">Curated soundscapes</span>
+            </div>
+            <div class="browse-tiles-grid">
+              <div class="browse-tile" data-query="Global Top Hits 2026 official audio">
+                <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=80" class="tile-bg" alt="Top Hits" onerror="this.style.opacity='0'">
+                <div class="tile-gradient"></div>
+                <div class="tile-content">
+                  <span class="tile-badge">CHARTS</span>
+                  <span class="tile-title">Top Hits</span>
+                </div>
+              </div>
+
+              <div class="browse-tile" data-query="Bollywood Acoustic & Indie Hits Arijit A.R. Rahman">
+                <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=80" class="tile-bg" alt="Bollywood & Indie" onerror="this.style.opacity='0'">
+                <div class="tile-gradient"></div>
+                <div class="tile-content">
+                  <span class="tile-badge">DESI & ACOUSTIC</span>
+                  <span class="tile-title">Bollywood & Indie</span>
+                </div>
+              </div>
+
+              <div class="browse-tile" data-query="The Weeknd SZA Frank Ocean R&B">
+                <img src="https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=500&auto=format&fit=crop&q=80" class="tile-bg" alt="Late Night R&B" onerror="this.style.opacity='0'">
+                <div class="tile-gradient"></div>
+                <div class="tile-content">
+                  <span class="tile-badge">MOODY VIBES</span>
+                  <span class="tile-title">Late Night R&B</span>
+                </div>
+              </div>
+
+              <div class="browse-tile" data-query="Dua Lipa Billie Eilish Pop Hits">
+                <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=600&q=80" class="tile-bg" alt="Pop Essentials" onerror="this.style.opacity='0'">
+                <div class="tile-gradient"></div>
+                <div class="tile-content">
+                  <span class="tile-badge">GLOBAL POP</span>
+                  <span class="tile-title">Pop Essentials</span>
+                </div>
+              </div>
+
+              <div class="browse-tile" data-query="Travis Scott Kendrick Lamar Drake">
+                <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=500&auto=format&fit=crop&q=80" class="tile-bg" alt="Hip-Hop & Rap" onerror="this.style.opacity='0'">
+                <div class="tile-gradient"></div>
+                <div class="tile-content">
+                  <span class="tile-badge">FLOW & BASS</span>
+                  <span class="tile-title">Hip-Hop & Rap</span>
+                </div>
+              </div>
+
+              <div class="browse-tile" data-query="Arctic Monkeys Tame Impala Cigarettes After Sex">
+                <img src="https://images.unsplash.com/photo-1464375117522-1311d6a5b81f?w=500&auto=format&fit=crop&q=80" class="tile-bg" alt="Alt & Indie Rock" onerror="this.style.opacity='0'">
+                <div class="tile-gradient"></div>
+                <div class="tile-content">
+                  <span class="tile-badge">ALTERNATIVE</span>
+                  <span class="tile-title">Alt & Indie Rock</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Search Loading Spinner -->
+        <div id="search-spinner" class="search-spinner hidden">
+          <div class="m3-spinner"></div>
+          <p class="spinner-text">Searching music catalog...</p>
+        </div>
+
+        <!-- Search Results Stream -->
+        <div id="search-results" class="results-stream">
+          <div class="empty-state">
+            <span class="material-symbols-rounded empty-icon">saved_search</span>
+            <h3>Discover Music</h3>
+            <p>Type a song, artist, or tap one of the chips above</p>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= TAB 3: LIBRARY ================= -->
+      <section id="tab-library" class="tab-panel">
+        
+        <!-- Library Segmented Control -->
+        <div class="library-header-section">
+          <div class="m3-segmented-control">
+            <button id="lib-nav-offline" class="m3-segment-btn active">
+              <span class="material-symbols-rounded">download_done</span>
+              <span>Offline Vault</span>
+            </button>
+            <button id="lib-nav-playlists" class="m3-segment-btn">
+              <span class="material-symbols-rounded">playlist_play</span>
+              <span>Playlists</span>
+            </button>
+            <button id="lib-nav-albums" class="m3-segment-btn">
+              <span class="material-symbols-rounded">album</span>
+              <span>Albums</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SUB-VIEW 1: OFFLINE VAULT -->
+        <div id="lib-view-offline" class="lib-sub-view">
+          <div class="vault-overview-card">
+            <div class="vault-meta">
+              <div class="vault-title-row">
+                <span class="material-symbols-rounded">cloud_done</span>
+                <span class="vault-heading">In-App Vault</span>
+              </div>
+              <span id="vault-storage-info" class="vault-subtext">0 Songs • 0 MB</span>
+            </div>
+            <button id="btn-vault-play-all" class="m3-accent-pill-btn">
+              <span class="material-symbols-rounded">play_arrow</span>
+              <span>Play All</span>
+            </button>
+          </div>
+          <div id="vault-list" class="results-stream">
+            <div class="empty-state">
+              <span class="material-symbols-rounded empty-icon">downloading</span>
+              <h3>No Offline Tracks</h3>
+              <p>Download any song to store it locally for instant in-app playback with zero buffering!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB-VIEW 2: PLAYLISTS -->
+        <div id="lib-view-playlists" class="lib-sub-view hidden">
+          <div class="section-action-header">
+            <h3>My Playlists</h3>
+            <button id="btn-create-playlist" class="m3-accent-pill-btn">
+              <span class="material-symbols-rounded">add</span>
+              <span>New Playlist</span>
+            </button>
+          </div>
+          <div id="playlists-grid" class="playlists-grid">
+            <!-- Playlists rendered here -->
+          </div>
+        </div>
+
+        <!-- SUB-VIEW 3: ALBUMS -->
+        <div id="lib-view-albums" class="lib-sub-view hidden">
+          <div class="section-action-header">
+            <h3>Explore Albums</h3>
+            <span class="header-sub">Search or browse featured albums</span>
+          </div>
+          <div id="lib-albums-grid" class="albums-grid">
+            <!-- Albums rendered here -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= TAB 4: QUEUE ================= -->
+      <section id="tab-queue" class="tab-panel">
+        <div class="section-action-header queue-header">
+          <div>
+            <h3 id="queue-count">Up Next</h3>
+            <span class="header-sub">Active playback list</span>
+          </div>
+          <button id="btn-clear-queue" class="m3-tonal-pill-btn">
+            <span class="material-symbols-rounded">delete_sweep</span>
+            <span>Clear</span>
+          </button>
+        </div>
+
+        <div id="queue-list" class="results-stream">
+          <div class="empty-state">
+            <span class="material-symbols-rounded empty-icon">queue_music</span>
+            <h3>Queue is Empty</h3>
+            <p>Search for songs or albums and add tracks to your listening queue!</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 5: CONFIG ================= -->
+      <section id="tab-settings" data-view="config" class="tab-panel">
+        <div class="settings-scroll-container">
+          
+          <!-- Autonomous Standalone Engine Card -->
+          <div class="m3-settings-card">
+            <div class="card-header-row">
+              <span class="material-symbols-rounded card-icon" style="color: #64B5F6;">bolt</span>
+              <h4>Autonomous Engine Mode</h4>
+            </div>
+
+            <div class="standalone-badge-box" style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08);">
+              <span class="material-symbols-rounded" style="color: #4CAF50; font-size: 24px;">verified</span>
+              <div>
+                <div style="font-weight: 600; font-size: 0.9rem; color: #fff;">ArchiveTune Standalone Engine</div>
+                <div style="font-size: 0.75rem; opacity: 0.75;">Runs 100% independently on device. No PC server or Wi-Fi pairing required.</div>
+              </div>
+            </div>
+
+            <div class="setting-field">
+              <label for="setting-backend-url">Custom Remote Proxy (Optional):</label>
+              <div class="input-with-button">
+                <input type="text" id="setting-backend-url" class="m3-text-input" placeholder="Standalone (No server needed)">
+                <button id="btn-test-backend" class="m3-accent-pill-btn">Test</button>
+              </div>
+              <p class="field-hint">Leave blank for the on-device engine. Works anywhere on mobile data or any Wi-Fi.</p>
+            </div>
+
+            <div id="backend-test-result" class="test-result-box hidden">
+              <span id="backend-test-status">Testing connection...</span>
+            </div>
+          </div>
+
+          <!-- Sound & Audio FX Card -->
+          <div class="m3-settings-card">
+            <div class="card-header-row">
+              <span class="material-symbols-rounded card-icon">tune</span>
+              <h4>Audio Feedback</h4>
+            </div>
+
+            <div class="setting-switch-row">
+              <div class="switch-info">
+                <span class="switch-title">Subtle Synth Haptics & SFX</span>
+                <span class="switch-sub">Play soft tonal feedback on button actions</span>
+              </div>
+              <label class="m3-switch">
+                <input type="checkbox" id="setting-sfx" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Sound Equalizer & Sleep Timer Card -->
+          <div class="m3-settings-card">
+            <div class="card-header-row">
+              <span class="material-symbols-rounded card-icon">graphic_eq</span>
+              <h4>Audio Equalizer & Sleep Timer</h4>
+            </div>
+
+            <!-- Audio Presets -->
+            <div class="setting-field">
+              <label class="field-label-m3">Audio Equalizer Preset:</label>
+              <div class="preset-pills-row" id="eq-presets-container">
+                <button class="eq-pill active" data-preset="flat">Flat</button>
+                <button class="eq-pill" data-preset="bass_boost">Bass Boost</button>
+                <button class="eq-pill" data-preset="acoustic">Acoustic</button>
+                <button class="eq-pill" data-preset="lofi">Lo-Fi Warmth</button>
+                <button class="eq-pill" data-preset="crisp">Vocal Crisp</button>
+              </div>
+            </div>
+
+            <!-- Sleep Timer -->
+            <div class="setting-field" style="margin-top: 14px;">
+              <div class="field-header-with-badge">
+                <label class="field-label-m3">Sleep Timer:</label>
+                <span id="sleep-timer-badge" class="timer-countdown-badge hidden">Off</span>
+              </div>
+              <div class="preset-pills-row" id="sleep-timer-pills">
+                <button class="sleep-pill active" data-time="0">Off</button>
+                <button class="sleep-pill" data-time="5">5 min</button>
+                <button class="sleep-pill" data-time="15">15 min</button>
+                <button class="sleep-pill" data-time="30">30 min</button>
+                <button class="sleep-pill" data-time="60">60 min</button>
+                <button class="sleep-pill" data-time="end">End of Song</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- System Info Card -->
+          <div class="m3-settings-card">
+            <div class="card-header-row">
+              <span class="material-symbols-rounded card-icon">info</span>
+              <h4>System Information</h4>
+            </div>
+            <div class="system-info-grid">
+              <span class="info-label">Interface:</span><span class="info-val">Material Design 3</span>
+              <span class="info-label">Platform:</span><span id="cap-status" class="info-val">Web Mode</span>
+              <span class="info-label">Storage:</span><span class="info-val">IndexedDB Offline Vault</span>
+              <span class="info-label">Version:</span><span class="info-val">2.0.0 Material You</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Floating Mini-Player Pill (Active on non-player tabs) -->
+    <div id="floating-mini-player" class="floating-mini-player hidden" title="Tap to expand player">
+      <img id="mini-thumb" class="mini-thumb" src="idle-cover.jpg" alt="Mini Cover" onerror="this.src='idle-cover.jpg'">
+      <div class="mini-info">
+        <div id="mini-title" class="mini-title">Ready to Play</div>
+        <div id="mini-artist" class="mini-artist">Select a song</div>
+      </div>
+      <div class="mini-controls">
+        <button id="mini-btn-play" type="button" class="mini-action-btn" title="Play/Pause">
+          <span id="mini-play-icon" class="material-symbols-rounded">play_arrow</span>
+        </button>
+        <button id="mini-btn-next" type="button" class="mini-action-btn" title="Next Track">
+          <span class="material-symbols-rounded">skip_next</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Material 3 Floating Bottom Navigation Bar (Stadium Pill with Enclosed Icon + Label) -->
+    <nav class="m3-bottom-nav">
+      <!-- Apple Music-Style Morphing Active Spring Pill Indicator -->
+      <div id="nav-indicator-pill" class="m3-nav-indicator"></div>
+
+      <button class="m3-nav-item active" data-tab="tab-player">
+        <div class="m3-nav-pill">
+          <span class="material-symbols-rounded">graphic_eq</span>
+          <span class="m3-nav-label">Player</span>
+        </div>
+      </button>
+
+      <button class="m3-nav-item" data-tab="tab-search">
+        <div class="m3-nav-pill">
+          <span class="material-symbols-rounded">search</span>
+          <span class="m3-nav-label">Search</span>
+        </div>
+      </button>
+
+      <button class="m3-nav-item" data-tab="tab-library">
+        <div class="m3-nav-pill">
+          <span class="material-symbols-rounded">library_music</span>
+          <span class="m3-nav-label">Library</span>
+        </div>
+      </button>
+
+      <button class="m3-nav-item" data-tab="tab-queue">
+        <div class="m3-nav-pill">
+          <span class="material-symbols-rounded">queue_music</span>
+          <span class="m3-nav-label">Queue</span>
+        </div>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- ================= MODAL: ALBUM ARCHIVE ================= -->
+  <div id="modal-album" class="m3-modal-backdrop hidden">
+    <div class="m3-bottom-sheet">
+      <div class="sheet-drag-handle"></div>
+      <div class="sheet-header">
+        <h3 class="sheet-title">Album Details</h3>
+        <button id="btn-close-album-modal" class="m3-icon-btn sheet-close-btn" title="Close">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+      <div class="sheet-body">
+        <div class="album-hero-banner">
+          <img id="modal-album-art" class="album-hero-art" src="icon.jpg" alt="Album Cover">
+          <div class="album-hero-text">
+            <h4 id="modal-album-title" class="album-title">Album Title</h4>
+            <p id="modal-album-artist" class="album-artist">Artist</p>
+            <p id="modal-album-meta" class="album-meta">Year • 0 Tracks</p>
+          </div>
+        </div>
+        <div class="sheet-action-row">
+          <button id="btn-modal-album-play" class="m3-accent-pill-btn flex-1">
+            <span class="material-symbols-rounded">play_arrow</span>
+            <span>Play Album</span>
+          </button>
+          <button id="btn-modal-album-queue" class="m3-tonal-pill-btn flex-1">
+            <span class="material-symbols-rounded">add_to_queue</span>
+            <span>Queue All</span>
+          </button>
+        </div>
+        <div id="modal-album-tracks" class="sheet-tracks-stream">
+          <!-- Album tracks rendered here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: PLAYLIST DETAIL ================= -->
+  <div id="modal-playlist" class="m3-modal-backdrop hidden">
+    <div class="m3-bottom-sheet">
+      <div class="sheet-drag-handle"></div>
+      <div class="sheet-header">
+        <h3 id="modal-playlist-name" class="sheet-title">Playlist</h3>
+        <button id="btn-close-playlist-modal" class="m3-icon-btn sheet-close-btn" title="Close">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+      <div class="sheet-body">
+        <div class="sheet-action-row">
+          <button id="btn-modal-playlist-play" class="m3-accent-pill-btn flex-1">
+            <span class="material-symbols-rounded">play_arrow</span>
+            <span>Play All</span>
+          </button>
+          <button id="btn-modal-playlist-shuffle" class="m3-tonal-pill-btn flex-1">
+            <span class="material-symbols-rounded">shuffle</span>
+            <span>Shuffle</span>
+          </button>
+          <button id="btn-modal-playlist-delete" class="m3-danger-pill-btn">
+            <span class="material-symbols-rounded">delete</span>
+          </button>
+        </div>
+        <div id="modal-playlist-tracks" class="sheet-tracks-stream">
+          <!-- Playlist tracks rendered here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: ADD TO PLAYLIST PICKER ================= -->
+  <div id="modal-playlist-picker" class="m3-modal-backdrop hidden">
+    <div class="m3-bottom-sheet">
+      <div class="sheet-drag-handle"></div>
+      <div class="sheet-header">
+        <h3 class="sheet-title">Add to Playlist</h3>
+        <button id="btn-close-picker-modal" class="m3-icon-btn sheet-close-btn" title="Close">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+      <div class="sheet-body">
+        <p id="picker-track-label" class="picker-track-info">Select target playlist</p>
+        <div class="picker-create-row">
+          <button id="btn-picker-create-new" class="m3-accent-pill-btn w-full">
+            <span class="material-symbols-rounded">add</span>
+            <span>Create New Playlist</span>
+          </button>
+        </div>
+        <div id="picker-playlists-list" class="picker-list">
+          <!-- Playlists rendered here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HTML5 Audio Element with Instant Preloading & Background Playback Attributes -->
+  <audio id="audio-player" preload="auto" playsinline webkit-playsinline crossorigin="anonymous"></audio>
+
+  <!-- Offscreen Canvas for Dynamic Monet Color Extraction -->
+  <canvas id="monet-canvas" width="32" height="32" style="display: none;"></canvas>
+
+  <!-- Main Application Script -->
+  <script src="app.js"></script>
+</body>
+</html>
