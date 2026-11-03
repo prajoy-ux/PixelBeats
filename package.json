@@ -16,7 +16,7 @@
     "streaming"
   ],
   "author": "PixelBeats Agent",
-  "license": "MIT",
+  "license": "GPL-3.0",
   "dependencies": {
     "@capacitor/android": "^6.0.0",
     "@capacitor/cli": "^6.0.0",
