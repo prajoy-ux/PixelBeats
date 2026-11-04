@@ -5591,7 +5591,7 @@ function syncCreatorAvatarFromGitHub() {
 }
 
 // ================= IN-APP SELF UPDATER =================
-const APP_VERSION = '2.0.1';
+const APP_VERSION = '2.0.2';
 const GITHUB_REPO = 'prajoy-ux/PixelBeats';
 let pendingUpdateApkUrl = null;
 let isUpdating = false;
@@ -5665,7 +5665,14 @@ async function checkForAppUpdates(isManual = false) {
       if (elements.btnInstallUpdate) elements.btnInstallUpdate.disabled = false;
       if (elements.btnInstallText) elements.btnInstallText.textContent = 'Download & Install';
 
-      if (elements.modalUpdate) elements.modalUpdate.classList.remove('hidden');
+      // Only pop up the modal dialog if the user explicitly clicked "Check for Updates" in Settings!
+      if (isManual && elements.modalUpdate) {
+        elements.modalUpdate.classList.remove('hidden');
+      } else {
+        if (elements.btnCheckUpdatesText) {
+          elements.btnCheckUpdatesText.textContent = `Update ${remoteTag} Available`;
+        }
+      }
     } else {
       if (isManual) {
         showToast(`PixelBeats is up to date (${APP_VERSION})`, 'check_circle', 2500);
@@ -5794,10 +5801,10 @@ async function initApp() {
     } catch (e) {}
   })();
 
-  // 12. Automatic In-App Self-Update Check on Startup
+  // 12. Silent Background Check (no intrusive popups)
   setTimeout(() => {
     checkForAppUpdates(false);
-  }, 2200);
+  }, 5000);
 }
 
 // Window resize & orientation handlers to keep spring indicator snapped

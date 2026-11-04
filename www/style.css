@@ -1,3 +1,4 @@
+@import url('fonts.css');
 /* ============================================================
    PIXELMUSIC // GOOGLE PIXEL "MATERIAL YOU" (MATERIAL DESIGN 3)
    Authentic Android Monet Dynamic Theming & Bento Widget UI
@@ -170,9 +171,9 @@ html, body {
 
 /* Material Symbols Standard Utility */
 .material-symbols-rounded {
-  font-family: 'Material Symbols Rounded', sans-serif;
-  font-weight: 500;
-  font-style: normal;
+  font-family: 'Material Symbols Rounded' !important;
+  font-weight: normal !important;
+  font-style: normal !important;
   font-size: 24px;
   line-height: 1;
   letter-spacing: normal;
@@ -181,9 +182,11 @@ html, body {
   white-space: nowrap;
   word-wrap: normal;
   direction: ltr;
-  -webkit-font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga' 1 !important;
+  -moz-font-feature-settings: 'liga' 1 !important;
+  font-feature-settings: 'liga' 1 !important;
   -webkit-font-smoothing: antialiased;
-  font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+  text-rendering: optimizeLegibility;
 }
 
 /* ================= MAIN GOOGLE PIXEL SHELL ================= */
