@@ -20,10 +20,10 @@
   </p>
 
   <div align="center">
-    <img src="https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white&labelColor=1e1e2e" alt="Platform" />
-    <img src="https://img.shields.io/badge/UI-Material%20Design%203-576028?style=for-the-badge&logo=materialdesign&logoColor=white&labelColor=1e1e2e" alt="Design" />
-    <img src="https://img.shields.io/badge/Framework-Capacitor%206-119EFF?style=for-the-badge&logo=capacitor&logoColor=white&labelColor=1e1e2e" alt="Capacitor" />
-    <img src="https://img.shields.io/badge/Backend-Python%20FastAPI-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=1e1e2e" alt="Python" />
+    <img src="https://img.shields.io/badge/Language-Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white&labelColor=1e1e2e" alt="Kotlin" />
+    <img src="https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white&labelColor=1e1e2e" alt="Compose" />
+    <img src="https://img.shields.io/badge/Design-Material%20You%20%28M3%29-576028?style=for-the-badge&logo=materialdesign&logoColor=white&labelColor=1e1e2e" alt="Design" />
+    <img src="https://img.shields.io/badge/Audio-AndroidX%20Media3-009688?style=for-the-badge&logo=android&logoColor=white&labelColor=1e1e2e" alt="Media3" />
     <img src="https://img.shields.io/github/license/prajoy-ux/PixelBeats?style=for-the-badge&color=576028&labelColor=1e1e2e" alt="License" />
   </div>
 
