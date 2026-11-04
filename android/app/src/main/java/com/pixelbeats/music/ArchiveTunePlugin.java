@@ -1743,8 +1743,13 @@ public class ArchiveTunePlugin extends Plugin {
                     Intent permIntent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + ctx.getPackageName()));
                     permIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     ctx.startActivity(permIntent);
+                    return false;
                 }
             }
+
+            // Hint to package installer that this is a recognized self-update
+            installIntent.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true);
+            installIntent.putExtra(Intent.EXTRA_INSTALLER_PACKAGE_NAME, ctx.getPackageName());
 
             ctx.startActivity(installIntent);
             return true;

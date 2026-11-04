@@ -24,6 +24,8 @@ android {
             keyPassword 'pixelbeats2026'
             v1SigningEnabled true
             v2SigningEnabled true
+            enableV3Signing = true
+            enableV4Signing = true
         }
     }
     buildTypes {
