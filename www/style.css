@@ -172,7 +172,7 @@ html, body {
 /* Material Symbols Standard Utility */
 .material-symbols-rounded {
   font-family: 'Material Symbols Rounded' !important;
-  font-weight: normal !important;
+  font-weight: 500 !important;
   font-style: normal !important;
   font-size: 24px;
   line-height: 1;
@@ -187,6 +187,7 @@ html, body {
   font-feature-settings: 'liga' 1 !important;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24 !important;
 }
 
 /* ================= MAIN GOOGLE PIXEL SHELL ================= */
