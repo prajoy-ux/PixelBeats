@@ -412,6 +412,13 @@ const elements = {
   toastIcon: document.getElementById('toast-icon'),
   toastMessage: document.getElementById('toast-message'),
 
+  // Accounts System
+  modalAccounts: document.getElementById('modal-accounts'),
+  btnCloseAccountsModal: document.getElementById('btn-close-accounts-modal'),
+  btnOpenAccountManager: document.getElementById('btn-open-account-manager'),
+  btnLibAccount: document.getElementById('btn-lib-account'),
+  accountFileInput: document.getElementById('account-file-input'),
+
   // Modals
   modalAlbum: document.getElementById('modal-album'),
   btnCloseAlbumModal: document.getElementById('btn-close-album-modal'),
@@ -2654,6 +2661,16 @@ const PlaylistsManager = {
 
   savePlaylists(lists) {
     localStorage.setItem('pixelbeats_playlists', JSON.stringify(lists));
+    try {
+      if (typeof AccountManager !== 'undefined' && AccountManager.syncCurrentToActiveAccount) {
+        AccountManager.syncCurrentToActiveAccount(false);
+      }
+    } catch (e) {}
+    try {
+      if (typeof CloudDbManager !== 'undefined' && CloudDbManager.isLoggedIn()) {
+        CloudDbManager.pushLocalToCloud(false);
+      }
+    } catch (e) {}
   },
 
   createPlaylist(name) {
@@ -2704,6 +2721,757 @@ const PlaylistsManager = {
     return true;
   }
 };
+
+// Helper: Download a clean JSON file locally (web & android compatible)
+function downloadJsonFile(filename, dataObj) {
+  try {
+    const jsonStr = JSON.stringify(dataObj, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (err) {
+    console.error('[Download] Failed to trigger download:', err);
+  }
+}
+
+// ================= USER ACCOUNTS & PROFILE MANAGER =================
+const AccountManager = {
+  STORAGE_ACCOUNTS_KEY: 'pixelbeats_accounts',
+  STORAGE_ACTIVE_KEY: 'pixelbeats_active_account_id',
+
+  getAccounts() {
+    try {
+      const raw = localStorage.getItem(this.STORAGE_ACCOUNTS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error('[AccountManager] Read error:', e);
+    }
+    // Default initial profile
+    const initialAccount = {
+      id: 'acc_guest',
+      name: 'Default Profile',
+      username: 'pixelbeats',
+      avatarIcon: 'headphones',
+      pin: '',
+      createdAt: Date.now(),
+      lastSyncedAt: Date.now(),
+      data: {
+        playlists: PlaylistsManager.getPlaylists(),
+        eqCustomBands: Array.isArray(STATE.eqCustomBands) ? [...STATE.eqCustomBands] : [0, 0, 0, 0, 0],
+        eqPreset: STATE.eqPreset || 'flat',
+        theme: STATE.currentTheme || 'matcha',
+        sfxEnabled: STATE.sfxEnabled !== false,
+        volume: STATE.currentVolume || 0.75,
+        isAutoCycle: STATE.isAutoCycle !== false
+      }
+    };
+    this.saveAccounts([initialAccount]);
+    localStorage.setItem(this.STORAGE_ACTIVE_KEY, 'acc_guest');
+    return [initialAccount];
+  },
+
+  saveAccounts(accounts) {
+    try {
+      localStorage.setItem(this.STORAGE_ACCOUNTS_KEY, JSON.stringify(accounts));
+    } catch (e) {
+      console.error('[AccountManager] Save accounts error:', e);
+    }
+  },
+
+  getActiveAccountId() {
+    return localStorage.getItem(this.STORAGE_ACTIVE_KEY) || 'acc_guest';
+  },
+
+  getActiveAccount() {
+    const accounts = this.getAccounts();
+    const activeId = this.getActiveAccountId();
+    let account = accounts.find(a => a.id === activeId);
+    if (!account) {
+      account = accounts[0];
+      if (account) localStorage.setItem(this.STORAGE_ACTIVE_KEY, account.id);
+    }
+    return account;
+  },
+
+  createAccount({ name, username, avatarIcon, pin, migrateCurrent }) {
+    const trimmedName = (name || '').trim();
+    if (!trimmedName) throw new Error('Please enter a valid display name.');
+
+    let cleanUsername = (username || '').trim().replace(/^@+/, '');
+    if (!cleanUsername) cleanUsername = trimmedName.toLowerCase().replace(/[^a-z0-9_]/g, '');
+    if (!cleanUsername) cleanUsername = 'user_' + Math.floor(Math.random() * 1000);
+
+    const accounts = this.getAccounts();
+    const newId = 'acc_' + Date.now();
+
+    let accountData;
+    if (migrateCurrent) {
+      accountData = {
+        playlists: PlaylistsManager.getPlaylists(),
+        eqCustomBands: Array.isArray(STATE.eqCustomBands) ? [...STATE.eqCustomBands] : [0, 0, 0, 0, 0],
+        eqPreset: STATE.eqPreset || 'flat',
+        theme: STATE.currentTheme || 'matcha',
+        sfxEnabled: STATE.sfxEnabled !== false,
+        volume: STATE.currentVolume || 0.75,
+        isAutoCycle: STATE.isAutoCycle !== false
+      };
+    } else {
+      accountData = {
+        playlists: [
+          { id: 'favorites', name: 'Favorites', tracks: [], createdAt: Date.now() }
+        ],
+        eqCustomBands: [0, 0, 0, 0, 0],
+        eqPreset: 'flat',
+        theme: 'matcha',
+        sfxEnabled: true,
+        volume: 0.75,
+        isAutoCycle: true
+      };
+    }
+
+    const newAccount = {
+      id: newId,
+      name: trimmedName,
+      username: cleanUsername,
+      avatarIcon: avatarIcon || 'headphones',
+      pin: pin ? pin.trim() : '',
+      createdAt: Date.now(),
+      lastSyncedAt: Date.now(),
+      data: accountData
+    };
+
+    accounts.push(newAccount);
+    this.saveAccounts(accounts);
+
+    // Switch to new account
+    this.switchAccount(newId, false);
+    return newAccount;
+  },
+
+  switchAccount(targetId, verifyPin = true) {
+    const accounts = this.getAccounts();
+    const target = accounts.find(a => a.id === targetId);
+    if (!target) return false;
+
+    // PIN check
+    if (verifyPin && target.pin && target.pin.trim() !== '') {
+      const entered = prompt(`Enter 4-digit PIN for ${target.name}:`);
+      if (entered === null) return false;
+      if (entered.trim() !== target.pin.trim()) {
+        alert('Incorrect PIN. Profile switch cancelled.');
+        return false;
+      }
+    }
+
+    // 1. Save current active account state before switching
+    this.syncCurrentToActiveAccount(false);
+
+    // 2. Set new active account ID
+    localStorage.setItem(this.STORAGE_ACTIVE_KEY, target.id);
+
+    // 3. Load target account data into app
+    const data = target.data || {};
+    if (Array.isArray(data.playlists)) {
+      localStorage.setItem('pixelbeats_playlists', JSON.stringify(data.playlists));
+      if (typeof renderPlaylistsGrid === 'function') renderPlaylistsGrid();
+      if (typeof updateFavoriteButtonState === 'function') updateFavoriteButtonState();
+      if (typeof updateVaultStorageEstimate === 'function') updateVaultStorageEstimate();
+    }
+
+    if (Array.isArray(data.eqCustomBands)) {
+      STATE.eqCustomBands = [...data.eqCustomBands];
+      localStorage.setItem('pixelbeats_eq_custom_bands', JSON.stringify(STATE.eqCustomBands));
+      for (let i = 0; i < 5; i++) {
+        if (typeof applyEqualizerBand === 'function') {
+          applyEqualizerBand(i, STATE.eqCustomBands[i] || 0, true);
+        }
+      }
+    }
+
+    if (data.theme && typeof applyTheme === 'function') {
+      applyTheme(data.theme, true);
+    }
+
+    if (typeof data.sfxEnabled === 'boolean') {
+      STATE.sfxEnabled = data.sfxEnabled;
+      localStorage.setItem('pixelbeats_sfx', STATE.sfxEnabled);
+      const sfxToggle = document.getElementById('setting-sfx');
+      if (sfxToggle) sfxToggle.checked = STATE.sfxEnabled;
+    }
+
+    if (typeof data.volume === 'number' && !isNaN(data.volume)) {
+      STATE.currentVolume = data.volume;
+      localStorage.setItem('pixelbeats_volume', data.volume.toString());
+      if (elements.audio) elements.audio.volume = data.volume;
+      if (typeof updateVolumeVisuals === 'function') updateVolumeVisuals(data.volume);
+    }
+
+    // 4. Update UI displays
+    this.renderAccountUI();
+    showToast(`Switched to profile: ${target.name}`, 'account_circle');
+    playHapticSfx('click');
+    return true;
+  },
+
+  syncCurrentToActiveAccount(showToastFeedback = true) {
+    const active = this.getActiveAccount();
+    if (!active) return;
+
+    active.data = {
+      playlists: PlaylistsManager.getPlaylists(),
+      eqCustomBands: Array.isArray(STATE.eqCustomBands) ? [...STATE.eqCustomBands] : [0, 0, 0, 0, 0],
+      eqPreset: STATE.eqPreset || 'flat',
+      theme: STATE.currentTheme || 'matcha',
+      sfxEnabled: STATE.sfxEnabled !== false,
+      volume: (typeof STATE.currentVolume === 'number' && !isNaN(STATE.currentVolume)) ? STATE.currentVolume : 0.75,
+      isAutoCycle: STATE.isAutoCycle !== false
+    };
+    active.lastSyncedAt = Date.now();
+
+    const accounts = this.getAccounts();
+    const idx = accounts.findIndex(a => a.id === active.id);
+    if (idx !== -1) accounts[idx] = active;
+    this.saveAccounts(accounts);
+
+    this.renderAccountUI();
+    if (showToastFeedback) {
+      showToast('Account data & playlists synced!', 'cloud_done');
+      playHapticSfx('action');
+    }
+  },
+
+  deleteAccount(accountId) {
+    const accounts = this.getAccounts();
+    if (accounts.length <= 1) {
+      alert('Cannot delete the only account profile.');
+      return false;
+    }
+    const filtered = accounts.filter(a => a.id !== accountId);
+    this.saveAccounts(filtered);
+
+    if (this.getActiveAccountId() === accountId) {
+      this.switchAccount(filtered[0].id, false);
+    } else {
+      this.renderAccountUI();
+    }
+    showToast('Profile deleted', 'delete');
+    return true;
+  },
+
+  exportBackup() {
+    this.syncCurrentToActiveAccount(false);
+    const backupObj = {
+      appName: 'PixelBeats',
+      version: APP_VERSION,
+      exportedAt: Date.now(),
+      accounts: this.getAccounts(),
+      activeAccountId: this.getActiveAccountId()
+    };
+    const active = this.getActiveAccount();
+    const filename = `PixelBeats_Backup_${active ? active.username : 'account'}_${new Date().toISOString().slice(0, 10)}.json`;
+    downloadJsonFile(filename, backupObj);
+    showToast('Backup file downloaded', 'download_done');
+  },
+
+  importBackup(backupData) {
+    if (!backupData || !Array.isArray(backupData.accounts)) {
+      throw new Error('Invalid PixelBeats backup format.');
+    }
+    this.saveAccounts(backupData.accounts);
+    const targetId = backupData.activeAccountId || backupData.accounts[0].id;
+    this.switchAccount(targetId, false);
+    showToast(`Restored ${backupData.accounts.length} account profile(s)!`, 'verified');
+  },
+
+  generateSyncKey() {
+    this.syncCurrentToActiveAccount(false);
+    const active = this.getActiveAccount();
+    const payload = {
+      type: 'PB_SYNC',
+      account: active
+    };
+    try {
+      return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+    } catch (e) {
+      return btoa(JSON.stringify(payload));
+    }
+  },
+
+  restoreFromSyncKey(keyStr) {
+    try {
+      const decoded = decodeURIComponent(escape(atob(keyStr.trim())));
+      const payload = JSON.parse(decoded);
+      if (!payload || payload.type !== 'PB_SYNC' || !payload.account) {
+        throw new Error('Invalid key format.');
+      }
+      const acc = payload.account;
+      acc.id = 'acc_' + Date.now();
+      acc.lastSyncedAt = Date.now();
+      const accounts = this.getAccounts();
+      accounts.push(acc);
+      this.saveAccounts(accounts);
+      this.switchAccount(acc.id, false);
+      showToast(`Restored account for ${acc.name}!`, 'cloud_done');
+      return true;
+    } catch (e) {
+      alert('Invalid or corrupted Sync Key. Please make sure the entire key string was copied.');
+      return false;
+    }
+  },
+
+  renderAccountUI() {
+    const active = this.getActiveAccount();
+    if (!active) return;
+
+    // 1. Settings Card
+    const nameEl = document.getElementById('account-display-name');
+    const handleEl = document.getElementById('account-handle');
+    const avatarIconEl = document.getElementById('account-avatar-icon');
+    const playlistsCountEl = document.getElementById('stat-playlists-count');
+    const favCountEl = document.getElementById('stat-favorites-count');
+    const eqPresetEl = document.getElementById('stat-eq-preset');
+    const statusPill = document.getElementById('account-status-pill');
+
+    if (nameEl) nameEl.textContent = active.name;
+    if (handleEl) handleEl.textContent = `@${active.username} • PixelBeats Profile`;
+    if (avatarIconEl) avatarIconEl.textContent = active.avatarIcon || 'headphones';
+    if (statusPill) statusPill.textContent = active.pin ? 'PIN Protected' : 'Active';
+
+    // Stats
+    const playlists = PlaylistsManager.getPlaylists();
+    const favPl = playlists.find(p => p.id === 'favorites');
+    const favCount = favPl && favPl.tracks ? favPl.tracks.length : 0;
+    if (playlistsCountEl) playlistsCountEl.textContent = `${playlists.length} Playlist${playlists.length === 1 ? '' : 's'}`;
+    if (favCountEl) favCountEl.textContent = `${favCount} Saved`;
+    if (eqPresetEl) {
+      const isCustom = Array.isArray(STATE.eqCustomBands) && STATE.eqCustomBands.some(v => v !== 0);
+      eqPresetEl.textContent = isCustom ? 'Custom EQ' : 'Flat EQ';
+    }
+
+    // 2. Library Header Quick Chip
+    const libNameEl = document.getElementById('lib-account-label');
+    const libIconEl = document.getElementById('lib-account-icon');
+    if (libNameEl) libNameEl.textContent = active.name;
+    if (libIconEl) libIconEl.textContent = active.avatarIcon || 'headphones';
+
+    // 3. Accounts Sheet Active Card
+    const sheetNameEl = document.getElementById('active-acc-sheet-name');
+    const sheetHandleEl = document.getElementById('active-acc-sheet-handle');
+    const sheetBubbleIcon = document.getElementById('active-acc-bubble-icon');
+    const sheetSyncEl = document.getElementById('active-acc-sheet-sync');
+    if (sheetNameEl) sheetNameEl.textContent = active.name;
+    if (sheetHandleEl) sheetHandleEl.textContent = `@${active.username}`;
+    if (sheetBubbleIcon) sheetBubbleIcon.textContent = active.avatarIcon || 'headphones';
+    if (sheetSyncEl) {
+      const minutesAgo = Math.floor((Date.now() - (active.lastSyncedAt || Date.now())) / 60000);
+      sheetSyncEl.textContent = minutesAgo <= 1 ? 'Synced just now' : `Synced ${minutesAgo}m ago`;
+    }
+
+    // 4. Accounts Sheet Saved List
+    this.renderAccountsSavedList();
+  },
+
+  renderAccountsSavedList() {
+    const listContainer = document.getElementById('accounts-saved-list');
+    const countPill = document.getElementById('accounts-count-pill');
+    if (!listContainer) return;
+
+    const accounts = this.getAccounts();
+    const activeId = this.getActiveAccountId();
+    if (countPill) countPill.textContent = `${accounts.length} Profile${accounts.length === 1 ? '' : 's'}`;
+
+    listContainer.innerHTML = '';
+    accounts.forEach(acc => {
+      const isCurrent = acc.id === activeId;
+      const plCount = acc.data && acc.data.playlists ? acc.data.playlists.length : 0;
+
+      const item = document.createElement('div');
+      item.className = `saved-acc-item ${isCurrent ? 'is-current' : ''}`;
+      item.innerHTML = `
+        <div class="saved-acc-left">
+          <div class="saved-acc-avatar">
+            <span class="material-symbols-rounded">${acc.avatarIcon || 'headphones'}</span>
+          </div>
+          <div class="saved-acc-meta">
+            <div class="saved-acc-name">${escapeHtml(acc.name)} ${isCurrent ? '✓' : ''}</div>
+            <div class="saved-acc-sub">@${escapeHtml(acc.username)} • ${plCount} playlist(s) ${acc.pin ? '🔒' : ''}</div>
+          </div>
+        </div>
+        <div class="saved-acc-actions">
+          ${!isCurrent ? `
+            <button type="button" class="btn-acc-action-mini switch-acc" title="Switch to this profile">
+              <span class="material-symbols-rounded">login</span>
+            </button>
+            <button type="button" class="btn-acc-action-mini delete-acc" title="Delete this profile">
+              <span class="material-symbols-rounded">delete</span>
+            </button>
+          ` : `
+            <span class="material-symbols-rounded" style="color: #576028; font-size: 20px;">check_circle</span>
+          `}
+        </div>
+      `;
+
+      if (!isCurrent) {
+        item.querySelector('.saved-acc-left').addEventListener('click', () => {
+          AccountManager.switchAccount(acc.id);
+        });
+        const switchBtn = item.querySelector('.switch-acc');
+        if (switchBtn) {
+          switchBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            AccountManager.switchAccount(acc.id);
+          });
+        }
+        const delBtn = item.querySelector('.delete-acc');
+        if (delBtn) {
+          delBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm(`Delete account profile "${acc.name}"? This cannot be undone.`)) {
+              AccountManager.deleteAccount(acc.id);
+            }
+          });
+        }
+      }
+      listContainer.appendChild(item);
+    });
+  },
+
+  init() {
+    this.getAccounts();
+    this.renderAccountUI();
+  }
+};
+
+// ================= SUPABASE CLOUD DATABASE SYNC MANAGER =================
+const CloudDbManager = {
+  STORAGE_SUPABASE_URL_KEY: 'pixelbeats_supabase_url',
+  STORAGE_SUPABASE_KEY_KEY: 'pixelbeats_supabase_anon_key',
+  STORAGE_CLOUD_SESSION_KEY: 'pixelbeats_cloud_session',
+
+  getUrl() {
+    return localStorage.getItem(this.STORAGE_SUPABASE_URL_KEY) || 'https://kinwotuphlelguumgfkc.supabase.co';
+  },
+
+  setUrl(url) {
+    localStorage.setItem(this.STORAGE_SUPABASE_URL_KEY, (url || '').trim());
+  },
+
+  getAnonKey() {
+    return localStorage.getItem(this.STORAGE_SUPABASE_KEY_KEY) || 'sb_publishable_4XOMl9-m9LczjYUiJ1deHg_AN18Pglb';
+  },
+
+  setAnonKey(key) {
+    localStorage.setItem(this.STORAGE_SUPABASE_KEY_KEY, (key || '').trim());
+  },
+
+  getSession() {
+    try {
+      const raw = localStorage.getItem(this.STORAGE_CLOUD_SESSION_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return null;
+  },
+
+  setSession(session) {
+    if (!session) {
+      localStorage.removeItem(this.STORAGE_CLOUD_SESSION_KEY);
+    } else {
+      localStorage.setItem(this.STORAGE_CLOUD_SESSION_KEY, JSON.stringify(session));
+    }
+  },
+
+  isLoggedIn() {
+    const s = this.getSession();
+    return !!(s && s.access_token && s.user);
+  },
+
+  async signUp(email, password, displayName) {
+    const url = this.getUrl();
+    const key = this.getAnonKey();
+    if (!url || !key) {
+      throw new Error('Please configure your Supabase Project URL and Anon Key in Database Connection settings first.');
+    }
+
+    const endpoint = `${url.replace(/\/+$/, '')}/auth/v1/signup`;
+    const resp = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'apikey': key,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email.trim(),
+        password: password,
+        data: {
+          display_name: displayName ? displayName.trim() : email.split('@')[0]
+        }
+      })
+    });
+
+    const data = await resp.json();
+    if (!resp.ok) {
+      throw new Error(data.error_description || data.msg || data.message || 'Failed to create cloud account.');
+    }
+
+    if (data.access_token && data.user) {
+      this.setSession(data);
+      await this.pushLocalToCloud(false);
+      this.renderCloudUI();
+      return data;
+    } else {
+      return { message: 'Cloud account created! If email confirmation is enabled, check your inbox.' };
+    }
+  },
+
+  async signIn(email, password) {
+    const url = this.getUrl();
+    const key = this.getAnonKey();
+    if (!url || !key) {
+      throw new Error('Please configure your Supabase Project URL and Anon Key in Database Connection settings first.');
+    }
+
+    const endpoint = `${url.replace(/\/+$/, '')}/auth/v1/token?grant_type=password`;
+    const resp = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'apikey': key,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email.trim(),
+        password: password
+      })
+    });
+
+    const data = await resp.json();
+    if (!resp.ok) {
+      throw new Error(data.error_description || data.msg || data.message || 'Invalid email or password.');
+    }
+
+    this.setSession(data);
+    await this.pullCloudToLocal(true);
+    this.renderCloudUI();
+    return data;
+  },
+
+  async signOut() {
+    this.setSession(null);
+    this.renderCloudUI();
+    showToast('Signed out from Cloud Database', 'logout');
+  },
+
+  async pushLocalToCloud(showToastFeedback = true) {
+    const session = this.getSession();
+    const url = this.getUrl();
+    const key = this.getAnonKey();
+    if (!session || !url || !key) return;
+
+    try {
+      const user = session.user;
+      const endpoint = `${url.replace(/\/+$/, '')}/rest/v1/pixelbeats_users`;
+
+      const payload = {
+        id: user.id,
+        email: user.email,
+        display_name: user.user_metadata?.display_name || user.email.split('@')[0],
+        playlists: PlaylistsManager.getPlaylists(),
+        eq_custom_bands: Array.isArray(STATE.eqCustomBands) ? STATE.eqCustomBands : [0, 0, 0, 0, 0],
+        eq_preset: STATE.eqPreset || 'flat',
+        theme: STATE.currentTheme || 'matcha',
+        sfx_enabled: STATE.sfxEnabled !== false,
+        volume: STATE.currentVolume || 0.75,
+        updated_at: new Date().toISOString()
+      };
+
+      const resp = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'apikey': key,
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (resp.ok) {
+        session.last_synced_at = Date.now();
+        this.setSession(session);
+        this.renderCloudUI();
+        if (showToastFeedback) {
+          showToast('Synced to Cloud Database!', 'cloud_done');
+          playHapticSfx('action');
+        }
+      }
+    } catch (err) {
+      console.warn('[CloudSync] Push error:', err);
+    }
+  },
+
+  async pullCloudToLocal(showToastFeedback = true) {
+    const session = this.getSession();
+    const url = this.getUrl();
+    const key = this.getAnonKey();
+    if (!session || !url || !key) return;
+
+    try {
+      const user = session.user;
+      const endpoint = `${url.replace(/\/+$/, '')}/rest/v1/pixelbeats_users?id=eq.${user.id}&select=*`;
+
+      const resp = await fetch(endpoint, {
+        method: 'GET',
+        headers: {
+          'apikey': key,
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+
+      if (!resp.ok) return;
+      const rows = await resp.json();
+      if (!Array.isArray(rows) || rows.length === 0) {
+        await this.pushLocalToCloud(false);
+        return;
+      }
+
+      const row = rows[0];
+      if (Array.isArray(row.playlists)) {
+        PlaylistsManager.savePlaylists(row.playlists);
+        if (typeof renderPlaylistsGrid === 'function') renderPlaylistsGrid();
+        if (typeof updateFavoriteButtonState === 'function') updateFavoriteButtonState();
+        if (typeof updateVaultStorageEstimate === 'function') updateVaultStorageEstimate();
+      }
+
+      if (Array.isArray(row.eq_custom_bands)) {
+        STATE.eqCustomBands = [...row.eq_custom_bands];
+        localStorage.setItem('pixelbeats_eq_custom_bands', JSON.stringify(STATE.eqCustomBands));
+        for (let i = 0; i < 5; i++) {
+          if (typeof applyEqualizerBand === 'function') {
+            applyEqualizerBand(i, STATE.eqCustomBands[i] || 0, true);
+          }
+        }
+      }
+
+      if (row.theme && typeof applyTheme === 'function') {
+        applyTheme(row.theme, true);
+      }
+
+      if (typeof row.sfx_enabled === 'boolean') {
+        STATE.sfxEnabled = row.sfx_enabled;
+        localStorage.setItem('pixelbeats_sfx', STATE.sfxEnabled);
+        const sfxToggle = document.getElementById('setting-sfx');
+        if (sfxToggle) sfxToggle.checked = STATE.sfxEnabled;
+      }
+
+      if (typeof row.volume === 'number' && !isNaN(row.volume)) {
+        STATE.currentVolume = row.volume;
+        localStorage.setItem('pixelbeats_volume', row.volume.toString());
+        if (elements.audio) elements.audio.volume = row.volume;
+        if (typeof updateVolumeVisuals === 'function') updateVolumeVisuals(row.volume);
+      }
+
+      session.last_synced_at = Date.now();
+      this.setSession(session);
+      this.renderCloudUI();
+      if (showToastFeedback) {
+        showToast('Downloaded playlists & settings from Cloud!', 'cloud_download');
+        playHapticSfx('action');
+      }
+    } catch (err) {
+      console.warn('[CloudSync] Pull error:', err);
+    }
+  },
+
+  renderCloudUI() {
+    const session = this.getSession();
+    const isLogged = this.isLoggedIn();
+
+    const sessionBox = document.getElementById('cloud-session-box');
+    const authBox = document.getElementById('cloud-auth-box');
+    const heroTitle = document.getElementById('cloud-hero-title');
+    const heroDesc = document.getElementById('cloud-hero-desc');
+    const heroIcon = document.getElementById('cloud-hero-icon');
+
+    const nameEl = document.getElementById('cloud-session-name');
+    const emailEl = document.getElementById('cloud-session-email');
+    const syncLabel = document.getElementById('cloud-last-sync-label');
+
+    const urlInput = document.getElementById('input-supabase-url');
+    const keyInput = document.getElementById('input-supabase-key');
+
+    if (urlInput && !urlInput.value) urlInput.value = this.getUrl();
+    if (keyInput && !keyInput.value) keyInput.value = this.getAnonKey();
+
+    if (isLogged && session && session.user) {
+      if (sessionBox) sessionBox.classList.remove('hidden');
+      if (authBox) authBox.classList.add('hidden');
+      if (heroTitle) heroTitle.textContent = 'Cloud Database Connected';
+      if (heroDesc) heroDesc.textContent = 'Your playlists, favorites, and 5-band studio equalizer are automatically synchronized with Supabase.';
+      if (heroIcon) heroIcon.textContent = 'cloud_done';
+
+      const user = session.user;
+      const displayName = user.user_metadata?.display_name || user.email.split('@')[0];
+      if (nameEl) nameEl.textContent = displayName;
+      if (emailEl) emailEl.textContent = user.email;
+
+      if (syncLabel) {
+        const lastSync = session.last_synced_at ? Math.floor((Date.now() - session.last_synced_at) / 60000) : 0;
+        syncLabel.textContent = lastSync <= 1 ? 'Live Synced' : `Synced ${lastSync}m ago`;
+      }
+    } else {
+      if (sessionBox) sessionBox.classList.add('hidden');
+      if (authBox) authBox.classList.remove('hidden');
+      if (heroTitle) heroTitle.textContent = 'Supabase Cloud Database';
+      if (heroDesc) heroDesc.textContent = 'Sync your playlists, favorites, and 5-band equalizer tuning to a real cloud database. Sign in on any phone or computer to load your music instantly.';
+      if (heroIcon) heroIcon.textContent = 'cloud_queue';
+    }
+  },
+
+  getSqlSchema() {
+    return `-- ==========================================
+-- PIXELBEATS SUPABASE DATABASE SCHEMA
+-- Run this in your Supabase SQL Editor:
+-- ==========================================
+
+create table if not exists public.pixelbeats_users (
+  id uuid references auth.users on delete cascade not null primary key,
+  email text,
+  display_name text,
+  avatar_icon text default 'headphones',
+  playlists jsonb default '[]'::jsonb,
+  eq_custom_bands jsonb default '[0, 0, 0, 0, 0]'::jsonb,
+  eq_preset text default 'flat',
+  theme text default 'matcha',
+  sfx_enabled boolean default true,
+  volume float default 0.75,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.pixelbeats_users enable row level security;
+
+create policy "Users can view and edit own music profile"
+on public.pixelbeats_users for all
+using (auth.uid() = id)
+with check (auth.uid() = id);`;
+  },
+
+  init() {
+    this.renderCloudUI();
+    if (this.isLoggedIn()) {
+      this.pullCloudToLocal(false);
+    }
+  }
+};
+
+
 
 function updateFavoriteButtonState() {
   const currentSong = STATE.queue[STATE.currentIndex];
@@ -5458,6 +6226,383 @@ function setupEventListeners() {
   document.addEventListener('touchstart', unlockAudioContext);
   document.addEventListener('keydown', unlockAudioContext);
 
+  // ================= ACCOUNTS & PROFILE MODAL LISTENERS =================
+  const openAccountsModal = (tabName = 'profiles') => {
+    playHapticSfx('click');
+    AccountManager.renderAccountUI();
+    if (elements.modalAccounts) {
+      elements.modalAccounts.classList.remove('hidden');
+    }
+    if (tabName === 'create') {
+      const createNav = document.getElementById('acc-nav-create');
+      if (createNav) createNav.click();
+    } else if (tabName === 'backup') {
+      const backupNav = document.getElementById('acc-nav-backup');
+      if (backupNav) backupNav.click();
+    } else {
+      const profNav = document.getElementById('acc-nav-profiles');
+      if (profNav) profNav.click();
+    }
+  };
+
+  const closeAccountsModal = () => {
+    playHapticSfx('click');
+    if (elements.modalAccounts) {
+      elements.modalAccounts.classList.add('hidden');
+    }
+  };
+
+  if (elements.btnOpenAccountManager) {
+    elements.btnOpenAccountManager.addEventListener('click', () => openAccountsModal('profiles'));
+  }
+
+  if (elements.btnLibAccount) {
+    elements.btnLibAccount.addEventListener('click', () => openAccountsModal('profiles'));
+  }
+
+  if (elements.btnCloseAccountsModal) {
+    elements.btnCloseAccountsModal.addEventListener('click', closeAccountsModal);
+  }
+
+  if (elements.modalAccounts) {
+    elements.modalAccounts.addEventListener('click', (e) => {
+      if (e.target === elements.modalAccounts) closeAccountsModal();
+    });
+  }
+
+  // Sub-Navigation Tabs inside Accounts Sheet
+  const accNavBtns = [
+    { nav: document.getElementById('acc-nav-profiles'), tab: document.getElementById('acc-tab-profiles') },
+    { nav: document.getElementById('acc-nav-cloud'), tab: document.getElementById('acc-tab-cloud') },
+    { nav: document.getElementById('acc-nav-create'), tab: document.getElementById('acc-tab-create') },
+    { nav: document.getElementById('acc-nav-backup'), tab: document.getElementById('acc-tab-backup') }
+  ];
+
+  accNavBtns.forEach(item => {
+    if (item.nav && item.tab) {
+      item.nav.addEventListener('click', () => {
+        playHapticSfx('click');
+        accNavBtns.forEach(b => {
+          if (b.nav) b.nav.classList.remove('active');
+          if (b.tab) b.tab.classList.add('hidden');
+        });
+        item.nav.classList.add('active');
+        item.tab.classList.remove('hidden');
+
+        if (item.nav.id === 'acc-nav-backup') {
+          const ta = document.getElementById('sync-key-textarea');
+          if (ta) ta.value = AccountManager.generateSyncKey();
+        }
+      });
+    }
+  });
+
+  // Avatar icon picker selection in Create Account form
+  document.querySelectorAll('.avatar-pick-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.avatar-pick-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      playHapticSfx('click');
+    });
+  });
+
+  // Submit Create Account Form
+  const btnSubmitCreateAccount = document.getElementById('btn-submit-create-account');
+  if (btnSubmitCreateAccount) {
+    btnSubmitCreateAccount.addEventListener('click', () => {
+      const nameInput = document.getElementById('input-acc-name');
+      const userInput = document.getElementById('input-acc-username');
+      const pinInput = document.getElementById('input-acc-pin');
+      const migrateCheck = document.getElementById('check-acc-migrate');
+
+      const name = nameInput ? nameInput.value.trim() : '';
+      const username = userInput ? userInput.value.trim() : '';
+      const pin = pinInput ? pinInput.value.trim() : '';
+      const migrateCurrent = migrateCheck ? migrateCheck.checked : true;
+
+      const activeAvatarBtn = document.querySelector('.avatar-pick-btn.active');
+      const avatarIcon = activeAvatarBtn ? activeAvatarBtn.getAttribute('data-icon') : 'headphones';
+
+      if (!name) {
+        alert('Please enter a display name for the account.');
+        if (nameInput) nameInput.focus();
+        return;
+      }
+
+      try {
+        const created = AccountManager.createAccount({
+          name,
+          username,
+          avatarIcon,
+          pin,
+          migrateCurrent
+        });
+
+        if (nameInput) nameInput.value = '';
+        if (userInput) userInput.value = '';
+        if (pinInput) pinInput.value = '';
+
+        // Switch to Profiles view inside modal
+        const profNav = document.getElementById('acc-nav-profiles');
+        if (profNav) profNav.click();
+
+        showToast(`Account created for ${created.name}!`, 'check_circle');
+      } catch (err) {
+        alert(err.message || 'Failed to create account.');
+      }
+    });
+  }
+
+  // Quick Action Buttons
+  const btnAccountSyncNow = document.getElementById('btn-account-sync-now');
+  if (btnAccountSyncNow) {
+    btnAccountSyncNow.addEventListener('click', () => {
+      AccountManager.syncCurrentToActiveAccount(true);
+    });
+  }
+
+  const btnSheetSyncActive = document.getElementById('btn-sheet-sync-active');
+  if (btnSheetSyncActive) {
+    btnSheetSyncActive.addEventListener('click', () => {
+      AccountManager.syncCurrentToActiveAccount(true);
+    });
+  }
+
+  const btnQuickExport = document.getElementById('btn-quick-export');
+  if (btnQuickExport) {
+    btnQuickExport.addEventListener('click', () => {
+      AccountManager.exportBackup();
+    });
+  }
+
+  const btnBackupExportAll = document.getElementById('btn-backup-export-all');
+  if (btnBackupExportAll) {
+    btnBackupExportAll.addEventListener('click', () => {
+      AccountManager.exportBackup();
+    });
+  }
+
+  const btnQuickImport = document.getElementById('btn-quick-import');
+  if (btnQuickImport) {
+    btnQuickImport.addEventListener('click', () => {
+      if (elements.accountFileInput) elements.accountFileInput.click();
+    });
+  }
+
+  const btnBackupImportAll = document.getElementById('btn-backup-import-all');
+  if (btnBackupImportAll) {
+    btnBackupImportAll.addEventListener('click', () => {
+      if (elements.accountFileInput) elements.accountFileInput.click();
+    });
+  }
+
+  if (elements.accountFileInput) {
+    elements.accountFileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          AccountManager.importBackup(parsed);
+          closeAccountsModal();
+        } catch (err) {
+          console.error('[Import] Error:', err);
+          alert('Failed to parse backup file. Please select a valid PixelBeats JSON backup.');
+        }
+      };
+      reader.readAsText(file);
+      elements.accountFileInput.value = '';
+    });
+  }
+
+  const btnQuickSyncCode = document.getElementById('btn-quick-sync-code');
+  if (btnQuickSyncCode) {
+    btnQuickSyncCode.addEventListener('click', () => {
+      openAccountsModal('backup');
+    });
+  }
+
+  const btnSyncKeyCopy = document.getElementById('btn-sync-key-copy');
+  if (btnSyncKeyCopy) {
+    btnSyncKeyCopy.addEventListener('click', async () => {
+      const ta = document.getElementById('sync-key-textarea');
+      const val = ta ? ta.value.trim() : AccountManager.generateSyncKey();
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(val);
+        } else {
+          const tempTa = document.createElement('textarea');
+          tempTa.value = val;
+          document.body.appendChild(tempTa);
+          tempTa.select();
+          document.execCommand('copy');
+          document.body.removeChild(tempTa);
+        }
+        showToast('Sync Key copied to clipboard!', 'content_copy');
+        playHapticSfx('click');
+      } catch (e) {
+        showToast('Key ready in text box', 'content_copy');
+      }
+    });
+  }
+
+  const btnSyncKeyApply = document.getElementById('btn-sync-key-apply');
+  if (btnSyncKeyApply) {
+    btnSyncKeyApply.addEventListener('click', () => {
+      const ta = document.getElementById('sync-key-textarea');
+      const val = ta ? ta.value.trim() : '';
+      if (!val) {
+        alert('Please paste a PixelBeats Sync Key into the text box.');
+        if (ta) ta.focus();
+        return;
+      }
+      if (AccountManager.restoreFromSyncKey(val)) {
+        closeAccountsModal();
+      }
+    });
+  }
+
+
+  // ================= CLOUD DATABASE LISTENERS =================
+  let isCloudSignUpMode = false;
+  const toggleCloudSignIn = document.getElementById('toggle-cloud-signin');
+  const toggleCloudSignUp = document.getElementById('toggle-cloud-signup');
+  const groupCloudName = document.getElementById('group-cloud-name');
+  const textCloudSubmit = document.getElementById('text-cloud-submit');
+  const iconCloudSubmit = document.getElementById('icon-cloud-submit');
+
+  if (toggleCloudSignIn && toggleCloudSignUp) {
+    toggleCloudSignIn.addEventListener('click', () => {
+      isCloudSignUpMode = false;
+      toggleCloudSignIn.classList.add('active');
+      toggleCloudSignUp.classList.remove('active');
+      if (groupCloudName) groupCloudName.style.display = 'none';
+      if (textCloudSubmit) textCloudSubmit.textContent = 'Sign In to Cloud';
+      if (iconCloudSubmit) iconCloudSubmit.textContent = 'login';
+      playHapticSfx('click');
+    });
+
+    toggleCloudSignUp.addEventListener('click', () => {
+      isCloudSignUpMode = true;
+      toggleCloudSignUp.classList.add('active');
+      toggleCloudSignIn.classList.remove('active');
+      if (groupCloudName) groupCloudName.style.display = 'flex';
+      if (textCloudSubmit) textCloudSubmit.textContent = 'Create Cloud Account';
+      if (iconCloudSubmit) iconCloudSubmit.textContent = 'person_add';
+      playHapticSfx('click');
+    });
+  }
+
+  // Submit Cloud Auth
+  const btnSubmitCloudAuth = document.getElementById('btn-submit-cloud-auth');
+  if (btnSubmitCloudAuth) {
+    btnSubmitCloudAuth.addEventListener('click', async () => {
+      const emailInput = document.getElementById('input-cloud-email');
+      const passInput = document.getElementById('input-cloud-password');
+      const nameInput = document.getElementById('input-cloud-name');
+
+      const email = emailInput ? emailInput.value.trim() : '';
+      const pass = passInput ? passInput.value : '';
+      const name = nameInput ? nameInput.value.trim() : '';
+
+      if (!email || !email.includes('@')) {
+        alert('Please enter a valid email address.');
+        if (emailInput) emailInput.focus();
+        return;
+      }
+      if (!pass || pass.length < 6) {
+        alert('Password must be at least 6 characters.');
+        if (passInput) passInput.focus();
+        return;
+      }
+
+      playHapticSfx('click');
+      btnSubmitCloudAuth.disabled = true;
+      const originalText = textCloudSubmit ? textCloudSubmit.textContent : '';
+      if (textCloudSubmit) textCloudSubmit.textContent = 'Connecting...';
+
+      try {
+        if (isCloudSignUpMode) {
+          const res = await CloudDbManager.signUp(email, pass, name);
+          alert(res.message || 'Cloud account created successfully and playlists synced!');
+        } else {
+          await CloudDbManager.signIn(email, pass);
+          showToast(`Welcome back, ${email.split('@')[0]}!`, 'cloud_done');
+        }
+      } catch (err) {
+        alert(err.message || 'Cloud connection failed.');
+      } finally {
+        btnSubmitCloudAuth.disabled = false;
+        if (textCloudSubmit) textCloudSubmit.textContent = originalText;
+      }
+    });
+  }
+
+  // Cloud Session buttons
+  const btnCloudPushNow = document.getElementById('btn-cloud-push-now');
+  if (btnCloudPushNow) {
+    btnCloudPushNow.addEventListener('click', () => {
+      CloudDbManager.pushLocalToCloud(true);
+    });
+  }
+
+  const btnCloudPullNow = document.getElementById('btn-cloud-pull-now');
+  if (btnCloudPullNow) {
+    btnCloudPullNow.addEventListener('click', () => {
+      CloudDbManager.pullCloudToLocal(true);
+    });
+  }
+
+  const btnCloudSignout = document.getElementById('btn-cloud-signout');
+  if (btnCloudSignout) {
+    btnCloudSignout.addEventListener('click', () => {
+      if (confirm('Sign out from Cloud Database? Your local playlists will stay on this device.')) {
+        CloudDbManager.signOut();
+      }
+    });
+  }
+
+  // Save Supabase Keys
+  const btnSaveSupabaseConfig = document.getElementById('btn-save-supabase-config');
+  if (btnSaveSupabaseConfig) {
+    btnSaveSupabaseConfig.addEventListener('click', () => {
+      const urlInput = document.getElementById('input-supabase-url');
+      const keyInput = document.getElementById('input-supabase-key');
+      const url = urlInput ? urlInput.value.trim() : '';
+      const key = keyInput ? keyInput.value.trim() : '';
+      CloudDbManager.setUrl(url);
+      CloudDbManager.setAnonKey(key);
+      showToast('Database connection settings saved!', 'check_circle');
+      playHapticSfx('action');
+    });
+  }
+
+  // Copy SQL Schema
+  const btnCopySqlSchema = document.getElementById('btn-copy-sql-schema');
+  if (btnCopySqlSchema) {
+    btnCopySqlSchema.addEventListener('click', async () => {
+      const sql = CloudDbManager.getSqlSchema();
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(sql);
+        } else {
+          const tempTa = document.createElement('textarea');
+          tempTa.value = sql;
+          document.body.appendChild(tempTa);
+          tempTa.select();
+          document.execCommand('copy');
+          document.body.removeChild(tempTa);
+        }
+        showToast('SQL Schema copied to clipboard!', 'content_copy');
+        playHapticSfx('click');
+      } catch (e) {
+        prompt('Copy SQL schema below:', sql);
+      }
+    });
+  }
+
   // In-App Self Updater Event Listeners
   if (elements.btnCheckUpdates) {
     elements.btnCheckUpdates.addEventListener('click', () => {
@@ -5591,7 +6736,7 @@ function syncCreatorAvatarFromGitHub() {
 }
 
 // ================= IN-APP SELF UPDATER =================
-const APP_VERSION = '2.0.3';
+const APP_VERSION = '2.0.4';
 const GITHUB_REPO = 'prajoy-ux/PixelBeats';
 let pendingUpdateApkUrl = null;
 let isUpdating = false;
@@ -5760,6 +6905,14 @@ async function initApp() {
     await updateVaultUI();
   } catch (dbErr) {
     console.warn('[Vault] IndexedDB warning:', dbErr);
+  }
+
+  // 7b. Initialize User Accounts & Profile Sync System
+  try {
+    AccountManager.init();
+    CloudDbManager.init();
+  } catch (accErr) {
+    console.warn('[Init] AccountManager init warning:', accErr);
   }
 
   // 8. Start Ambient Glow Animation Loop

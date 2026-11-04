@@ -3937,3 +3937,727 @@ html, body {
 }
 
 
+
+/* ==========================================================================
+   PIXELBEATS USER ACCOUNTS & CLOUD DATA SYNC SYSTEM
+   ========================================================================== */
+
+/* Quick Account Chip in Library Header */
+.lib-account-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 12px !important;
+  background: #EFF2E1 !important;
+  background-color: #EFF2E1 !important;
+  color: #363D17 !important;
+  border: none !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), background-color 0.2s ease !important;
+  flex-shrink: 0 !important;
+}
+.lib-account-chip:active {
+  transform: scale(0.95) !important;
+  background: #576028 !important;
+  color: #EFF2E1 !important;
+}
+.lib-account-chip .lib-account-icon {
+  font-size: 18px !important;
+  color: #576028 !important;
+}
+.lib-account-chip:active .lib-account-icon {
+  color: #EFF2E1 !important;
+}
+
+/* User Account & Cloud Sync Card */
+.account-profile-card {
+  margin-bottom: 16px !important;
+}
+
+.account-badge-box {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 14px !important;
+  background: rgba(87, 96, 40, 0.08) !important;
+  border-radius: 20px !important;
+  margin-top: 10px !important;
+}
+
+.account-avatar-wrapper {
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px !important;
+  border-radius: 50% !important;
+  background: #576028 !important;
+  color: #EFF2E1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 3px 10px rgba(54, 61, 23, 0.3) !important;
+  flex-shrink: 0 !important;
+}
+
+.account-avatar-icon {
+  font-size: 28px !important;
+  color: #EFF2E1 !important;
+}
+
+.account-info {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.account-name-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.account-display-name {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #363D17 !important;
+  letter-spacing: -0.2px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.account-status-pill {
+  display: inline-block !important;
+  padding: 2px 8px !important;
+  border-radius: 999px !important;
+  background: #576028 !important;
+  color: #EFF2E1 !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+}
+
+.account-handle {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #576028 !important;
+}
+
+.account-stats-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-wrap: wrap !important;
+  margin-top: 4px !important;
+}
+
+.account-stat-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  background: #EFF2E1 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #363D17 !important;
+}
+.account-stat-chip .material-symbols-rounded {
+  font-size: 13px !important;
+  color: #576028 !important;
+}
+
+.account-actions-grid {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-top: 12px !important;
+}
+
+.account-backup-pills-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-top: 10px !important;
+}
+
+.account-sub-action-pill {
+  flex: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  padding: 8px 4px !important;
+  border-radius: 999px !important;
+  background: #EFF2E1 !important;
+  background-color: #EFF2E1 !important;
+  color: #363D17 !important;
+  border: none !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+  transition: transform 0.15s ease, background 0.15s ease !important;
+  white-space: nowrap !important;
+}
+.account-sub-action-pill:active {
+  transform: scale(0.96) !important;
+  background: #576028 !important;
+  color: #EFF2E1 !important;
+}
+.account-sub-action-pill .material-symbols-rounded {
+  font-size: 14px !important;
+  color: #576028 !important;
+}
+.account-sub-action-pill:active .material-symbols-rounded {
+  color: #EFF2E1 !important;
+}
+
+/* Accounts Modal Bottom Sheet */
+.accounts-sheet {
+  max-height: 88vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.accounts-sheet-body {
+  overflow-y: auto !important;
+  padding: 0 16px 24px 16px !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+.sheet-title-with-icon {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.accounts-sub-nav {
+  margin-bottom: 16px !important;
+}
+
+/* Active Account Hero Card */
+.active-account-hero-card {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 14px !important;
+  background: #C8D394 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+  margin-bottom: 16px !important;
+}
+
+.active-acc-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.acc-avatar-bubble {
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+  border-radius: 50% !important;
+  background: #576028 !important;
+  color: #EFF2E1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 2px 8px rgba(54, 61, 23, 0.25) !important;
+}
+.acc-avatar-bubble .material-symbols-rounded {
+  font-size: 24px !important;
+  color: #EFF2E1 !important;
+}
+
+.active-acc-meta {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  min-width: 0 !important;
+}
+
+.active-acc-badge-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.active-acc-name {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #363D17 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.active-pill-tag {
+  background: #576028 !important;
+  color: #EFF2E1 !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  padding: 2px 6px !important;
+  border-radius: 999px !important;
+  letter-spacing: 0.5px !important;
+}
+
+.active-acc-handle {
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  color: #576028 !important;
+}
+
+.active-acc-sync-time {
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  color: #576028 !important;
+  opacity: 0.8 !important;
+}
+
+/* Saved Accounts List */
+.accounts-list-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 10px !important;
+}
+.accounts-list-header h4 {
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  color: #363D17 !important;
+  margin: 0 !important;
+}
+
+.accounts-count-pill {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #576028 !important;
+  background: rgba(87, 96, 40, 0.12) !important;
+  padding: 2px 8px !important;
+  border-radius: 999px !important;
+}
+
+.accounts-saved-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.saved-acc-item {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 10px 14px !important;
+  background: #EFF2E1 !important;
+  border-radius: 18px !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+.saved-acc-item:hover {
+  background: #e2e7d0 !important;
+}
+.saved-acc-item.is-current {
+  border: 1.5px solid #576028 !important;
+  background: #e4eac8 !important;
+}
+
+.saved-acc-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.saved-acc-avatar {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 50% !important;
+  background: #576028 !important;
+  color: #EFF2E1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+.saved-acc-avatar .material-symbols-rounded {
+  font-size: 20px !important;
+  color: #EFF2E1 !important;
+}
+
+.saved-acc-name {
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  color: #363D17 !important;
+}
+
+.saved-acc-sub {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #576028 !important;
+}
+
+.saved-acc-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.btn-acc-action-mini {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  border: none !important;
+  background: transparent !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  color: #576028 !important;
+  transition: background 0.15s ease !important;
+}
+.btn-acc-action-mini:hover {
+  background: rgba(87, 96, 40, 0.15) !important;
+}
+.btn-acc-action-mini.delete-acc:hover {
+  color: #ba1a1a !important;
+  background: rgba(186, 26, 26, 0.12) !important;
+}
+
+/* Forms & Avatar Pickers */
+.create-account-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.form-group-m3 {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.form-label-m3 {
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  color: #576028 !important;
+}
+
+.m3-text-input {
+  width: 100% !important;
+  background: #EFF2E1 !important;
+  background-color: #EFF2E1 !important;
+  border: 1.5px solid rgba(87, 96, 40, 0.2) !important;
+  border-radius: 14px !important;
+  padding: 10px 14px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #363D17 !important;
+  box-sizing: border-box !important;
+  outline: none !important;
+  transition: border-color 0.2s ease, background 0.2s ease !important;
+}
+.m3-text-input:focus {
+  border-color: #576028 !important;
+  background: #ffffff !important;
+}
+
+.input-with-prefix {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+}
+.input-prefix {
+  position: absolute !important;
+  left: 12px !important;
+  font-weight: 800 !important;
+  color: #576028 !important;
+  font-size: 15px !important;
+  pointer-events: none !important;
+}
+.prefix-padded {
+  padding-left: 30px !important;
+}
+
+.field-hint {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #576028 !important;
+  opacity: 0.8 !important;
+}
+
+.avatar-picker-rack {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.avatar-pick-btn {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 50% !important;
+  background: #EFF2E1 !important;
+  border: 2px solid transparent !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  color: #576028 !important;
+  transition: all 0.2s ease !important;
+}
+.avatar-pick-btn:hover {
+  background: #e2e7d0 !important;
+}
+.avatar-pick-btn.active {
+  background: #576028 !important;
+  color: #EFF2E1 !important;
+  border-color: #363D17 !important;
+  box-shadow: 0 3px 10px rgba(87, 96, 40, 0.3) !important;
+}
+.avatar-pick-btn.active .material-symbols-rounded {
+  color: #EFF2E1 !important;
+}
+
+.form-switch-box {
+  background: #EFF2E1 !important;
+  border-radius: 16px !important;
+  padding: 12px 14px !important;
+  margin-top: 4px !important;
+}
+
+/* Backup & Sync Cards */
+.backup-options-card {
+  background: #C8D394 !important;
+  border-radius: 20px !important;
+  padding: 16px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1) !important;
+}
+.backup-options-card h4 {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #363D17 !important;
+  margin: 0 !important;
+}
+
+.backup-card-sub {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #576028 !important;
+  margin: 4px 0 12px 0 !important;
+  line-height: 1.4 !important;
+}
+
+.backup-buttons-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.m3-textarea {
+  width: 100% !important;
+  background: #EFF2E1 !important;
+  background-color: #EFF2E1 !important;
+  border: 1.5px solid rgba(87, 96, 40, 0.2) !important;
+  border-radius: 14px !important;
+  padding: 10px 12px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  color: #363D17 !important;
+  box-sizing: border-box !important;
+  outline: none !important;
+  font-family: inherit !important;
+  resize: none !important;
+}
+.m3-textarea:focus {
+  border-color: #576028 !important;
+  background: #ffffff !important;
+}
+
+/* Cloud Database & Supabase Styles */
+.cloud-hero-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 14px !important;
+  background: #C8D394 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1) !important;
+  margin-bottom: 16px !important;
+}
+
+.cloud-hero-icon-bubble {
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+  border-radius: 50% !important;
+  background: #576028 !important;
+  color: #EFF2E1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 2px 8px rgba(54, 61, 23, 0.25) !important;
+}
+.cloud-hero-icon-bubble .material-symbols-rounded {
+  font-size: 24px !important;
+  color: #EFF2E1 !important;
+}
+
+.cloud-hero-text h4 {
+  font-size: 14.5px !important;
+  font-weight: 800 !important;
+  color: #363D17 !important;
+  margin: 0 !important;
+}
+.cloud-hero-text p {
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  color: #576028 !important;
+  margin: 3px 0 0 0 !important;
+  line-height: 1.35 !important;
+}
+
+/* Cloud Auth Switcher */
+.cloud-auth-toggle {
+  display: flex !important;
+  background: #EFF2E1 !important;
+  border-radius: 999px !important;
+  padding: 4px !important;
+  margin-bottom: 14px !important;
+  gap: 4px !important;
+}
+
+.cloud-toggle-btn {
+  flex: 1 !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 8px 12px !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #576028 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+.cloud-toggle-btn.active {
+  background: #576028 !important;
+  color: #EFF2E1 !important;
+  box-shadow: 0 2px 8px rgba(54, 61, 23, 0.2) !important;
+}
+
+/* Cloud Active Session Box */
+.cloud-session-box {
+  background: #EFF2E1 !important;
+  border-radius: 20px !important;
+  padding: 16px !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08) !important;
+  margin-bottom: 16px !important;
+}
+
+.cloud-user-meta-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-bottom: 14px !important;
+}
+
+.cloud-user-avatar {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 50% !important;
+  background: #576028 !important;
+  color: #EFF2E1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.cloud-user-avatar .material-symbols-rounded {
+  font-size: 24px !important;
+  color: #EFF2E1 !important;
+}
+
+.cloud-user-name {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #363D17 !important;
+}
+
+.cloud-user-email {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #576028 !important;
+}
+
+.cloud-sync-status {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #2e7d32 !important;
+  margin-top: 2px !important;
+}
+
+.cloud-pulse-dot {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background: #2e7d32 !important;
+  box-shadow: 0 0 6px rgba(46, 125, 50, 0.6) !important;
+  animation: pulseCloud 2s infinite ease-in-out !important;
+}
+
+@keyframes pulseCloud {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}
+
+.cloud-session-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+/* Supabase Connection Drawer */
+.cloud-config-drawer {
+  margin-top: 16px !important;
+  border-top: 1px solid rgba(87, 96, 40, 0.15) !important;
+  padding-top: 12px !important;
+}
+
+.cloud-details-drawer {
+  background: #EFF2E1 !important;
+  border-radius: 16px !important;
+  padding: 10px 14px !important;
+}
+
+.cloud-details-summary {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 12.5px !important;
+  font-weight: 800 !important;
+  color: #363D17 !important;
+  cursor: pointer !important;
+  outline: none !important;
+}
+
+.cloud-drawer-body {
+  margin-top: 12px !important;
+  padding-top: 10px !important;
+  border-top: 1px dashed rgba(87, 96, 40, 0.2) !important;
+}
