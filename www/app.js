@@ -343,6 +343,7 @@ const elements = {
   btnDownloadTrack: document.getElementById('btn-download-track'),
   downloadBtnLabel: document.getElementById('download-btn-label'),
   btnPlayerAddPlaylist: document.getElementById('btn-player-add-playlist'),
+  btnShareTrack: document.getElementById('btn-share-track'),
   btnAutoCycle: document.getElementById('btn-auto-cycle'),
   autoCycleLabel: document.getElementById('auto-cycle-label'),
   pixelVolPill: document.getElementById('pixel-vol-pill'),
@@ -4812,6 +4813,48 @@ function escapeHtml(str) {
 }
 
 // ================= EVENT LISTENERS =================
+// ================= TRACK SHARING =================
+async function shareCurrentTrack() {
+  const song = STATE.queue[STATE.currentIndex];
+  if (!song || !song.videoId) {
+    showToast('Play a song first to share', 'info');
+    return;
+  }
+  if (elements.btnShareTrack && elements.btnShareTrack.disabled) return;
+
+  const title = song.title || 'Listen on PixelBeats';
+  const text = song.artist ? `${title} - ${song.artist}` : title;
+  const url = `https://www.youtube.com/watch?v=${encodeURIComponent(song.videoId)}`;
+  if (elements.btnShareTrack) elements.btnShareTrack.disabled = true;
+  try {
+    if (ArchiveTuneBridge.isNative()) {
+      await window.Capacitor.Plugins.ArchiveTune.shareTrack({ title, text, url });
+      return;
+    }
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title, text, url });
+        return;
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+      }
+    }
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast('Song link copied', 'content_copy');
+        return;
+      } catch (error) {}
+    }
+    window.prompt('Copy song link:', url);
+  } catch (error) {
+    console.warn('[Share] Failed:', error);
+    showToast('Unable to share track', 'error');
+  } finally {
+    if (elements.btnShareTrack) elements.btnShareTrack.disabled = false;
+  }
+}
+
 function setupEventListeners() {
   // Bottom Navigation Bar
   document.querySelectorAll('.m3-nav-item').forEach(btn => {
@@ -4862,6 +4905,11 @@ function setupEventListeners() {
       showToast('Play a song first to add to playlist', 'info');
     }
   });
+
+  // Share Current Track
+  if (elements.btnShareTrack) {
+    elements.btnShareTrack.addEventListener('click', shareCurrentTrack);
+  }
 
   // Lossless Audio Quality Badge Info
   const losslessBadge = document.getElementById('lossless-badge');

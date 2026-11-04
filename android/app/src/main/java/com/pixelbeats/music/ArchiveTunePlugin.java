@@ -110,6 +110,29 @@ public class ArchiveTunePlugin extends Plugin {
         initMediaSession();
     }
 
+    @PluginMethod
+    public void shareTrack(PluginCall call) {
+        String url = call.getString("url", "");
+        String title = call.getString("title", "PixelBeats");
+        String text = call.getString("text", title);
+        if (url.isEmpty()) {
+            call.reject("A song link is required");
+            return;
+        }
+        getActivity().runOnUiThread(() -> {
+            try {
+                Intent sendIntent = new Intent(Intent.ACTION_SEND);
+                sendIntent.setType("text/plain");
+                sendIntent.putExtra(Intent.EXTRA_SUBJECT, title);
+                sendIntent.putExtra(Intent.EXTRA_TEXT, text + "\n" + url);
+                getActivity().startActivity(Intent.createChooser(sendIntent, "Share song"));
+                call.resolve();
+            } catch (Exception error) {
+                call.reject("Unable to open share sheet", error);
+            }
+        });
+    }
+
     @Override
     protected void handleOnDestroy() {
         if (mediaSession != null) {

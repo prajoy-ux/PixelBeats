@@ -454,7 +454,7 @@
 
     .bento-actions-grid {
       display: grid !important;
-      grid-template-columns: repeat(2, 1fr) !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
       gap: 10px !important;
       height: 52px !important;
     }
@@ -1395,7 +1395,7 @@
 
         </div>
 
-        <!-- Bento Widget Action Row: Save to Vault & Add to Playlist -->
+        <!-- Bento Widget Action Row: Save, Playlist & Share -->
         <div class="bento-actions-grid">
           <button id="btn-download-track" class="bento-widget-btn" title="Save track to offline vault">
             <span class="material-symbols-rounded btn-icon-m3">download_done</span>
@@ -1404,6 +1404,10 @@
           <button id="btn-player-add-playlist" class="bento-widget-btn" title="Add track to custom playlist">
             <span class="material-symbols-rounded btn-icon-m3">playlist_add</span>
             <span class="btn-text">PLAYLIST</span>
+          </button>
+          <button type="button" id="btn-share-track" class="bento-widget-btn" title="Share current song" aria-label="Share current song">
+            <span class="material-symbols-rounded btn-icon-m3" aria-hidden="true">share</span>
+            <span class="btn-text">SHARE</span>
           </button>
         </div>
 

@@ -1073,7 +1073,7 @@ html, body {
 /* ================= BENTO ACTION WIDGETS ROW ================= */
 .bento-actions-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 0;
   gap: 12px;
   height: 52px;
@@ -1133,6 +1133,19 @@ html, body {
   letter-spacing: 0.3px;
   white-space: nowrap;
   color: #363D17 !important;
+}
+
+.bento-widget-btn:focus-visible {
+  outline: 2px solid #363D17;
+  outline-offset: 3px;
+}
+
+@media (max-width: 380px) {
+  .bento-widget-btn {
+    flex-direction: column;
+    gap: 2px;
+    padding: 0 4px;
+  }
 }
 
 /* Active State (When ON / Saved, e.g. CYCLE active or SAVE VAULT saved): Deep Olive background with Pale Cream text & icon */
