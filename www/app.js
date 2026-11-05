@@ -1827,51 +1827,52 @@ function syncLyricsWithTime(currentTime, forceScroll = false) {
   }
 }
 
-// ================= REAL WEB AUDIO EQUALIZER ENGINE =================
+// ================= PROFESSIONAL 5-BAND STUDIO EQUALIZER ENGINE =================
 let webAudioCtx = null;
 let webAudioSource = null;
 let eqBands = null;
 
-const EQ_PRESETS = {
-  flat: {
-    lowShelf: 0,
-    midPeak1: 0,
-    midPeak2: 0,
-    highShelf: 0,
-    label: 'Flat'
-  },
-  bass_boost: {
-    lowShelf: 14.0,  // Powerful +14dB punchy low-end
-    midPeak1: 3.5,   // +3.5dB lower-mid body
-    midPeak2: -2.0,  // -2dB mid scoop
-    highShelf: 1.0,  // smooth treble
-    label: 'Bass Boost'
-  },
-  acoustic: {
-    lowShelf: 2.0,   // Clean controlled low end
-    midPeak1: -4.5,  // Scoop mud at 700Hz
-    midPeak2: 6.0,   // Acoustic string presence & resonance
-    highShelf: 8.0,  // Open airy top end
-    label: 'Acoustic'
-  },
-  lofi: {
-    lowShelf: 8.0,   // Vintage warm low-end
-    midPeak1: 5.0,   // Nostalgic tape midrange
-    midPeak2: -4.0,  // Subdued presence
-    highShelf: -14.0,// Heavy tape/vinyl high-cut roll-off
-    label: 'Lo-Fi Warmth'
-  },
-  crisp: {
-    lowShelf: -4.5,  // Cut low-end rumble
-    midPeak1: 1.0,
-    midPeak2: 9.0,   // Front-stage vocal clarity
-    highShelf: 7.0,  // Breath & consonants
-    label: 'Vocal Crisp'
-  }
+const EQ_STUDIO_PRESETS = {
+  flat: [0, 0, 0, 0, 0],
+  bass_boost: [6.0, 3.5, 0, 1.0, 1.5],
+  vocal: [-2.0, 0.5, 3.5, 4.5, 2.0],
+  acoustic: [2.0, 1.0, -1.5, 3.0, 4.5],
+  lofi: [4.0, 2.5, -2.0, -4.0, -6.5],
+  electronic: [5.5, 2.5, -1.0, 3.0, 5.0]
 };
+
+// Smooth throttled dispatcher to Android Hardware DSP (avoids IPC congestion)
+let eqBridgeThrottleTimer = null;
+let pendingEqBands = null;
+
+function dispatchNativeEqUpdate(bands) {
+  pendingEqBands = bands;
+  if (eqBridgeThrottleTimer) return;
+  eqBridgeThrottleTimer = setTimeout(() => {
+    eqBridgeThrottleTimer = null;
+    if (pendingEqBands && ArchiveTuneBridge.isNative()) {
+      ArchiveTuneBridge.setEqualizerBands(pendingEqBands);
+    }
+  }, 40);
+}
+
+function flushNativeEqUpdate(bands) {
+  if (eqBridgeThrottleTimer) {
+    clearTimeout(eqBridgeThrottleTimer);
+    eqBridgeThrottleTimer = null;
+  }
+  if (ArchiveTuneBridge.isNative()) {
+    ArchiveTuneBridge.setEqualizerBands(bands || STATE.eqCustomBands);
+  }
+}
 
 function initWebAudioEqualizer() {
   if (!elements.audio) return;
+  // On Native Android, the Android Hardware DSP handles all streams seamlessly without CORS issues
+  if (ArchiveTuneBridge.isNative()) {
+    console.log('✨ [Equalizer] Android Hardware DSP active on Session 0');
+    return;
+  }
   if (webAudioCtx && eqBands) return;
 
   try {
@@ -1932,7 +1933,7 @@ function initWebAudioEqualizer() {
     b4.connect(webAudioCtx.destination);
 
     eqBands = [b0, b1, b2, b3, b4];
-    console.log('✨ [Equalizer] 5-Band Studio Graphic Equalizer linked to audio output');
+    console.log('✨ [Equalizer] 5-Band Web Audio Equalizer connected');
 
     // Apply saved custom bands if available
     if (Array.isArray(STATE.eqCustomBands)) {
@@ -1948,6 +1949,7 @@ function initWebAudioEqualizer() {
 }
 
 async function ensureWebAudioActive() {
+  if (ArchiveTuneBridge.isNative()) return;
   if (!webAudioCtx || !eqBands || !webAudioSource) {
     initWebAudioEqualizer();
   }
@@ -1960,80 +1962,78 @@ async function ensureWebAudioActive() {
   }
 }
 
+function updateEqBandUI(bandIndex, numGain) {
+  const pct = Math.max(0, Math.min(100, ((numGain - (-12)) / 24) * 100));
+  const valElem = document.getElementById(`eq-val-${bandIndex}`);
+  const fillElem = document.getElementById(`eq-fill-${bandIndex}`);
+  const knobElem = document.getElementById(`eq-knob-${bandIndex}`);
+
+  if (valElem) {
+    valElem.textContent = numGain > 0 ? `+${numGain}dB` : `${numGain}dB`;
+    valElem.classList.toggle('boost', numGain > 0);
+    valElem.classList.toggle('cut', numGain < 0);
+  }
+  if (fillElem) {
+    fillElem.style.height = `${pct}%`;
+  }
+  if (knobElem) {
+    knobElem.style.bottom = `${pct}%`;
+  }
+}
+
 function applyEqualizerBand(bandIndex, dbGain, updateUI = true) {
-  const numGain = Math.max(-12, Math.min(12, parseFloat(dbGain) || 0));
-  if (!Array.isArray(STATE.eqCustomBands)) {
+  const numGain = Math.max(-12, Math.min(12, Math.round(parseFloat(dbGain) * 2) / 2));
+  if (!Array.isArray(STATE.eqCustomBands) || STATE.eqCustomBands.length < 5) {
     STATE.eqCustomBands = [0, 0, 0, 0, 0];
   }
   STATE.eqCustomBands[bandIndex] = numGain;
   localStorage.setItem('pixelbeats_eq_custom_bands', JSON.stringify(STATE.eqCustomBands));
 
-  // 1. Web Audio Pipeline
-  ensureWebAudioActive();
-  if (Array.isArray(eqBands) && eqBands[bandIndex] && webAudioCtx) {
-    const t = webAudioCtx.currentTime || 0;
-    try {
-      eqBands[bandIndex].gain.cancelScheduledValues(t);
-      eqBands[bandIndex].gain.setValueAtTime(numGain, t);
-      eqBands[bandIndex].gain.value = numGain;
-    } catch (e) {}
+  // 1. Web Audio (smooth parameter ramp to eliminate zipper noise)
+  if (!ArchiveTuneBridge.isNative()) {
+    ensureWebAudioActive();
+    if (Array.isArray(eqBands) && eqBands[bandIndex] && webAudioCtx) {
+      try {
+        const t = webAudioCtx.currentTime;
+        eqBands[bandIndex].gain.cancelScheduledValues(t);
+        eqBands[bandIndex].gain.setTargetAtTime(numGain, t, 0.015);
+      } catch (e) {}
+    }
   }
 
-  // 2. Android Hardware DSP
-  try {
-    ArchiveTuneBridge.setEqualizerBands(STATE.eqCustomBands);
-  } catch (e) {}
+  // 2. Android Hardware DSP (Throttled for zero UI stutter)
+  dispatchNativeEqUpdate(STATE.eqCustomBands);
 
-  // 3. UI Readout, Fill & Knob positioning
+  // 3. UI Update
   if (updateUI) {
-    const pct = ((numGain - (-12)) / 24) * 100;
-    const valElem = document.getElementById(`eq-val-${bandIndex}`);
-    const fillElem = document.getElementById(`eq-fill-${bandIndex}`);
-    const knobElem = document.getElementById(`eq-knob-${bandIndex}`);
-
-    if (valElem) {
-      valElem.textContent = numGain > 0 ? `+${numGain}dB` : `${numGain}dB`;
-      valElem.classList.toggle('boost', numGain > 0);
-      valElem.classList.toggle('cut', numGain < 0);
-    }
-    if (fillElem) {
-      fillElem.style.height = `${pct}%`;
-    }
-    if (knobElem) {
-      knobElem.style.bottom = `${pct}%`;
-    }
+    updateEqBandUI(bandIndex, numGain);
   }
+}
+
+function applyEqPreset(presetKey, saveState = true) {
+  const bands = EQ_STUDIO_PRESETS[presetKey];
+  if (!bands) return;
+
+  STATE.eqPreset = presetKey;
+  STATE.eqCustomBands = [...bands];
+  if (saveState) {
+    localStorage.setItem('pixelbeats_eq', presetKey);
+    localStorage.setItem('pixelbeats_eq_custom_bands', JSON.stringify(STATE.eqCustomBands));
+  }
+
+  for (let i = 0; i < 5; i++) {
+    applyEqualizerBand(i, bands[i], true);
+  }
+  flushNativeEqUpdate(bands);
+
+  document.querySelectorAll('.eq-preset-pill').forEach(pill => {
+    pill.classList.toggle('active', pill.dataset.preset === presetKey);
+  });
 }
 
 function resetEqualizerToFlat() {
   playHapticSfx('click');
-  STATE.eqCustomBands = [0, 0, 0, 0, 0];
-  localStorage.setItem('pixelbeats_eq_custom_bands', JSON.stringify(STATE.eqCustomBands));
-
-  for (let i = 0; i < 5; i++) {
-    const valElem = document.getElementById(`eq-val-${i}`);
-    const fillElem = document.getElementById(`eq-fill-${i}`);
-    const knobElem = document.getElementById(`eq-knob-${i}`);
-
-    if (valElem) {
-      valElem.textContent = '0dB';
-      valElem.classList.remove('boost', 'cut');
-    }
-    if (fillElem) {
-      fillElem.style.height = '50%';
-    }
-    if (knobElem) {
-      knobElem.style.bottom = '50%';
-    }
-    if (Array.isArray(eqBands) && eqBands[i] && webAudioCtx) {
-      try { eqBands[i].gain.value = 0; } catch (e) {}
-    }
-  }
-
-  try {
-    ArchiveTuneBridge.setEqualizerBands([0, 0, 0, 0, 0]);
-  } catch (e) {}
-
+  applyEqPreset('flat', true);
   showToast('Equalizer: Flat (0 dB)', 'graphic_eq');
 }
 
@@ -2046,79 +2046,132 @@ function initEqualizerSliders() {
   if (!Array.isArray(saved) || saved.length < 5) saved = [0, 0, 0, 0, 0];
   STATE.eqCustomBands = saved;
 
+  // Initialize UI for all 5 bands
   for (let i = 0; i < 5; i++) {
-    const wrap = document.getElementById(`eq-wrap-${i}`);
-    const valElem = document.getElementById(`eq-val-${i}`);
-    const fillElem = document.getElementById(`eq-fill-${i}`);
-    const knobElem = document.getElementById(`eq-knob-${i}`);
     const gain = parseFloat(saved[i]) || 0;
-    const pct = ((gain - (-12)) / 24) * 100;
+    updateEqBandUI(i, gain);
 
-    if (valElem) {
-      valElem.textContent = gain > 0 ? `+${gain}dB` : `${gain}dB`;
-      valElem.classList.toggle('boost', gain > 0);
-      valElem.classList.toggle('cut', gain < 0);
-    }
-    if (fillElem) {
-      fillElem.style.height = `${pct}%`;
-    }
-    if (knobElem) {
-      knobElem.style.bottom = `${pct}%`;
-    }
-
+    const wrap = document.getElementById(`eq-wrap-${i}`);
     if (wrap) {
       let isDragging = false;
-      let lastVibrateDb = gain;
+      let lastSnapDb = gain;
 
       const handlePointer = (clientY) => {
         const groove = wrap.querySelector('.eq-track-groove');
         if (!groove) return;
         const rect = groove.getBoundingClientRect();
+        if (rect.height <= 0) return;
+
         const clampedY = Math.max(rect.top, Math.min(rect.bottom, clientY));
         const normalized = 1 - ((clampedY - rect.top) / rect.height);
         let db = -12 + (normalized * 24);
-        db = Math.round(db * 2) / 2;
+
+        // Gentle snap at neutral 0 dB detent (-0.4 to +0.4 snaps to 0)
+        if (Math.abs(db) < 0.4) {
+          db = 0;
+        } else {
+          db = Math.round(db * 2) / 2;
+        }
         db = Math.max(-12, Math.min(12, db));
 
-        if (Math.abs(db - lastVibrateDb) >= 1) {
-          playHapticSfx('click');
-          lastVibrateDb = db;
+        // Silent micro-vibration when passing across 0dB detent
+        if (db === 0 && lastSnapDb !== 0) {
+          if (typeof navigator !== 'undefined' && navigator.vibrate) {
+            navigator.vibrate(8);
+          }
         }
+        lastSnapDb = db;
+
         applyEqualizerBand(i, db, true);
+
+        // Clear preset active highlights when manually fine-tuning
+        document.querySelectorAll('.eq-preset-pill').forEach(p => p.classList.remove('active'));
       };
 
-      wrap.addEventListener('pointerdown', (e) => {
+      const startDrag = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         isDragging = true;
+        wrap.classList.add('is-dragging');
         try { wrap.setPointerCapture(e.pointerId); } catch (err) {}
         handlePointer(e.clientY);
-      });
-
-      wrap.addEventListener('pointermove', (e) => {
-        if (isDragging) {
-          handlePointer(e.clientY);
-        }
-      });
-
-      const endDrag = (e) => {
-        if (isDragging) {
-          isDragging = false;
-          try { wrap.releasePointerCapture(e.pointerId); } catch (err) {}
-        }
       };
 
+      const moveDrag = (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        e.stopPropagation();
+        handlePointer(e.clientY);
+      };
+
+      const endDrag = (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        wrap.classList.remove('is-dragging');
+        try { wrap.releasePointerCapture(e.pointerId); } catch (err) {}
+        flushNativeEqUpdate();
+      };
+
+      wrap.addEventListener('pointerdown', startDrag);
+      wrap.addEventListener('pointermove', moveDrag);
       wrap.addEventListener('pointerup', endDrag);
       wrap.addEventListener('pointercancel', endDrag);
+      wrap.addEventListener('lostpointercapture', endDrag);
+
+      // Fallback touch events for older WebViews
+      wrap.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches[0]) {
+          startDrag({
+            preventDefault: () => e.preventDefault(),
+            stopPropagation: () => e.stopPropagation(),
+            clientY: e.touches[0].clientY,
+            pointerId: 1
+          });
+        }
+      }, { passive: false });
+
+      wrap.addEventListener('touchmove', (e) => {
+        if (isDragging && e.touches && e.touches[0]) {
+          moveDrag({
+            preventDefault: () => e.preventDefault(),
+            stopPropagation: () => e.stopPropagation(),
+            clientY: e.touches[0].clientY
+          });
+        }
+      }, { passive: false });
+
+      wrap.addEventListener('touchend', endDrag);
+      wrap.addEventListener('touchcancel', endDrag);
     }
   }
 
+  // Preset pill listeners
+  document.querySelectorAll('.eq-preset-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      playHapticSfx('click');
+      const presetKey = pill.dataset.preset;
+      if (presetKey) {
+        applyEqPreset(presetKey, true);
+        showToast(`Equalizer: ${pill.textContent}`, 'tune');
+      }
+    });
+  });
+
+  // Reset Flat button
   const btnReset = document.getElementById('btn-eq-reset');
   if (btnReset) {
     btnReset.addEventListener('click', resetEqualizerToFlat);
   }
 
-  try {
-    ArchiveTuneBridge.setEqualizerBands(saved);
-  } catch (e) {}
+  // Check if current saved matches a preset
+  const savedPreset = localStorage.getItem('pixelbeats_eq') || 'flat';
+  const matchingPresetPill = document.querySelector(`.eq-preset-pill[data-preset="${savedPreset}"]`);
+  if (matchingPresetPill) {
+    document.querySelectorAll('.eq-preset-pill').forEach(p => p.classList.remove('active'));
+    matchingPresetPill.classList.add('active');
+  }
+
+  flushNativeEqUpdate(saved);
 }
 
 // ================= SLEEP TIMER WITH ACCURATE BACKGROUND DETECTION =================

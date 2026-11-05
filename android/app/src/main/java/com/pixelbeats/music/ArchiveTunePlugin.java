@@ -1248,15 +1248,9 @@ public class ArchiveTunePlugin extends Plugin {
                 }
             }
 
-            if (bands != null && bands.length() > 0 && nativeBassBoost != null) {
-                double subBassDb = bands.getDouble(0);
-                if (subBassDb > 0) {
-                    short boostStrength = (short) Math.min(1000, Math.round((subBassDb / 12.0) * 1000));
-                    nativeBassBoost.setEnabled(true);
-                    nativeBassBoost.setStrength(boostStrength);
-                } else {
-                    nativeBassBoost.setStrength((short) 0);
-                }
+            if (nativeBassBoost != null) {
+                // Keep BassBoost off during custom graphic EQ tuning to prevent clipping & distortion
+                nativeBassBoost.setEnabled(false);
             }
 
             JSObject res = new JSObject();
