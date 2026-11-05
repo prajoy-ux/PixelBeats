@@ -1685,7 +1685,7 @@
             <div class="account-actions-grid">
               <button type="button" id="btn-open-account-manager" class="m3-accent-pill-btn flex-1" style="justify-content: center; gap: 8px;">
                 <span class="material-symbols-rounded">manage_accounts</span>
-                <span id="btn-account-main-text">Switch / Manage Accounts</span>
+                <span id="btn-account-main-text">Manage Accounts</span>
               </button>
               <button type="button" id="btn-account-sync-now" class="m3-tonal-pill-btn" title="Sync current playlists and settings now" style="gap: 6px;">
                 <span class="material-symbols-rounded">sync</span>
@@ -2088,104 +2088,90 @@
       </div>
 
       <div class="sheet-body accounts-sheet-body">
-        <!-- Sub-Nav Segmented Control -->
+        <!-- Sub-Nav Segmented Control (3 Clean Non-Wrapping Tabs) -->
         <div class="m3-segmented-control accounts-sub-nav">
-          <button id="acc-nav-profiles" class="m3-segment-btn active">
+          <button id="acc-nav-cloud" class="m3-segment-btn active">
+            <span class="material-symbols-rounded">cloud</span>
+            <span>Cloud Sync</span>
+          </button>
+          <button id="acc-nav-profiles" class="m3-segment-btn">
             <span class="material-symbols-rounded">group</span>
             <span>Profiles</span>
           </button>
-          <button id="acc-nav-cloud" class="m3-segment-btn">
-            <span class="material-symbols-rounded">cloud</span>
-            <span>Cloud DB</span>
-          </button>
-          <button id="acc-nav-create" class="m3-segment-btn">
-            <span class="material-symbols-rounded">person_add</span>
-            <span>New Profile</span>
-          </button>
           <button id="acc-nav-backup" class="m3-segment-btn">
-            <span class="material-symbols-rounded">cloud_sync</span>
-            <span>Backup</span>
+            <span class="material-symbols-rounded">restore</span>
+            <span>Backup & Key</span>
           </button>
         </div>
 
-        <!-- TAB 1: PROFILES LIST & ACTIVE PROFILE -->
-        <div id="acc-tab-profiles" class="accounts-sub-tab">
-          <!-- Active Account Highlight Card -->
-          <div class="active-account-hero-card">
-            <div class="active-acc-left">
-              <div class="acc-avatar-bubble" id="active-acc-bubble">
-                <span class="material-symbols-rounded" id="active-acc-bubble-icon">person</span>
-              </div>
-              <div class="active-acc-meta">
-                <div class="active-acc-badge-row">
-                  <span class="active-acc-name" id="active-acc-sheet-name">Guest Profile</span>
-                  <span class="active-pill-tag">ACTIVE</span>
-                </div>
-                <span class="active-acc-handle" id="active-acc-sheet-handle">@local</span>
-                <span class="active-acc-sync-time" id="active-acc-sheet-sync">Synced just now</span>
-              </div>
-            </div>
-            <div class="active-acc-actions">
-              <button type="button" id="btn-sheet-sync-active" class="m3-accent-pill-btn" title="Save current playlists & EQ to this account" style="padding: 8px 16px;">
-                <span class="material-symbols-rounded" style="font-size: 18px;">sync</span>
-                <span>Save</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Saved Accounts Section -->
-          <div class="accounts-list-header">
-            <h4>Saved Profiles</h4>
-            <span class="accounts-count-pill" id="accounts-count-pill">1 Profile</span>
-          </div>
-
-          <div id="accounts-saved-list" class="accounts-saved-list">
-            <!-- Dynamically populated profiles list -->
-          </div>
-        </div>
-
-                <!-- TAB: CLOUD DATABASE (SUPABASE / CLOUD SYNC) -->
-        <div id="acc-tab-cloud" class="accounts-sub-tab hidden">
-          <!-- Cloud Status Banner -->
+        <!-- TAB 1: CLOUD DATABASE (SUPABASE) -->
+        <div id="acc-tab-cloud" class="accounts-sub-tab">
+          <!-- Cloud Status Banner (Shown when NOT logged in) -->
           <div class="cloud-hero-card" id="cloud-hero-card">
             <div class="cloud-hero-icon-bubble">
               <span class="material-symbols-rounded" id="cloud-hero-icon">cloud_queue</span>
             </div>
             <div class="cloud-hero-text">
               <h4 id="cloud-hero-title">Supabase Cloud Database</h4>
-              <p id="cloud-hero-desc">Sync your playlists, favorites, and 5-band equalizer tuning to a real cloud database. Sign in on any phone or computer to load your music instantly.</p>
+              <p id="cloud-hero-desc">Sync your playlists, favorites, and 5-band studio equalizer to real-time cloud storage. Access your library seamlessly anywhere.</p>
             </div>
           </div>
 
-          <!-- Active Cloud Session View (Shown when logged in to cloud) -->
-          <div id="cloud-session-box" class="cloud-session-box hidden">
-            <div class="cloud-user-meta-row">
-              <div class="cloud-user-avatar">
-                <span class="material-symbols-rounded">verified_user</span>
+          <!-- Active Cloud Session Bento Box (Shown when logged in - NO DOUBLE BOX) -->
+          <div id="cloud-session-box" class="cloud-session-bento hidden">
+            <div class="cloud-bento-top-row">
+              <div class="cloud-live-badge">
+                <span class="cloud-live-dot"></span>
+                <span class="cloud-live-text">Live Supabase Sync</span>
               </div>
-              <div class="cloud-user-info">
-                <div class="cloud-user-name" id="cloud-session-name">Cloud User</div>
-                <div class="cloud-user-email" id="cloud-session-email">user@example.com</div>
-                <div class="cloud-sync-status">
-                  <span class="cloud-pulse-dot"></span>
-                  <span id="cloud-last-sync-label">Synced just now</span>
+              <div class="cloud-sync-time-badge" id="cloud-last-sync-label">Live Synced</div>
+            </div>
+
+            <div class="cloud-bento-user-block">
+              <div class="cloud-bento-avatar-ring">
+                <div class="cloud-bento-avatar">
+                  <span class="material-symbols-rounded" id="cloud-bento-avatar-icon">person</span>
                 </div>
+                <div class="cloud-bento-verified-check">
+                  <span class="material-symbols-rounded">check</span>
+                </div>
+              </div>
+              <div class="cloud-bento-user-meta">
+                <div class="cloud-bento-display-name" id="cloud-session-name">Cloud User</div>
+                <div class="cloud-bento-email" id="cloud-session-email">user@example.com</div>
               </div>
             </div>
 
-            <div class="cloud-session-actions">
-              <button type="button" id="btn-cloud-push-now" class="m3-accent-pill-btn flex-1" style="justify-content: center;">
+            <div class="cloud-bento-stats-bar">
+              <div class="cloud-bento-stat">
+                <span class="material-symbols-rounded">playlist_play</span>
+                <span id="cloud-stat-playlists">1 Playlist</span>
+              </div>
+              <div class="cloud-bento-stat-divider"></div>
+              <div class="cloud-bento-stat">
+                <span class="material-symbols-rounded">favorite</span>
+                <span id="cloud-stat-favorites">0 Saved</span>
+              </div>
+              <div class="cloud-bento-stat-divider"></div>
+              <div class="cloud-bento-stat">
+                <span class="material-symbols-rounded">tune</span>
+                <span id="cloud-stat-eq">Flat EQ</span>
+              </div>
+            </div>
+
+            <div class="cloud-bento-actions-grid">
+              <button type="button" id="btn-cloud-push-now" class="cloud-action-btn cloud-push-btn">
                 <span class="material-symbols-rounded">cloud_upload</span>
-                <span>Push Local to Cloud</span>
+                <span>Push to Cloud</span>
               </button>
-              <button type="button" id="btn-cloud-pull-now" class="m3-tonal-pill-btn flex-1" style="justify-content: center;">
+              <button type="button" id="btn-cloud-pull-now" class="cloud-action-btn cloud-pull-btn">
                 <span class="material-symbols-rounded">cloud_download</span>
                 <span>Pull from Cloud</span>
               </button>
             </div>
 
-            <div style="margin-top: 10px;">
-              <button type="button" id="btn-cloud-signout" class="m3-danger-pill-btn w-full" style="justify-content: center; height: 42px;">
+            <div class="cloud-signout-container">
+              <button type="button" id="btn-cloud-signout" class="m3-tonal-danger-btn" title="Sign out of Supabase Cloud">
                 <span class="material-symbols-rounded">logout</span>
                 <span>Sign Out from Cloud</span>
               </button>
@@ -2259,69 +2245,120 @@
           </div>
         </div>
 
-        <!-- TAB 2: CREATE NEW ACCOUNT -->
-        <div id="acc-tab-create" class="accounts-sub-tab hidden">
-          <form id="form-create-account" class="create-account-form" onsubmit="return false;">
-            <div class="form-group-m3">
-              <label class="form-label-m3">Display Name</label>
-              <input type="text" id="input-acc-name" class="m3-text-input" placeholder="e.g. Prajoy, Alex, Gym..." required maxlength="32">
+        <!-- TAB 2: PROFILES LIST & ACTIVE PROFILE -->
+        <div id="acc-tab-profiles" class="accounts-sub-tab hidden">
+          <!-- Profiles Header with New Profile Action -->
+          <div class="profiles-tab-header">
+            <div class="profiles-tab-header-titles">
+              <span class="profiles-section-title">Local Profiles</span>
+              <span class="profiles-section-sub">Switch listening libraries on this device</span>
             </div>
+            <button type="button" id="btn-toggle-create-profile" class="m3-accent-pill-btn profiles-add-btn">
+              <span class="material-symbols-rounded">add</span>
+              <span id="btn-toggle-create-text">New Profile</span>
+            </button>
+          </div>
 
-            <div class="form-group-m3">
-              <label class="form-label-m3">Username / Handle</label>
-              <div class="input-with-prefix">
-                <span class="input-prefix">@</span>
-                <input type="text" id="input-acc-username" class="m3-text-input prefix-padded" placeholder="username" required maxlength="24">
+          <!-- Collapsible Create Profile Form Drawer -->
+          <div id="panel-create-profile" class="create-profile-drawer hidden">
+            <form id="form-create-account" class="create-account-form" onsubmit="return false;">
+              <div class="form-group-m3">
+                <label class="form-label-m3">Display Name</label>
+                <input type="text" id="input-acc-name" class="m3-text-input" placeholder="e.g. Chill, Gym, Work..." required maxlength="32">
+              </div>
+
+              <div class="form-group-m3">
+                <label class="form-label-m3">Username / Handle</label>
+                <div class="input-with-prefix">
+                  <span class="input-prefix">@</span>
+                  <input type="text" id="input-acc-username" class="m3-text-input prefix-padded" placeholder="username" required maxlength="24">
+                </div>
+              </div>
+
+              <!-- Avatar Icon Selector -->
+              <div class="form-group-m3">
+                <label class="form-label-m3">Choose Profile Avatar</label>
+                <div class="avatar-picker-rack" id="avatar-picker-rack">
+                  <button type="button" class="avatar-pick-btn active" data-icon="headphones"><span class="material-symbols-rounded">headphones</span></button>
+                  <button type="button" class="avatar-pick-btn" data-icon="graphic_eq"><span class="material-symbols-rounded">graphic_eq</span></button>
+                  <button type="button" class="avatar-pick-btn" data-icon="music_note"><span class="material-symbols-rounded">music_note</span></button>
+                  <button type="button" class="avatar-pick-btn" data-icon="favorite"><span class="material-symbols-rounded">favorite</span></button>
+                  <button type="button" class="avatar-pick-btn" data-icon="star"><span class="material-symbols-rounded">star</span></button>
+                  <button type="button" class="avatar-pick-btn" data-icon="bolt"><span class="material-symbols-rounded">bolt</span></button>
+                  <button type="button" class="avatar-pick-btn" data-icon="rocket_launch"><span class="material-symbols-rounded">rocket_launch</span></button>
+                  <button type="button" class="avatar-pick-btn" data-icon="person"><span class="material-symbols-rounded">person</span></button>
+                </div>
+              </div>
+
+              <!-- Optional PIN -->
+              <div class="form-group-m3">
+                <label class="form-label-m3">Profile Lock PIN (Optional)</label>
+                <input type="password" id="input-acc-pin" class="m3-text-input" placeholder="4 digits (leave blank for none)" maxlength="8" inputmode="numeric">
+                <span class="field-hint">Protect this profile from being switched into without your PIN</span>
+              </div>
+
+              <!-- Migration checkbox -->
+              <div class="setting-switch-row form-switch-box">
+                <div class="switch-info">
+                  <span class="switch-title">Copy Current Playlists & Settings</span>
+                  <span class="switch-sub">Save current favorites, custom playlists, and equalizer into this new profile</span>
+                </div>
+                <label class="m3-switch">
+                  <input type="checkbox" id="check-acc-migrate" checked>
+                  <span class="switch-slider"></span>
+                </label>
+              </div>
+
+              <div class="form-actions-row">
+                <button type="button" id="btn-submit-create-account" class="m3-accent-pill-btn w-full" style="justify-content: center; height: 44px;">
+                  <span class="material-symbols-rounded">check</span>
+                  <span>Create & Switch Profile</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Active Account Highlight Card -->
+          <div class="active-account-hero-card">
+            <div class="active-acc-left">
+              <div class="acc-avatar-bubble" id="active-acc-bubble">
+                <span class="material-symbols-rounded" id="active-acc-bubble-icon">person</span>
+              </div>
+              <div class="active-acc-meta">
+                <div class="active-acc-badge-row">
+                  <span class="active-acc-name" id="active-acc-sheet-name">Default Profile</span>
+                  <span class="active-pill-tag">ACTIVE</span>
+                </div>
+                <span class="active-acc-handle" id="active-acc-sheet-handle">@pixelbeats</span>
+                <span class="active-acc-sync-time" id="active-acc-sheet-sync">Synced just now</span>
               </div>
             </div>
-
-            <!-- Avatar Icon Selector -->
-            <div class="form-group-m3">
-              <label class="form-label-m3">Choose Profile Avatar</label>
-              <div class="avatar-picker-rack" id="avatar-picker-rack">
-                <button type="button" class="avatar-pick-btn active" data-icon="headphones"><span class="material-symbols-rounded">headphones</span></button>
-                <button type="button" class="avatar-pick-btn" data-icon="graphic_eq"><span class="material-symbols-rounded">graphic_eq</span></button>
-                <button type="button" class="avatar-pick-btn" data-icon="music_note"><span class="material-symbols-rounded">music_note</span></button>
-                <button type="button" class="avatar-pick-btn" data-icon="favorite"><span class="material-symbols-rounded">favorite</span></button>
-                <button type="button" class="avatar-pick-btn" data-icon="star"><span class="material-symbols-rounded">star</span></button>
-                <button type="button" class="avatar-pick-btn" data-icon="bolt"><span class="material-symbols-rounded">bolt</span></button>
-                <button type="button" class="avatar-pick-btn" data-icon="rocket_launch"><span class="material-symbols-rounded">rocket_launch</span></button>
-                <button type="button" class="avatar-pick-btn" data-icon="person"><span class="material-symbols-rounded">person</span></button>
-              </div>
-            </div>
-
-            <!-- Optional PIN -->
-            <div class="form-group-m3">
-              <label class="form-label-m3">Profile Lock PIN (Optional)</label>
-              <input type="password" id="input-acc-pin" class="m3-text-input" placeholder="4 digits (leave blank for none)" maxlength="8" inputmode="numeric">
-              <span class="field-hint">Protect this account from being switched into without your PIN</span>
-            </div>
-
-            <!-- Migration checkbox -->
-            <div class="setting-switch-row form-switch-box">
-              <div class="switch-info">
-                <span class="switch-title">Copy Current Playlists & Settings</span>
-                <span class="switch-sub">Save current favorites, custom playlists, and equalizer into this new account</span>
-              </div>
-              <label class="m3-switch">
-                <input type="checkbox" id="check-acc-migrate" checked>
-                <span class="switch-slider"></span>
-              </label>
-            </div>
-
-            <div class="form-actions-row">
-              <button type="button" id="btn-submit-create-account" class="m3-accent-pill-btn w-full" style="justify-content: center; height: 48px;">
-                <span class="material-symbols-rounded">check</span>
-                <span>Create & Switch to Account</span>
+            <div class="active-acc-actions">
+              <button type="button" id="btn-sheet-sync-active" class="m3-accent-pill-btn" title="Save current playlists & EQ to this account" style="padding: 8px 16px;">
+                <span class="material-symbols-rounded" style="font-size: 18px;">sync</span>
+                <span>Save</span>
               </button>
             </div>
-          </form>
+          </div>
+
+          <!-- Saved Accounts Section -->
+          <div class="accounts-list-header">
+            <h4>Saved Profiles</h4>
+            <span class="accounts-count-pill" id="accounts-count-pill">1 Profile</span>
+          </div>
+
+          <div id="accounts-saved-list" class="accounts-saved-list">
+            <!-- Dynamically populated profiles list -->
+          </div>
         </div>
 
-        <!-- TAB 3: BACKUP & SYNC -->
+        <!-- TAB 3: BACKUP & SYNC KEY -->
         <div id="acc-tab-backup" class="accounts-sub-tab hidden">
           <div class="backup-options-card">
-            <h4>Portable File Backup</h4>
+            <div class="backup-card-header">
+              <span class="material-symbols-rounded" style="color: #576028;">folder_zip</span>
+              <h4>Portable JSON Backup</h4>
+            </div>
             <p class="backup-card-sub">Export or import a complete backup file containing your account profiles, playlists, favorites, and equalizer tuning.</p>
             <div class="backup-buttons-row">
               <button type="button" id="btn-backup-export-all" class="m3-accent-pill-btn flex-1" style="justify-content: center;">
@@ -2336,7 +2373,10 @@
           </div>
 
           <div class="backup-options-card" style="margin-top: 14px;">
-            <h4>Instant Sync Key</h4>
+            <div class="backup-card-header">
+              <span class="material-symbols-rounded" style="color: #576028;">key</span>
+              <h4>Instant Sync Key</h4>
+            </div>
             <p class="backup-card-sub">Quickly transfer your playlists and equalizer to another phone or computer by copying and pasting a compact Sync Key.</p>
             
             <div class="sync-key-input-box">

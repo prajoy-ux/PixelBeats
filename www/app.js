@@ -3030,7 +3030,9 @@ const AccountManager = {
 
   renderAccountUI() {
     const active = this.getActiveAccount();
-    if (!active) return;
+    const isCloudLogged = typeof CloudDbManager !== 'undefined' && CloudDbManager.isLoggedIn();
+    const cloudSession = isCloudLogged ? CloudDbManager.getSession() : null;
+    const cloudUser = cloudSession && cloudSession.user ? cloudSession.user : null;
 
     // 1. Settings Card
     const nameEl = document.getElementById('account-display-name');
@@ -3041,10 +3043,24 @@ const AccountManager = {
     const eqPresetEl = document.getElementById('stat-eq-preset');
     const statusPill = document.getElementById('account-status-pill');
 
-    if (nameEl) nameEl.textContent = active.name;
-    if (handleEl) handleEl.textContent = `@${active.username} • PixelBeats Profile`;
-    if (avatarIconEl) avatarIconEl.textContent = active.avatarIcon || 'headphones';
-    if (statusPill) statusPill.textContent = active.pin ? 'PIN Protected' : 'Active';
+    if (isCloudLogged && cloudUser) {
+      const cloudName = cloudUser.user_metadata?.display_name || cloudUser.email.split('@')[0];
+      if (nameEl) nameEl.textContent = cloudName;
+      if (handleEl) handleEl.textContent = cloudUser.email;
+      if (avatarIconEl) avatarIconEl.textContent = 'verified_user';
+      if (statusPill) {
+        statusPill.textContent = 'Cloud Synced';
+        statusPill.className = 'account-status-pill cloud-active';
+      }
+    } else if (active) {
+      if (nameEl) nameEl.textContent = active.name;
+      if (handleEl) handleEl.textContent = `@${active.username} • Local Profile`;
+      if (avatarIconEl) avatarIconEl.textContent = active.avatarIcon || 'headphones';
+      if (statusPill) {
+        statusPill.textContent = active.pin ? 'PIN Locked' : 'Local';
+        statusPill.className = 'account-status-pill';
+      }
+    }
 
     // Stats
     const playlists = PlaylistsManager.getPlaylists();
@@ -3054,26 +3070,34 @@ const AccountManager = {
     if (favCountEl) favCountEl.textContent = `${favCount} Saved`;
     if (eqPresetEl) {
       const isCustom = Array.isArray(STATE.eqCustomBands) && STATE.eqCustomBands.some(v => v !== 0);
-      eqPresetEl.textContent = isCustom ? 'Custom EQ' : 'Flat EQ';
+      eqPresetEl.textContent = isCustom ? 'Studio EQ' : 'Flat EQ';
     }
 
     // 2. Library Header Quick Chip
     const libNameEl = document.getElementById('lib-account-label');
     const libIconEl = document.getElementById('lib-account-icon');
-    if (libNameEl) libNameEl.textContent = active.name;
-    if (libIconEl) libIconEl.textContent = active.avatarIcon || 'headphones';
+    if (isCloudLogged && cloudUser) {
+      const cloudName = cloudUser.user_metadata?.display_name || cloudUser.email.split('@')[0];
+      if (libNameEl) libNameEl.textContent = cloudName;
+      if (libIconEl) libIconEl.textContent = 'cloud_done';
+    } else if (active) {
+      if (libNameEl) libNameEl.textContent = active.name;
+      if (libIconEl) libIconEl.textContent = active.avatarIcon || 'headphones';
+    }
 
     // 3. Accounts Sheet Active Card
     const sheetNameEl = document.getElementById('active-acc-sheet-name');
     const sheetHandleEl = document.getElementById('active-acc-sheet-handle');
     const sheetBubbleIcon = document.getElementById('active-acc-bubble-icon');
     const sheetSyncEl = document.getElementById('active-acc-sheet-sync');
-    if (sheetNameEl) sheetNameEl.textContent = active.name;
-    if (sheetHandleEl) sheetHandleEl.textContent = `@${active.username}`;
-    if (sheetBubbleIcon) sheetBubbleIcon.textContent = active.avatarIcon || 'headphones';
-    if (sheetSyncEl) {
-      const minutesAgo = Math.floor((Date.now() - (active.lastSyncedAt || Date.now())) / 60000);
-      sheetSyncEl.textContent = minutesAgo <= 1 ? 'Synced just now' : `Synced ${minutesAgo}m ago`;
+    if (active) {
+      if (sheetNameEl) sheetNameEl.textContent = active.name;
+      if (sheetHandleEl) sheetHandleEl.textContent = `@${active.username}`;
+      if (sheetBubbleIcon) sheetBubbleIcon.textContent = active.avatarIcon || 'headphones';
+      if (sheetSyncEl) {
+        const minutesAgo = Math.floor((Date.now() - (active.lastSyncedAt || Date.now())) / 60000);
+        sheetSyncEl.textContent = minutesAgo <= 1 ? 'Synced just now' : `Synced ${minutesAgo}m ago`;
+      }
     }
 
     // 4. Accounts Sheet Saved List
@@ -3394,15 +3418,17 @@ const CloudDbManager = {
     const session = this.getSession();
     const isLogged = this.isLoggedIn();
 
+    const heroCard = document.getElementById('cloud-hero-card');
     const sessionBox = document.getElementById('cloud-session-box');
     const authBox = document.getElementById('cloud-auth-box');
-    const heroTitle = document.getElementById('cloud-hero-title');
-    const heroDesc = document.getElementById('cloud-hero-desc');
-    const heroIcon = document.getElementById('cloud-hero-icon');
 
     const nameEl = document.getElementById('cloud-session-name');
     const emailEl = document.getElementById('cloud-session-email');
     const syncLabel = document.getElementById('cloud-last-sync-label');
+
+    const statPlEl = document.getElementById('cloud-stat-playlists');
+    const statFavEl = document.getElementById('cloud-stat-favorites');
+    const statEqEl = document.getElementById('cloud-stat-eq');
 
     const urlInput = document.getElementById('input-supabase-url');
     const keyInput = document.getElementById('input-supabase-key');
@@ -3411,11 +3437,9 @@ const CloudDbManager = {
     if (keyInput && !keyInput.value) keyInput.value = this.getAnonKey();
 
     if (isLogged && session && session.user) {
+      if (heroCard) heroCard.classList.add('hidden');
       if (sessionBox) sessionBox.classList.remove('hidden');
       if (authBox) authBox.classList.add('hidden');
-      if (heroTitle) heroTitle.textContent = 'Cloud Database Connected';
-      if (heroDesc) heroDesc.textContent = 'Your playlists, favorites, and 5-band studio equalizer are automatically synchronized with Supabase.';
-      if (heroIcon) heroIcon.textContent = 'cloud_done';
 
       const user = session.user;
       const displayName = user.user_metadata?.display_name || user.email.split('@')[0];
@@ -3426,12 +3450,24 @@ const CloudDbManager = {
         const lastSync = session.last_synced_at ? Math.floor((Date.now() - session.last_synced_at) / 60000) : 0;
         syncLabel.textContent = lastSync <= 1 ? 'Live Synced' : `Synced ${lastSync}m ago`;
       }
+
+      // Synced metrics
+      const playlists = PlaylistsManager.getPlaylists();
+      const favPl = playlists.find(p => p.id === 'favorites');
+      const favCount = favPl && favPl.tracks ? favPl.tracks.length : 0;
+      const isCustom = Array.isArray(STATE.eqCustomBands) && STATE.eqCustomBands.some(v => v !== 0);
+
+      if (statPlEl) statPlEl.textContent = `${playlists.length} Playlist${playlists.length === 1 ? '' : 's'}`;
+      if (statFavEl) statFavEl.textContent = `${favCount} Saved`;
+      if (statEqEl) statEqEl.textContent = isCustom ? 'Studio EQ' : 'Flat EQ';
     } else {
+      if (heroCard) heroCard.classList.remove('hidden');
       if (sessionBox) sessionBox.classList.add('hidden');
       if (authBox) authBox.classList.remove('hidden');
-      if (heroTitle) heroTitle.textContent = 'Supabase Cloud Database';
-      if (heroDesc) heroDesc.textContent = 'Sync your playlists, favorites, and 5-band equalizer tuning to a real cloud database. Sign in on any phone or computer to load your music instantly.';
-      if (heroIcon) heroIcon.textContent = 'cloud_queue';
+    }
+
+    if (typeof AccountManager !== 'undefined' && typeof AccountManager.renderAccountUI === 'function') {
+      AccountManager.renderAccountUI();
     }
   },
 
@@ -6227,21 +6263,36 @@ function setupEventListeners() {
   document.addEventListener('keydown', unlockAudioContext);
 
   // ================= ACCOUNTS & PROFILE MODAL LISTENERS =================
-  const openAccountsModal = (tabName = 'profiles') => {
+  const openAccountsModal = (tabName) => {
     playHapticSfx('click');
+    CloudDbManager.renderCloudUI();
     AccountManager.renderAccountUI();
     if (elements.modalAccounts) {
       elements.modalAccounts.classList.remove('hidden');
     }
+
+    if (!tabName) {
+      tabName = CloudDbManager.isLoggedIn() ? 'cloud' : 'cloud';
+    }
+
     if (tabName === 'create') {
-      const createNav = document.getElementById('acc-nav-create');
-      if (createNav) createNav.click();
+      const profNav = document.getElementById('acc-nav-profiles');
+      if (profNav) profNav.click();
+      const panelCreate = document.getElementById('panel-create-profile');
+      const toggleText = document.getElementById('btn-toggle-create-text');
+      if (panelCreate) panelCreate.classList.remove('hidden');
+      if (toggleText) toggleText.textContent = 'Cancel';
+      const nameInput = document.getElementById('input-acc-name');
+      if (nameInput) setTimeout(() => nameInput.focus(), 200);
     } else if (tabName === 'backup') {
       const backupNav = document.getElementById('acc-nav-backup');
       if (backupNav) backupNav.click();
-    } else {
+    } else if (tabName === 'profiles') {
       const profNav = document.getElementById('acc-nav-profiles');
       if (profNav) profNav.click();
+    } else {
+      const cloudNav = document.getElementById('acc-nav-cloud');
+      if (cloudNav) cloudNav.click();
     }
   };
 
@@ -6253,11 +6304,11 @@ function setupEventListeners() {
   };
 
   if (elements.btnOpenAccountManager) {
-    elements.btnOpenAccountManager.addEventListener('click', () => openAccountsModal('profiles'));
+    elements.btnOpenAccountManager.addEventListener('click', () => openAccountsModal());
   }
 
   if (elements.btnLibAccount) {
-    elements.btnLibAccount.addEventListener('click', () => openAccountsModal('profiles'));
+    elements.btnLibAccount.addEventListener('click', () => openAccountsModal());
   }
 
   if (elements.btnCloseAccountsModal) {
@@ -6270,11 +6321,10 @@ function setupEventListeners() {
     });
   }
 
-  // Sub-Navigation Tabs inside Accounts Sheet
+  // Sub-Navigation Tabs inside Accounts Sheet (3 Clean Tabs)
   const accNavBtns = [
-    { nav: document.getElementById('acc-nav-profiles'), tab: document.getElementById('acc-tab-profiles') },
     { nav: document.getElementById('acc-nav-cloud'), tab: document.getElementById('acc-tab-cloud') },
-    { nav: document.getElementById('acc-nav-create'), tab: document.getElementById('acc-tab-create') },
+    { nav: document.getElementById('acc-nav-profiles'), tab: document.getElementById('acc-tab-profiles') },
     { nav: document.getElementById('acc-nav-backup'), tab: document.getElementById('acc-tab-backup') }
   ];
 
@@ -6292,10 +6342,30 @@ function setupEventListeners() {
         if (item.nav.id === 'acc-nav-backup') {
           const ta = document.getElementById('sync-key-textarea');
           if (ta) ta.value = AccountManager.generateSyncKey();
+        } else if (item.nav.id === 'acc-nav-cloud') {
+          CloudDbManager.renderCloudUI();
         }
       });
     }
   });
+
+  // Toggle button for Create Profile Drawer
+  const btnToggleCreate = document.getElementById('btn-toggle-create-profile');
+  const panelCreateProfile = document.getElementById('panel-create-profile');
+  const textToggleCreate = document.getElementById('btn-toggle-create-text');
+  if (btnToggleCreate && panelCreateProfile) {
+    btnToggleCreate.addEventListener('click', () => {
+      playHapticSfx('click');
+      const isHidden = panelCreateProfile.classList.toggle('hidden');
+      if (textToggleCreate) {
+        textToggleCreate.textContent = isHidden ? 'New Profile' : 'Cancel';
+      }
+      if (!isHidden) {
+        const nameInput = document.getElementById('input-acc-name');
+        if (nameInput) setTimeout(() => nameInput.focus(), 150);
+      }
+    });
+  }
 
   // Avatar icon picker selection in Create Account form
   document.querySelectorAll('.avatar-pick-btn').forEach(btn => {
@@ -6324,7 +6394,7 @@ function setupEventListeners() {
       const avatarIcon = activeAvatarBtn ? activeAvatarBtn.getAttribute('data-icon') : 'headphones';
 
       if (!name) {
-        alert('Please enter a display name for the account.');
+        alert('Please enter a display name for the profile.');
         if (nameInput) nameInput.focus();
         return;
       }
@@ -6342,13 +6412,15 @@ function setupEventListeners() {
         if (userInput) userInput.value = '';
         if (pinInput) pinInput.value = '';
 
-        // Switch to Profiles view inside modal
-        const profNav = document.getElementById('acc-nav-profiles');
-        if (profNav) profNav.click();
+        // Close drawer
+        if (panelCreateProfile) panelCreateProfile.classList.add('hidden');
+        if (textToggleCreate) textToggleCreate.textContent = 'New Profile';
 
-        showToast(`Account created for ${created.name}!`, 'check_circle');
+        // Refresh active & saved profiles
+        AccountManager.renderAccountUI();
+        showToast(`Profile created for ${created.name}!`, 'check_circle');
       } catch (err) {
-        alert(err.message || 'Failed to create account.');
+        alert(err.message || 'Failed to create profile.');
       }
     });
   }

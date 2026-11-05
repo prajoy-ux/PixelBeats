@@ -3982,13 +3982,15 @@ html, body {
   display: flex !important;
   align-items: center !important;
   gap: 14px !important;
-  padding: 14px !important;
+  padding: 16px !important;
   background: rgba(87, 96, 40, 0.08) !important;
-  border-radius: 20px !important;
+  border: 1px solid rgba(87, 96, 40, 0.12) !important;
+  border-radius: 22px !important;
   margin-top: 10px !important;
 }
 
 .account-avatar-wrapper {
+  position: relative !important;
   width: 52px !important;
   height: 52px !important;
   min-width: 52px !important;
@@ -3998,12 +4000,12 @@ html, body {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  box-shadow: 0 3px 10px rgba(54, 61, 23, 0.3) !important;
+  box-shadow: 0 4px 12px rgba(54, 61, 23, 0.25) !important;
   flex-shrink: 0 !important;
 }
 
 .account-avatar-icon {
-  font-size: 28px !important;
+  font-size: 26px !important;
   color: #EFF2E1 !important;
 }
 
@@ -4019,7 +4021,6 @@ html, body {
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
-  flex-wrap: wrap !important;
 }
 
 .account-display-name {
@@ -4033,45 +4034,64 @@ html, body {
 }
 
 .account-status-pill {
-  display: inline-block !important;
-  padding: 2px 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 3px 9px !important;
   border-radius: 999px !important;
   background: #576028 !important;
   color: #EFF2E1 !important;
   font-size: 10px !important;
   font-weight: 800 !important;
-  letter-spacing: 0.5px !important;
+  letter-spacing: 0.4px !important;
   text-transform: uppercase !important;
+  flex-shrink: 0 !important;
+}
+
+.account-status-pill.cloud-active {
+  background: #2e7d32 !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 4px rgba(46, 125, 50, 0.35) !important;
 }
 
 .account-handle {
   font-size: 12px !important;
   font-weight: 600 !important;
   color: #576028 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
+/* Micro Stats: 3 Balanced Micro-Pills That Never Wrap */
 .account-stats-row {
-  display: flex !important;
-  align-items: center !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
   gap: 6px !important;
-  flex-wrap: wrap !important;
-  margin-top: 4px !important;
+  margin-top: 6px !important;
 }
 
 .account-stat-chip {
   display: inline-flex !important;
   align-items: center !important;
+  justify-content: center !important;
   gap: 4px !important;
-  padding: 3px 8px !important;
+  padding: 5px 6px !important;
   border-radius: 999px !important;
-  background: #EFF2E1 !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(87, 96, 40, 0.12) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
   font-size: 11px !important;
   font-weight: 700 !important;
   color: #363D17 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
+
 .account-stat-chip .material-symbols-rounded {
-  font-size: 13px !important;
+  font-size: 13.5px !important;
   color: #576028 !important;
+  flex-shrink: 0 !important;
 }
 
 .account-actions-grid {
@@ -4081,11 +4101,20 @@ html, body {
   margin-top: 12px !important;
 }
 
+.account-actions-grid button {
+  height: 44px !important;
+}
+
+/* Unified Secondary Action Toolbar */
 .account-backup-pills-row {
   display: flex !important;
   align-items: center !important;
   gap: 6px !important;
   margin-top: 10px !important;
+  background: rgba(87, 96, 40, 0.05) !important;
+  padding: 5px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(87, 96, 40, 0.08) !important;
 }
 
 .account-sub-action-pill {
@@ -4093,38 +4122,43 @@ html, body {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 4px !important;
-  padding: 8px 4px !important;
-  border-radius: 999px !important;
+  gap: 5px !important;
+  padding: 8px 6px !important;
+  height: 36px !important;
+  border-radius: 13px !important;
   background: #EFF2E1 !important;
-  background-color: #EFF2E1 !important;
   color: #363D17 !important;
-  border: none !important;
+  border: 1px solid rgba(87, 96, 40, 0.08) !important;
   font-size: 11px !important;
   font-weight: 700 !important;
   cursor: pointer !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05) !important;
   transition: transform 0.15s ease, background 0.15s ease !important;
   white-space: nowrap !important;
 }
+
 .account-sub-action-pill:active {
   transform: scale(0.96) !important;
   background: #576028 !important;
   color: #EFF2E1 !important;
 }
+
 .account-sub-action-pill .material-symbols-rounded {
-  font-size: 14px !important;
+  font-size: 15px !important;
   color: #576028 !important;
 }
+
 .account-sub-action-pill:active .material-symbols-rounded {
   color: #EFF2E1 !important;
 }
 
-/* Accounts Modal Bottom Sheet */
+/* 2. Accounts Modal Bottom Sheet */
 .accounts-sheet {
   max-height: 88vh !important;
   display: flex !important;
   flex-direction: column !important;
+  border-top-left-radius: 28px !important;
+  border-top-right-radius: 28px !important;
 }
 
 .accounts-sheet-body {
@@ -4136,14 +4170,438 @@ html, body {
 .sheet-title-with-icon {
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
+  gap: 10px !important;
 }
 
+/* 3-Tab Segmented Navigation (No wrapping!) */
 .accounts-sub-nav {
+  display: flex !important;
+  margin-bottom: 16px !important;
+  gap: 4px !important;
+  background: rgba(87, 96, 40, 0.08) !important;
+  padding: 4px !important;
+  border-radius: 999px !important;
+}
+
+.accounts-sub-nav .m3-segment-btn {
+  flex: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 9px 8px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  border-radius: 999px !important;
+  white-space: nowrap !important;
+}
+
+.accounts-sub-nav .m3-segment-btn .material-symbols-rounded {
+  font-size: 18px !important;
+}
+
+/* 3. Cloud Database / Supabase Hero Card & Bento View */
+.cloud-hero-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 16px !important;
+  background: #C8D394 !important;
+  border-radius: 22px !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08) !important;
   margin-bottom: 16px !important;
 }
 
-/* Active Account Hero Card */
+.cloud-hero-icon-bubble {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  border-radius: 50% !important;
+  background: #576028 !important;
+  color: #EFF2E1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 3px 8px rgba(54, 61, 23, 0.25) !important;
+}
+
+.cloud-hero-icon-bubble .material-symbols-rounded {
+  font-size: 26px !important;
+  color: #EFF2E1 !important;
+}
+
+.cloud-hero-text h4 {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #363D17 !important;
+  margin: 0 !important;
+}
+
+.cloud-hero-text p {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #576028 !important;
+  margin: 3px 0 0 0 !important;
+  line-height: 1.35 !important;
+}
+
+/* Active Cloud Bento Hero Card (The Single Unified Hero Card!) */
+.cloud-session-bento {
+  background: #EFF2E1 !important;
+  border: 1px solid rgba(87, 96, 40, 0.14) !important;
+  border-radius: 24px !important;
+  padding: 18px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+  margin-bottom: 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+
+.cloud-bento-top-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.cloud-live-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: rgba(46, 125, 50, 0.12) !important;
+  border: 1px solid rgba(46, 125, 50, 0.25) !important;
+  padding: 4px 10px !important;
+  border-radius: 999px !important;
+}
+
+.cloud-live-dot {
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 50% !important;
+  background: #2e7d32 !important;
+  box-shadow: 0 0 6px rgba(46, 125, 50, 0.6) !important;
+  animation: pulseCloud 2s infinite ease-in-out !important;
+}
+
+.cloud-live-text {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: #2e7d32 !important;
+  letter-spacing: 0.2px !important;
+}
+
+.cloud-sync-time-badge {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #747D43 !important;
+}
+
+.cloud-bento-user-block {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.cloud-bento-avatar-ring {
+  position: relative !important;
+  width: 56px !important;
+  height: 56px !important;
+  flex-shrink: 0 !important;
+}
+
+.cloud-bento-avatar {
+  width: 56px !important;
+  height: 56px !important;
+  border-radius: 50% !important;
+  background: #576028 !important;
+  color: #EFF2E1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 4px 12px rgba(54, 61, 23, 0.25) !important;
+}
+
+.cloud-bento-avatar .material-symbols-rounded {
+  font-size: 30px !important;
+  color: #EFF2E1 !important;
+}
+
+.cloud-bento-verified-check {
+  position: absolute !important;
+  bottom: -2px !important;
+  right: -2px !important;
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  background: #2e7d32 !important;
+  color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 2px solid #EFF2E1 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.cloud-bento-verified-check .material-symbols-rounded {
+  font-size: 13px !important;
+  color: #ffffff !important;
+}
+
+.cloud-bento-user-meta {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  min-width: 0 !important;
+}
+
+.cloud-bento-display-name {
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  color: #363D17 !important;
+  letter-spacing: -0.2px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.cloud-bento-email {
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  color: #576028 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.cloud-bento-stats-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-around !important;
+  background: rgba(87, 96, 40, 0.06) !important;
+  border: 1px solid rgba(87, 96, 40, 0.08) !important;
+  border-radius: 14px !important;
+  padding: 8px 12px !important;
+}
+
+.cloud-bento-stat {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  color: #363D17 !important;
+}
+
+.cloud-bento-stat .material-symbols-rounded {
+  font-size: 15px !important;
+  color: #576028 !important;
+}
+
+.cloud-bento-stat-divider {
+  width: 1px !important;
+  height: 16px !important;
+  background: rgba(87, 96, 40, 0.15) !important;
+}
+
+.cloud-bento-actions-grid {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.cloud-action-btn {
+  flex: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  height: 44px !important;
+  border-radius: 999px !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.cloud-action-btn:active {
+  transform: scale(0.97) !important;
+}
+
+.cloud-push-btn {
+  background: #576028 !important;
+  color: #EFF2E1 !important;
+  box-shadow: 0 3px 10px rgba(54, 61, 23, 0.25) !important;
+}
+
+.cloud-push-btn .material-symbols-rounded {
+  font-size: 18px !important;
+  color: #EFF2E1 !important;
+}
+
+.cloud-pull-btn {
+  background: #DCE5B3 !important;
+  color: #363D17 !important;
+  border: 1px solid rgba(87, 96, 40, 0.15) !important;
+}
+
+.cloud-pull-btn .material-symbols-rounded {
+  font-size: 18px !important;
+  color: #576028 !important;
+}
+
+.cloud-signout-container {
+  margin-top: 2px !important;
+}
+
+/* Material 3 Tonal Danger Pill Button (Refined Sign Out!) */
+.m3-tonal-danger-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  height: 44px !important;
+  border-radius: 999px !important;
+  background: rgba(186, 26, 26, 0.08) !important;
+  border: 1px solid rgba(186, 26, 26, 0.22) !important;
+  color: #ba1a1a !important;
+  font-family: inherit !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.m3-tonal-danger-btn:hover {
+  background: rgba(186, 26, 26, 0.14) !important;
+  border-color: rgba(186, 26, 26, 0.35) !important;
+}
+
+.m3-tonal-danger-btn:active {
+  transform: scale(0.98) !important;
+  background: rgba(186, 26, 26, 0.2) !important;
+}
+
+.m3-tonal-danger-btn .material-symbols-rounded {
+  font-size: 18px !important;
+  color: #ba1a1a !important;
+}
+
+/* Cloud Auth Switcher & Form */
+.cloud-auth-toggle {
+  display: flex !important;
+  background: #EFF2E1 !important;
+  border-radius: 999px !important;
+  padding: 4px !important;
+  margin-bottom: 14px !important;
+  gap: 4px !important;
+  border: 1px solid rgba(87, 96, 40, 0.1) !important;
+}
+
+.cloud-toggle-btn {
+  flex: 1 !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 9px 12px !important;
+  border-radius: 999px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  color: #576028 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.cloud-toggle-btn.active {
+  background: #576028 !important;
+  color: #EFF2E1 !important;
+  box-shadow: 0 2px 8px rgba(54, 61, 23, 0.2) !important;
+}
+
+@keyframes pulseCloud {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}
+
+/* Supabase Connection Config Drawer */
+.cloud-config-drawer {
+  margin-top: 16px !important;
+  border-top: 1px solid rgba(87, 96, 40, 0.15) !important;
+  padding-top: 12px !important;
+}
+
+.cloud-details-drawer {
+  background: #EFF2E1 !important;
+  border-radius: 18px !important;
+  padding: 12px 14px !important;
+  border: 1px solid rgba(87, 96, 40, 0.1) !important;
+}
+
+.cloud-details-summary {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 12.5px !important;
+  font-weight: 800 !important;
+  color: #363D17 !important;
+  cursor: pointer !important;
+  outline: none !important;
+}
+
+.cloud-drawer-body {
+  margin-top: 12px !important;
+  padding-top: 10px !important;
+  border-top: 1px dashed rgba(87, 96, 40, 0.2) !important;
+}
+
+/* 4. Profiles Tab Styles */
+.profiles-tab-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 14px !important;
+}
+
+.profiles-tab-header-titles {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+.profiles-section-title {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #363D17 !important;
+}
+
+.profiles-section-sub {
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  color: #576028 !important;
+}
+
+.profiles-add-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 6px 14px !important;
+  height: 36px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  border-radius: 999px !important;
+}
+
+.create-profile-drawer {
+  background: #EFF2E1 !important;
+  border: 1px solid rgba(87, 96, 40, 0.14) !important;
+  border-radius: 20px !important;
+  padding: 16px !important;
+  margin-bottom: 16px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+
 .active-account-hero-card {
   display: flex !important;
   align-items: center !important;
@@ -4152,7 +4610,7 @@ html, body {
   padding: 14px !important;
   background: #C8D394 !important;
   border-radius: 20px !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
   margin-bottom: 16px !important;
 }
 
@@ -4176,6 +4634,7 @@ html, body {
   justify-content: center !important;
   box-shadow: 0 2px 8px rgba(54, 61, 23, 0.25) !important;
 }
+
 .acc-avatar-bubble .material-symbols-rounded {
   font-size: 24px !important;
   color: #EFF2E1 !important;
@@ -4204,35 +4663,35 @@ html, body {
 }
 
 .active-pill-tag {
-  background: #576028 !important;
-  color: #EFF2E1 !important;
   font-size: 9px !important;
   font-weight: 800 !important;
+  background: #576028 !important;
+  color: #EFF2E1 !important;
   padding: 2px 6px !important;
   border-radius: 999px !important;
   letter-spacing: 0.5px !important;
 }
 
 .active-acc-handle {
-  font-size: 11.5px !important;
+  font-size: 12px !important;
   font-weight: 600 !important;
   color: #576028 !important;
 }
 
 .active-acc-sync-time {
-  font-size: 10.5px !important;
-  font-weight: 600 !important;
-  color: #576028 !important;
-  opacity: 0.8 !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  color: #747D43 !important;
 }
 
-/* Saved Accounts List */
+/* Saved Profiles List */
 .accounts-list-header {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   margin-bottom: 10px !important;
 }
+
 .accounts-list-header h4 {
   font-size: 14px !important;
   font-weight: 800 !important;
@@ -4243,9 +4702,9 @@ html, body {
 .accounts-count-pill {
   font-size: 11px !important;
   font-weight: 700 !important;
+  background: rgba(87, 96, 40, 0.1) !important;
   color: #576028 !important;
-  background: rgba(87, 96, 40, 0.12) !important;
-  padding: 2px 8px !important;
+  padding: 3px 8px !important;
   border-radius: 999px !important;
 }
 
@@ -4259,19 +4718,17 @@ html, body {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 10px 14px !important;
+  gap: 12px !important;
+  padding: 10px 12px !important;
   background: #EFF2E1 !important;
-  border-radius: 18px !important;
-  cursor: pointer !important;
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(87, 96, 40, 0.1) !important;
+  transition: transform 0.15s ease, background 0.15s ease !important;
 }
-.saved-acc-item:hover {
-  background: #e2e7d0 !important;
-}
+
 .saved-acc-item.is-current {
-  border: 1.5px solid #576028 !important;
-  background: #e4eac8 !important;
+  border-color: #576028 !important;
+  background: rgba(200, 211, 148, 0.4) !important;
 }
 
 .saved-acc-left {
@@ -4280,6 +4737,7 @@ html, body {
   gap: 10px !important;
   flex: 1 !important;
   min-width: 0 !important;
+  cursor: pointer !important;
 }
 
 .saved-acc-avatar {
@@ -4293,19 +4751,30 @@ html, body {
   justify-content: center !important;
   flex-shrink: 0 !important;
 }
+
 .saved-acc-avatar .material-symbols-rounded {
   font-size: 20px !important;
   color: #EFF2E1 !important;
+}
+
+.saved-acc-meta {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1px !important;
+  min-width: 0 !important;
 }
 
 .saved-acc-name {
   font-size: 13.5px !important;
   font-weight: 800 !important;
   color: #363D17 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 .saved-acc-sub {
-  font-size: 11px !important;
+  font-size: 11.5px !important;
   font-weight: 600 !important;
   color: #576028 !important;
 }
@@ -4320,24 +4789,27 @@ html, body {
   width: 32px !important;
   height: 32px !important;
   border-radius: 50% !important;
+  background: rgba(87, 96, 40, 0.1) !important;
   border: none !important;
-  background: transparent !important;
+  color: #576028 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
-  color: #576028 !important;
-  transition: background 0.15s ease !important;
-}
-.btn-acc-action-mini:hover {
-  background: rgba(87, 96, 40, 0.15) !important;
-}
-.btn-acc-action-mini.delete-acc:hover {
-  color: #ba1a1a !important;
-  background: rgba(186, 26, 26, 0.12) !important;
+  transition: background 0.15s ease, transform 0.15s ease !important;
 }
 
-/* Forms & Avatar Pickers */
+.btn-acc-action-mini:active {
+  transform: scale(0.92) !important;
+  background: #576028 !important;
+  color: #EFF2E1 !important;
+}
+
+.btn-acc-action-mini .material-symbols-rounded {
+  font-size: 17px !important;
+}
+
+/* 5. Forms & Inputs */
 .create-account-form {
   display: flex !important;
   flex-direction: column !important;
@@ -4347,29 +4819,31 @@ html, body {
 .form-group-m3 {
   display: flex !important;
   flex-direction: column !important;
-  gap: 6px !important;
+  gap: 4px !important;
 }
 
 .form-label-m3 {
-  font-size: 12.5px !important;
+  font-size: 12px !important;
   font-weight: 700 !important;
-  color: #576028 !important;
+  color: #363D17 !important;
 }
 
 .m3-text-input {
   width: 100% !important;
+  height: 44px !important;
   background: #EFF2E1 !important;
-  background-color: #EFF2E1 !important;
   border: 1.5px solid rgba(87, 96, 40, 0.2) !important;
   border-radius: 14px !important;
-  padding: 10px 14px !important;
-  font-size: 14px !important;
+  padding: 0 14px !important;
+  font-size: 13.5px !important;
   font-weight: 600 !important;
   color: #363D17 !important;
   box-sizing: border-box !important;
   outline: none !important;
+  font-family: inherit !important;
   transition: border-color 0.2s ease, background 0.2s ease !important;
 }
+
 .m3-text-input:focus {
   border-color: #576028 !important;
   background: #ffffff !important;
@@ -4380,85 +4854,103 @@ html, body {
   display: flex !important;
   align-items: center !important;
 }
+
 .input-prefix {
   position: absolute !important;
   left: 12px !important;
-  font-weight: 800 !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
   color: #576028 !important;
-  font-size: 15px !important;
   pointer-events: none !important;
 }
-.prefix-padded {
-  padding-left: 30px !important;
+
+.m3-text-input.prefix-padded {
+  padding-left: 28px !important;
 }
 
 .field-hint {
   font-size: 11px !important;
-  font-weight: 600 !important;
-  color: #576028 !important;
-  opacity: 0.8 !important;
+  font-weight: 500 !important;
+  color: #747D43 !important;
+  margin-top: 2px !important;
 }
 
 .avatar-picker-rack {
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
-  flex-wrap: wrap !important;
+  overflow-x: auto !important;
+  padding: 4px 0 !important;
+  -webkit-overflow-scrolling: touch !important;
 }
 
 .avatar-pick-btn {
-  width: 42px !important;
-  height: 42px !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
   border-radius: 50% !important;
   background: #EFF2E1 !important;
-  border: 2px solid transparent !important;
+  border: 2px solid rgba(87, 96, 40, 0.15) !important;
+  color: #576028 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
-  color: #576028 !important;
-  transition: all 0.2s ease !important;
+  transition: all 0.15s ease !important;
 }
-.avatar-pick-btn:hover {
-  background: #e2e7d0 !important;
-}
+
 .avatar-pick-btn.active {
   background: #576028 !important;
+  border-color: #576028 !important;
   color: #EFF2E1 !important;
-  border-color: #363D17 !important;
-  box-shadow: 0 3px 10px rgba(87, 96, 40, 0.3) !important;
+  transform: scale(1.08) !important;
+  box-shadow: 0 2px 8px rgba(54, 61, 23, 0.3) !important;
 }
-.avatar-pick-btn.active .material-symbols-rounded {
-  color: #EFF2E1 !important;
+
+.avatar-pick-btn .material-symbols-rounded {
+  font-size: 20px !important;
 }
 
 .form-switch-box {
   background: #EFF2E1 !important;
-  border-radius: 16px !important;
-  padding: 12px 14px !important;
+  border-radius: 14px !important;
+  padding: 10px 12px !important;
+  border: 1px solid rgba(87, 96, 40, 0.1) !important;
+}
+
+.form-actions-row {
   margin-top: 4px !important;
 }
 
-/* Backup & Sync Cards */
+/* 6. Backup & Sync Key Tab Styles */
 .backup-options-card {
-  background: #C8D394 !important;
+  background: #EFF2E1 !important;
   border-radius: 20px !important;
   padding: 16px !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(87, 96, 40, 0.12) !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05) !important;
 }
-.backup-options-card h4 {
-  font-size: 15px !important;
+
+.backup-card-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-bottom: 6px !important;
+}
+
+.backup-card-header h4 {
+  font-size: 14.5px !important;
   font-weight: 800 !important;
   color: #363D17 !important;
   margin: 0 !important;
 }
 
 .backup-card-sub {
-  font-size: 12px !important;
+  font-size: 11.5px !important;
   font-weight: 600 !important;
   color: #576028 !important;
-  margin: 4px 0 12px 0 !important;
-  line-height: 1.4 !important;
+  margin: 0 0 12px 0 !important;
+  line-height: 1.35 !important;
 }
 
 .backup-buttons-row {
@@ -4467,10 +4959,18 @@ html, body {
   gap: 8px !important;
 }
 
+.backup-buttons-row button {
+  height: 42px !important;
+  border-radius: 999px !important;
+}
+
+.sync-key-input-box {
+  margin-bottom: 6px !important;
+}
+
 .m3-textarea {
   width: 100% !important;
   background: #EFF2E1 !important;
-  background-color: #EFF2E1 !important;
   border: 1.5px solid rgba(87, 96, 40, 0.2) !important;
   border-radius: 14px !important;
   padding: 10px 12px !important;
@@ -4481,183 +4981,10 @@ html, body {
   outline: none !important;
   font-family: inherit !important;
   resize: none !important;
+  transition: border-color 0.2s ease, background 0.2s ease !important;
 }
+
 .m3-textarea:focus {
   border-color: #576028 !important;
   background: #ffffff !important;
-}
-
-/* Cloud Database & Supabase Styles */
-.cloud-hero-card {
-  display: flex !important;
-  align-items: center !important;
-  gap: 12px !important;
-  padding: 14px !important;
-  background: #C8D394 !important;
-  border-radius: 20px !important;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1) !important;
-  margin-bottom: 16px !important;
-}
-
-.cloud-hero-icon-bubble {
-  width: 46px !important;
-  height: 46px !important;
-  min-width: 46px !important;
-  border-radius: 50% !important;
-  background: #576028 !important;
-  color: #EFF2E1 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  box-shadow: 0 2px 8px rgba(54, 61, 23, 0.25) !important;
-}
-.cloud-hero-icon-bubble .material-symbols-rounded {
-  font-size: 24px !important;
-  color: #EFF2E1 !important;
-}
-
-.cloud-hero-text h4 {
-  font-size: 14.5px !important;
-  font-weight: 800 !important;
-  color: #363D17 !important;
-  margin: 0 !important;
-}
-.cloud-hero-text p {
-  font-size: 11.5px !important;
-  font-weight: 600 !important;
-  color: #576028 !important;
-  margin: 3px 0 0 0 !important;
-  line-height: 1.35 !important;
-}
-
-/* Cloud Auth Switcher */
-.cloud-auth-toggle {
-  display: flex !important;
-  background: #EFF2E1 !important;
-  border-radius: 999px !important;
-  padding: 4px !important;
-  margin-bottom: 14px !important;
-  gap: 4px !important;
-}
-
-.cloud-toggle-btn {
-  flex: 1 !important;
-  border: none !important;
-  background: transparent !important;
-  padding: 8px 12px !important;
-  border-radius: 999px !important;
-  font-size: 12px !important;
-  font-weight: 700 !important;
-  color: #576028 !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-}
-.cloud-toggle-btn.active {
-  background: #576028 !important;
-  color: #EFF2E1 !important;
-  box-shadow: 0 2px 8px rgba(54, 61, 23, 0.2) !important;
-}
-
-/* Cloud Active Session Box */
-.cloud-session-box {
-  background: #EFF2E1 !important;
-  border-radius: 20px !important;
-  padding: 16px !important;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08) !important;
-  margin-bottom: 16px !important;
-}
-
-.cloud-user-meta-row {
-  display: flex !important;
-  align-items: center !important;
-  gap: 12px !important;
-  margin-bottom: 14px !important;
-}
-
-.cloud-user-avatar {
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 50% !important;
-  background: #576028 !important;
-  color: #EFF2E1 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-.cloud-user-avatar .material-symbols-rounded {
-  font-size: 24px !important;
-  color: #EFF2E1 !important;
-}
-
-.cloud-user-name {
-  font-size: 15px !important;
-  font-weight: 800 !important;
-  color: #363D17 !important;
-}
-
-.cloud-user-email {
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  color: #576028 !important;
-}
-
-.cloud-sync-status {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  font-size: 11px !important;
-  font-weight: 700 !important;
-  color: #2e7d32 !important;
-  margin-top: 2px !important;
-}
-
-.cloud-pulse-dot {
-  width: 8px !important;
-  height: 8px !important;
-  border-radius: 50% !important;
-  background: #2e7d32 !important;
-  box-shadow: 0 0 6px rgba(46, 125, 50, 0.6) !important;
-  animation: pulseCloud 2s infinite ease-in-out !important;
-}
-
-@keyframes pulseCloud {
-  0% { transform: scale(0.9); opacity: 0.7; }
-  50% { transform: scale(1.3); opacity: 1; }
-  100% { transform: scale(0.9); opacity: 0.7; }
-}
-
-.cloud-session-actions {
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-}
-
-/* Supabase Connection Drawer */
-.cloud-config-drawer {
-  margin-top: 16px !important;
-  border-top: 1px solid rgba(87, 96, 40, 0.15) !important;
-  padding-top: 12px !important;
-}
-
-.cloud-details-drawer {
-  background: #EFF2E1 !important;
-  border-radius: 16px !important;
-  padding: 10px 14px !important;
-}
-
-.cloud-details-summary {
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  font-size: 12.5px !important;
-  font-weight: 800 !important;
-  color: #363D17 !important;
-  cursor: pointer !important;
-  outline: none !important;
-}
-
-.cloud-drawer-body {
-  margin-top: 12px !important;
-  padding-top: 10px !important;
-  border-top: 1px dashed rgba(87, 96, 40, 0.2) !important;
 }
