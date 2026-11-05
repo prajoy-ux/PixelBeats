@@ -1707,7 +1707,7 @@
                   </span>
                   <div class="creator-link-text">
                     <span class="creator-link-title">Releases & Updates</span>
-                    <span id="creator-app-version" class="creator-link-handle">PixelBeats v2.0.9 APK</span>
+                    <span id="creator-app-version" class="creator-link-handle">PixelBeats v2.1.0 APK</span>
                   </div>
                 </div>
                 <span class="material-symbols-rounded creator-link-arrow">open_in_new</span>
@@ -1737,7 +1737,7 @@
                   <span id="account-display-name" class="account-display-name">Guest Profile</span>
                   <span id="account-status-pill" class="account-status-pill">Local</span>
                 </div>
-                <div id="account-handle" class="account-handle">@local • PixelBeats User</div>
+                <div id="account-handle" class="account-handle">@pixelbeats • Offline Profile</div>
                 <div id="account-stats-row" class="account-stats-row">
                   <span class="account-stat-chip" id="stat-playlists-chip"><span class="material-symbols-rounded">playlist_play</span><span id="stat-playlists-count">1 Playlist</span></span>
                   <span class="account-stat-chip" id="stat-favorites-chip"><span class="material-symbols-rounded">favorite</span><span id="stat-favorites-count">0 Saved</span></span>
@@ -1750,11 +1750,11 @@
             <div class="account-actions-grid">
               <button type="button" id="btn-open-account-manager" class="m3-accent-pill-btn flex-1" style="justify-content: center; gap: 8px;">
                 <span class="material-symbols-rounded">manage_accounts</span>
-                <span id="btn-account-main-text">Manage Accounts</span>
+                <span id="btn-account-main-text">Switch / Manage Profiles</span>
               </button>
               <button type="button" id="btn-account-sync-now" class="m3-tonal-pill-btn" title="Sync current playlists and settings now" style="gap: 6px;">
                 <span class="material-symbols-rounded">sync</span>
-                <span id="btn-account-sync-label">Sync</span>
+                <span id="btn-account-sync-label">Save</span>
               </button>
             </div>
 
@@ -1916,7 +1916,7 @@
               <span class="info-label">Interface:</span><span class="info-val">Material Design 3</span>
               <span class="info-label">Platform:</span><span id="cap-status" class="info-val">Web Mode</span>
               <span class="info-label">Storage:</span><span class="info-val">IndexedDB Offline Vault</span>
-              <span class="info-label">Version:</span><span id="system-app-version" class="info-val">v2.0.9</span>
+              <span class="info-label">Version:</span><span id="system-app-version" class="info-val">v2.1.0</span>
             </div>
             <div>
               <button type="button" id="btn-check-updates" class="m3-accent-pill-btn w-full" style="justify-content: center; gap: 8px;">
@@ -2085,7 +2085,7 @@
       <div class="sheet-header">
         <div class="sheet-title-with-icon">
           <span class="material-symbols-rounded" style="color: #576028; font-size: 24px;">manage_accounts</span>
-          <h3 class="sheet-title">User Accounts & Sync</h3>
+          <h3 class="sheet-title">User Profiles & Backup</h3>
         </div>
         <button id="btn-close-accounts-modal" class="m3-icon-btn sheet-close-btn" title="Close">
           <span class="material-symbols-rounded">close</span>
@@ -2093,13 +2093,9 @@
       </div>
 
       <div class="sheet-body accounts-sheet-body">
-        <!-- Sub-Nav Segmented Control (3 Clean Non-Wrapping Tabs) -->
+        <!-- Sub-Nav Segmented Control (2 Clean 50/50 Offline Tabs) -->
         <div class="m3-segmented-control accounts-sub-nav">
-          <button id="acc-nav-cloud" class="m3-segment-btn active">
-            <span class="material-symbols-rounded">cloud</span>
-            <span>Cloud Sync</span>
-          </button>
-          <button id="acc-nav-profiles" class="m3-segment-btn">
+          <button id="acc-nav-profiles" class="m3-segment-btn active">
             <span class="material-symbols-rounded">group</span>
             <span>Profiles</span>
           </button>
@@ -2109,175 +2105,8 @@
           </button>
         </div>
 
-        <!-- TAB 1: CLOUD DATABASE (SUPABASE) -->
-        <div id="acc-tab-cloud" class="accounts-sub-tab">
-          <!-- Cloud Status Banner (Shown when NOT logged in) -->
-          <div class="cloud-hero-card" id="cloud-hero-card">
-            <div class="cloud-hero-icon-bubble">
-              <span class="material-symbols-rounded" id="cloud-hero-icon">cloud_queue</span>
-            </div>
-            <div class="cloud-hero-text">
-              <h4 id="cloud-hero-title">Supabase Cloud Database</h4>
-              <p id="cloud-hero-desc">Sync your playlists, favorites, and 5-band studio equalizer to real-time cloud storage. Access your library seamlessly anywhere.</p>
-            </div>
-          </div>
-
-          <!-- Active Cloud Session Bento Box (Shown when logged in - NO DOUBLE BOX) -->
-          <div id="cloud-session-box" class="cloud-session-bento hidden">
-            <div class="cloud-bento-top-row">
-              <div class="cloud-live-badge">
-                <span class="cloud-live-dot"></span>
-                <span class="cloud-live-text">Live Supabase Sync</span>
-              </div>
-              <div class="cloud-sync-time-badge" id="cloud-last-sync-label">Live Synced</div>
-            </div>
-
-            <div class="cloud-bento-user-block">
-              <div class="cloud-bento-avatar-ring">
-                <div class="cloud-bento-avatar">
-                  <span class="material-symbols-rounded" id="cloud-bento-avatar-icon">person</span>
-                </div>
-                <div class="cloud-bento-verified-check">
-                  <span class="material-symbols-rounded">check</span>
-                </div>
-              </div>
-              <div class="cloud-bento-user-meta">
-                <div class="cloud-bento-display-name" id="cloud-session-name">Cloud User</div>
-                <div class="cloud-bento-email" id="cloud-session-email">user@example.com</div>
-              </div>
-            </div>
-
-            <div class="cloud-bento-stats-bar">
-              <div class="cloud-bento-stat">
-                <span class="material-symbols-rounded">playlist_play</span>
-                <span id="cloud-stat-playlists">1 Playlist</span>
-              </div>
-              <div class="cloud-bento-stat-divider"></div>
-              <div class="cloud-bento-stat">
-                <span class="material-symbols-rounded">favorite</span>
-                <span id="cloud-stat-favorites">0 Saved</span>
-              </div>
-              <div class="cloud-bento-stat-divider"></div>
-              <div class="cloud-bento-stat">
-                <span class="material-symbols-rounded">tune</span>
-                <span id="cloud-stat-eq">Flat EQ</span>
-              </div>
-            </div>
-
-            <div class="cloud-bento-actions-grid">
-              <button type="button" id="btn-cloud-push-now" class="cloud-action-btn cloud-push-btn">
-                <span class="material-symbols-rounded">cloud_upload</span>
-                <span>Push to Cloud</span>
-              </button>
-              <button type="button" id="btn-cloud-pull-now" class="cloud-action-btn cloud-pull-btn">
-                <span class="material-symbols-rounded">cloud_download</span>
-                <span>Pull from Cloud</span>
-              </button>
-            </div>
-
-            <div class="cloud-signout-container">
-              <button type="button" id="btn-cloud-signout" class="m3-tonal-danger-btn" title="Sign out of Supabase Cloud">
-                <span class="material-symbols-rounded">logout</span>
-                <span>Sign Out from Cloud</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Cloud Auth Forms (Shown when not logged in to cloud) -->
-          <div id="cloud-auth-box" class="cloud-auth-box">
-            <!-- Mode Toggle: Sign In vs Sign Up -->
-            <div class="cloud-auth-toggle">
-              <button type="button" id="toggle-cloud-signin" class="cloud-toggle-btn active">
-                <span class="material-symbols-rounded" style="font-size: 16px;">login</span>
-                <span>Sign In</span>
-              </button>
-              <button type="button" id="toggle-cloud-signup" class="cloud-toggle-btn">
-                <span class="material-symbols-rounded" style="font-size: 16px;">person_add</span>
-                <span>Sign Up</span>
-              </button>
-            </div>
-
-            <form id="form-cloud-auth" class="create-account-form" onsubmit="return false;">
-              <!-- Display Name (Shown only in Sign Up) -->
-              <div class="form-group-m3" id="group-cloud-name" style="display: none;">
-                <label class="form-label-m3">Display Name</label>
-                <input type="text" id="input-cloud-name" class="m3-text-input" placeholder="Your Name or Artist Tag" maxlength="32" autocomplete="nickname">
-              </div>
-
-              <!-- Email Address -->
-              <div class="form-group-m3" id="group-cloud-email">
-                <label class="form-label-m3">Email Address</label>
-                <input type="email" id="input-cloud-email" class="m3-text-input" placeholder="name@domain.com" required autocomplete="email">
-              </div>
-
-              <!-- Password -->
-              <div class="form-group-m3" id="group-cloud-password">
-                <label class="form-label-m3">Password</label>
-                <input type="password" id="input-cloud-password" class="m3-text-input" placeholder="••••••••" minlength="6" autocomplete="current-password">
-              </div>
-
-              <!-- Auth Notice / Confirmation Helper -->
-              <div id="cloud-auth-notice" class="cloud-auth-notice hidden"></div>
-
-              <div class="form-actions-row" style="margin-top: 6px;">
-                <button type="button" id="btn-submit-cloud-auth" class="m3-accent-pill-btn w-full" style="justify-content: center; height: 48px;">
-                  <span class="material-symbols-rounded" id="icon-cloud-submit">login</span>
-                  <span id="text-cloud-submit">Sign In to Cloud</span>
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <!-- Supabase Custom Project Config & SQL Schema Drawer -->
-          <div class="cloud-config-drawer">
-            <details class="cloud-details-drawer">
-              <summary class="cloud-details-summary">
-                <span class="material-symbols-rounded" style="font-size: 18px; color: #576028;">settings</span>
-                <span>Database Connection & SQL Setup</span>
-              </summary>
-              <div class="cloud-drawer-body">
-                <!-- Supabase Setup Tip Box -->
-                <div style="background: rgba(87, 96, 40, 0.08); border: 1px solid rgba(87, 96, 40, 0.15); border-radius: 14px; padding: 12px; margin-bottom: 12px;">
-                  <div style="display: flex; align-items: center; gap: 6px; font-weight: 800; color: #363D17; font-size: 12px;">
-                    <span class="material-symbols-rounded" style="font-size: 16px; color: #576028;">bolt</span>
-                    <span>Instant Login & Sign Up Tip:</span>
-                  </div>
-                  <p style="font-size: 11px; color: #576028; margin: 6px 0 6px 0; line-height: 1.4;">
-                    In your Supabase Dashboard ➔ <b>Authentication</b> ➔ <b>Sign In / Providers</b> ➔ <b>Email</b>, turn <b>OFF</b> <b>"Confirm email"</b>.
-                  </p>
-                  <p style="font-size: 10.5px; color: #576028; margin: 0; line-height: 1.35;">
-                    This allows you and your users to sign up and log in immediately with email & password without any email confirmation delays!
-                  </p>
-                </div>
-
-                <p class="field-hint" style="margin-bottom: 10px;">
-                  Connect to your own free Supabase PostgreSQL database or paste your project keys:
-                </p>
-                <div class="form-group-m3">
-                  <label class="form-label-m3">Supabase Project URL</label>
-                  <input type="url" id="input-supabase-url" class="m3-text-input" placeholder="https://xyzcompany.supabase.co" value="https://kinwotuphlelguumgfkc.supabase.co">
-                </div>
-                <div class="form-group-m3">
-                  <label class="form-label-m3">Supabase Anon Key</label>
-                  <input type="text" id="input-supabase-key" class="m3-text-input" placeholder="sb_publishable_..." value="sb_publishable_4XOMl9-m9LczjYUiJ1deHg_AN18Pglb">
-                </div>
-                <div class="drawer-actions-row" style="display: flex; gap: 8px; margin-top: 10px;">
-                  <button type="button" id="btn-save-supabase-config" class="m3-accent-pill-btn flex-1" style="justify-content: center;">
-                    <span class="material-symbols-rounded">save</span>
-                    <span>Save Keys</span>
-                  </button>
-                  <button type="button" id="btn-copy-sql-schema" class="m3-tonal-pill-btn flex-1" style="justify-content: center;" title="Copy SQL statement to create the table in Supabase">
-                    <span class="material-symbols-rounded">code</span>
-                    <span>Copy SQL Schema</span>
-                  </button>
-                </div>
-              </div>
-            </details>
-          </div>
-        </div>
-
-        <!-- TAB 2: PROFILES LIST & ACTIVE PROFILE -->
-        <div id="acc-tab-profiles" class="accounts-sub-tab hidden">
+        <!-- TAB 1: PROFILES LIST & ACTIVE PROFILE -->
+        <div id="acc-tab-profiles" class="accounts-sub-tab">
           <!-- Profiles Header with New Profile Action -->
           <div class="profiles-tab-header">
             <div class="profiles-tab-header-titles">

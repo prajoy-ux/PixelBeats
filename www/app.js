@@ -2732,11 +2732,7 @@ const PlaylistsManager = {
         AccountManager.syncCurrentToActiveAccount(false);
       }
     } catch (e) {}
-    try {
-      if (typeof CloudDbManager !== 'undefined' && CloudDbManager.isLoggedIn()) {
-        CloudDbManager.pushLocalToCloud(false);
-      }
-    } catch (e) {}
+
   },
 
   createPlaylist(name) {
@@ -3096,9 +3092,6 @@ const AccountManager = {
 
   renderAccountUI() {
     const active = this.getActiveAccount();
-    const isCloudLogged = typeof CloudDbManager !== 'undefined' && CloudDbManager.isLoggedIn();
-    const cloudSession = isCloudLogged ? CloudDbManager.getSession() : null;
-    const cloudUser = cloudSession && cloudSession.user ? cloudSession.user : null;
 
     // 1. Settings Card
     const nameEl = document.getElementById('account-display-name');
@@ -3109,21 +3102,12 @@ const AccountManager = {
     const eqPresetEl = document.getElementById('stat-eq-preset');
     const statusPill = document.getElementById('account-status-pill');
 
-    if (isCloudLogged && cloudUser) {
-      const cloudName = cloudUser.user_metadata?.display_name || cloudUser.email.split('@')[0];
-      if (nameEl) nameEl.textContent = cloudName;
-      if (handleEl) handleEl.textContent = cloudUser.email;
-      if (avatarIconEl) avatarIconEl.textContent = 'verified_user';
-      if (statusPill) {
-        statusPill.textContent = 'Cloud Synced';
-        statusPill.className = 'account-status-pill cloud-active';
-      }
-    } else if (active) {
+    if (active) {
       if (nameEl) nameEl.textContent = active.name;
-      if (handleEl) handleEl.textContent = `@${active.username} • Local Profile`;
+      if (handleEl) handleEl.textContent = `@${active.username} • Offline Profile`;
       if (avatarIconEl) avatarIconEl.textContent = active.avatarIcon || 'headphones';
       if (statusPill) {
-        statusPill.textContent = active.pin ? 'PIN Locked' : 'Local';
+        statusPill.textContent = active.pin ? 'PIN Locked' : 'Active';
         statusPill.className = 'account-status-pill';
       }
     }
@@ -3142,11 +3126,7 @@ const AccountManager = {
     // 2. Library Header Quick Chip
     const libNameEl = document.getElementById('lib-account-label');
     const libIconEl = document.getElementById('lib-account-icon');
-    if (isCloudLogged && cloudUser) {
-      const cloudName = cloudUser.user_metadata?.display_name || cloudUser.email.split('@')[0];
-      if (libNameEl) libNameEl.textContent = cloudName;
-      if (libIconEl) libIconEl.textContent = 'cloud_done';
-    } else if (active) {
+    if (active) {
       if (libNameEl) libNameEl.textContent = active.name;
       if (libIconEl) libIconEl.textContent = active.avatarIcon || 'headphones';
     }
@@ -3161,8 +3141,7 @@ const AccountManager = {
       if (sheetHandleEl) sheetHandleEl.textContent = `@${active.username}`;
       if (sheetBubbleIcon) sheetBubbleIcon.textContent = active.avatarIcon || 'headphones';
       if (sheetSyncEl) {
-        const minutesAgo = Math.floor((Date.now() - (active.lastSyncedAt || Date.now())) / 60000);
-        sheetSyncEl.textContent = `Synced ${formatRelativeSyncTime(active.lastSyncedAt)}`;
+        sheetSyncEl.textContent = `Saved ${formatRelativeSyncTime(active.lastSyncedAt)}`;
       }
     }
 
@@ -3240,469 +3219,6 @@ const AccountManager = {
     this.renderAccountUI();
   }
 };
-
-// ================= SUPABASE CLOUD DATABASE SYNC MANAGER =================
-const CloudDbManager = {
-  STORAGE_SUPABASE_URL_KEY: 'pixelbeats_supabase_url',
-  STORAGE_SUPABASE_KEY_KEY: 'pixelbeats_supabase_anon_key',
-  STORAGE_CLOUD_SESSION_KEY: 'pixelbeats_cloud_session',
-
-  getUrl() {
-    return localStorage.getItem(this.STORAGE_SUPABASE_URL_KEY) || 'https://kinwotuphlelguumgfkc.supabase.co';
-  },
-
-  setUrl(url) {
-    localStorage.setItem(this.STORAGE_SUPABASE_URL_KEY, (url || '').trim());
-  },
-
-  getAnonKey() {
-    return localStorage.getItem(this.STORAGE_SUPABASE_KEY_KEY) || 'sb_publishable_4XOMl9-m9LczjYUiJ1deHg_AN18Pglb';
-  },
-
-  setAnonKey(key) {
-    localStorage.setItem(this.STORAGE_SUPABASE_KEY_KEY, (key || '').trim());
-  },
-
-  getSession() {
-    try {
-      const raw = localStorage.getItem(this.STORAGE_CLOUD_SESSION_KEY);
-      if (raw) return JSON.parse(raw);
-    } catch (e) {}
-    return null;
-  },
-
-  setSession(session) {
-    if (!session) {
-      localStorage.removeItem(this.STORAGE_CLOUD_SESSION_KEY);
-    } else {
-      localStorage.setItem(this.STORAGE_CLOUD_SESSION_KEY, JSON.stringify(session));
-    }
-  },
-
-  isLoggedIn() {
-    const s = this.getSession();
-    return !!(s && s.access_token && s.user);
-  },
-
-  async sendOtp(email) {
-    const url = this.getUrl();
-    const key = this.getAnonKey();
-    if (!url || !key) {
-      throw new Error('Please configure your Supabase Project URL and Anon Key in Database Connection settings first.');
-    }
-
-    const endpoint = `${url.replace(/\/+$/, '')}/auth/v1/otp`;
-    const resp = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'apikey': key,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        email: email.trim(),
-        create_user: true
-      })
-    });
-
-    const data = await resp.json();
-    if (!resp.ok) {
-      throw new Error(data.error_description || data.msg || data.message || 'Failed to send OTP verification code.');
-    }
-    return data;
-  },
-
-  async verifyOtp(email, token, type = 'email') {
-    const url = this.getUrl();
-    const key = this.getAnonKey();
-    if (!url || !key) {
-      throw new Error('Please configure your Supabase Project URL and Anon Key in Database Connection settings first.');
-    }
-
-    const endpoint = `${url.replace(/\/+$/, '')}/auth/v1/verify`;
-    let resp = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'apikey': key,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        type: type,
-        email: email.trim(),
-        token: token.trim()
-      })
-    });
-
-    let data = await resp.json();
-    if (!resp.ok && (type === 'email' || type === 'signup')) {
-      const fallbackType = type === 'email' ? 'signup' : 'email';
-      resp = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'apikey': key,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          type: fallbackType,
-          email: email.trim(),
-          token: token.trim()
-        })
-      });
-      data = await resp.json();
-    }
-
-    if (!resp.ok) {
-      throw new Error(data.error_description || data.msg || data.message || 'Invalid or expired 6-digit OTP code.');
-    }
-
-    if (data.access_token && data.user) {
-      this.setSession(data);
-      await this.pullCloudToLocal(true);
-      this.renderCloudUI();
-      return data;
-    } else {
-      throw new Error('Verification was accepted by Supabase, but no session was returned.');
-    }
-  },
-  async signUp(email, password, displayName) {
-    const url = this.getUrl();
-    const key = this.getAnonKey();
-    if (!url || !key) {
-      throw new Error('Please configure your Supabase Project URL and Anon Key in Database Connection settings first.');
-    }
-
-    const endpoint = `${url.replace(/\/+$/, '')}/auth/v1/signup`;
-    const resp = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'apikey': key,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        email: email.trim(),
-        password: password,
-        data: {
-          display_name: displayName ? displayName.trim() : email.split('@')[0]
-        }
-      })
-    });
-
-    const data = await resp.json();
-    if (!resp.ok) {
-      throw new Error(data.error_description || data.msg || data.message || 'Failed to create cloud account.');
-    }
-
-    if (data.access_token && data.user) {
-      this.setSession(data);
-      await this.pushLocalToCloud(false);
-      this.renderCloudUI();
-      return data;
-    } else {
-      return { message: 'Cloud account created! If email confirmation is enabled, check your inbox.' };
-    }
-  },
-
-  async signIn(email, password) {
-    const url = this.getUrl();
-    const key = this.getAnonKey();
-    if (!url || !key) {
-      throw new Error('Please configure your Supabase Project URL and Anon Key in Database Connection settings first.');
-    }
-
-    const endpoint = `${url.replace(/\/+$/, '')}/auth/v1/token?grant_type=password`;
-    const resp = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'apikey': key,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        email: email.trim(),
-        password: password
-      })
-    });
-
-    const data = await resp.json();
-    if (!resp.ok) {
-      throw new Error(data.error_description || data.msg || data.message || 'Invalid email or password.');
-    }
-
-    this.setSession(data);
-    await this.pullCloudToLocal(true);
-    this.renderCloudUI();
-    return data;
-  },
-
-  async signOut() {
-    this.setSession(null);
-    localStorage.removeItem(this.STORAGE_CLOUD_SESSION_KEY);
-
-    // Reset input fields in auth box
-    const emailInput = document.getElementById('input-cloud-email');
-    const passInput = document.getElementById('input-cloud-password');
-    const nameInput = document.getElementById('input-cloud-name');
-    if (emailInput) emailInput.value = '';
-    if (passInput) passInput.value = '';
-    if (nameInput) nameInput.value = '';
-
-    // Clear notice message
-    const noticeEl = document.getElementById('cloud-auth-notice');
-    if (noticeEl) {
-      noticeEl.innerHTML = '';
-      noticeEl.classList.add('hidden');
-      noticeEl.style.display = 'none';
-    }
-
-    // Reset session box user labels
-    const nameEl = document.getElementById('cloud-session-name');
-    const emailEl = document.getElementById('cloud-session-email');
-    if (nameEl) nameEl.textContent = 'Cloud User';
-    if (emailEl) emailEl.textContent = '';
-
-    // Render Cloud and Accounts UI
-    this.renderCloudUI();
-    if (typeof AccountManager !== 'undefined' && typeof AccountManager.renderAccountUI === 'function') {
-      AccountManager.renderAccountUI();
-    }
-
-    showToast('Signed out from Cloud Database', 'logout');
-    playHapticSfx('action');
-  },
-
-  async pushLocalToCloud(showToastFeedback = true) {
-    const session = this.getSession();
-    const url = this.getUrl();
-    const key = this.getAnonKey();
-    if (!session || !url || !key) return;
-
-    try {
-      const user = session.user;
-      const endpoint = `${url.replace(/\/+$/, '')}/rest/v1/pixelbeats_users`;
-
-      const payload = {
-        id: user.id,
-        email: user.email,
-        display_name: user.user_metadata?.display_name || user.email.split('@')[0],
-        playlists: PlaylistsManager.getPlaylists(),
-        eq_custom_bands: Array.isArray(STATE.eqCustomBands) ? STATE.eqCustomBands : [0, 0, 0, 0, 0],
-        eq_preset: STATE.eqPreset || 'flat',
-        theme: STATE.currentTheme || 'matcha',
-        sfx_enabled: STATE.sfxEnabled !== false,
-        volume: STATE.currentVolume || 0.75,
-        updated_at: new Date().toISOString()
-      };
-
-      const resp = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'apikey': key,
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'resolution=merge-duplicates'
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (resp.ok) {
-        session.last_synced_at = Date.now();
-        this.setSession(session);
-        this.renderCloudUI();
-        if (showToastFeedback) {
-          showToast('Synced to Cloud Database!', 'cloud_done');
-          playHapticSfx('action');
-        }
-      }
-    } catch (err) {
-      console.warn('[CloudSync] Push error:', err);
-    }
-  },
-
-  async pullCloudToLocal(showToastFeedback = true) {
-    const session = this.getSession();
-    const url = this.getUrl();
-    const key = this.getAnonKey();
-    if (!session || !url || !key) return;
-
-    try {
-      const user = session.user;
-      const endpoint = `${url.replace(/\/+$/, '')}/rest/v1/pixelbeats_users?id=eq.${user.id}&select=*`;
-
-      const resp = await fetch(endpoint, {
-        method: 'GET',
-        headers: {
-          'apikey': key,
-          'Authorization': `Bearer ${session.access_token}`
-        }
-      });
-
-      if (!resp.ok) return;
-      const rows = await resp.json();
-      if (!Array.isArray(rows) || rows.length === 0) {
-        await this.pushLocalToCloud(false);
-        return;
-      }
-
-      const row = rows[0];
-      if (Array.isArray(row.playlists)) {
-        PlaylistsManager.savePlaylists(row.playlists);
-        if (typeof renderPlaylistsGrid === 'function') renderPlaylistsGrid();
-        if (typeof updateFavoriteButtonState === 'function') updateFavoriteButtonState();
-        if (typeof updateVaultStorageEstimate === 'function') updateVaultStorageEstimate();
-      }
-
-      if (Array.isArray(row.eq_custom_bands)) {
-        STATE.eqCustomBands = [...row.eq_custom_bands];
-        localStorage.setItem('pixelbeats_eq_custom_bands', JSON.stringify(STATE.eqCustomBands));
-        for (let i = 0; i < 5; i++) {
-          if (typeof applyEqualizerBand === 'function') {
-            applyEqualizerBand(i, STATE.eqCustomBands[i] || 0, true);
-          }
-        }
-      }
-
-      if (row.theme && typeof applyTheme === 'function') {
-        applyTheme(row.theme, true);
-      }
-
-      if (typeof row.sfx_enabled === 'boolean') {
-        STATE.sfxEnabled = row.sfx_enabled;
-        localStorage.setItem('pixelbeats_sfx', STATE.sfxEnabled);
-        const sfxToggle = document.getElementById('setting-sfx');
-        if (sfxToggle) sfxToggle.checked = STATE.sfxEnabled;
-      }
-
-      if (typeof row.volume === 'number' && !isNaN(row.volume)) {
-        STATE.currentVolume = row.volume;
-        localStorage.setItem('pixelbeats_volume', row.volume.toString());
-        if (elements.audio) elements.audio.volume = row.volume;
-        if (typeof updateVolumeVisuals === 'function') updateVolumeVisuals(row.volume);
-      }
-
-      session.last_synced_at = Date.now();
-      this.setSession(session);
-      this.renderCloudUI();
-      if (showToastFeedback) {
-        showToast('Downloaded playlists & settings from Cloud!', 'cloud_download');
-        playHapticSfx('action');
-      }
-    } catch (err) {
-      console.warn('[CloudSync] Pull error:', err);
-    }
-  },
-
-  renderCloudUI() {
-    const session = this.getSession();
-    const isLogged = this.isLoggedIn();
-
-    const heroCard = document.getElementById('cloud-hero-card');
-    const sessionBox = document.getElementById('cloud-session-box');
-    const authBox = document.getElementById('cloud-auth-box');
-
-    const nameEl = document.getElementById('cloud-session-name');
-    const emailEl = document.getElementById('cloud-session-email');
-    const syncLabel = document.getElementById('cloud-last-sync-label');
-
-    const statPlEl = document.getElementById('cloud-stat-playlists');
-    const statFavEl = document.getElementById('cloud-stat-favorites');
-    const statEqEl = document.getElementById('cloud-stat-eq');
-
-    const urlInput = document.getElementById('input-supabase-url');
-    const keyInput = document.getElementById('input-supabase-key');
-
-    if (urlInput && !urlInput.value) urlInput.value = this.getUrl();
-    if (keyInput && !keyInput.value) keyInput.value = this.getAnonKey();
-
-    if (isLogged && session && session.user) {
-      if (heroCard) {
-        heroCard.classList.add('hidden');
-        heroCard.style.display = 'none';
-      }
-      if (sessionBox) {
-        sessionBox.classList.remove('hidden');
-        sessionBox.style.display = 'flex';
-      }
-      if (authBox) {
-        authBox.classList.add('hidden');
-        authBox.style.display = 'none';
-      }
-
-      const user = session.user;
-      const displayName = user.user_metadata?.display_name || (user.email ? user.email.split('@')[0] : 'Cloud User');
-      if (nameEl) nameEl.textContent = displayName;
-      if (emailEl) emailEl.textContent = user.email || '';
-
-      if (syncLabel) {
-        const lastSync = session.last_synced_at ? Math.floor((Date.now() - session.last_synced_at) / 60000) : 0;
-        syncLabel.textContent = lastSync <= 1 ? 'Live Synced' : `Synced ${formatRelativeSyncTime(session.last_synced_at)}`;
-      }
-
-      // Synced metrics
-      const playlists = (typeof PlaylistsManager !== 'undefined') ? PlaylistsManager.getPlaylists() : [];
-      const favPl = playlists.find(p => p.id === 'favorites');
-      const favCount = favPl && favPl.tracks ? favPl.tracks.length : 0;
-      const isCustom = Array.isArray(STATE.eqCustomBands) && STATE.eqCustomBands.some(v => v !== 0);
-
-      if (statPlEl) statPlEl.textContent = `${playlists.length} Playlist${playlists.length === 1 ? '' : 's'}`;
-      if (statFavEl) statFavEl.textContent = `${favCount} Saved`;
-      if (statEqEl) statEqEl.textContent = isCustom ? 'Studio EQ' : 'Flat EQ';
-    } else {
-      if (heroCard) {
-        heroCard.classList.remove('hidden');
-        heroCard.style.display = 'flex';
-      }
-      if (sessionBox) {
-        sessionBox.classList.add('hidden');
-        sessionBox.style.display = 'none';
-      }
-      if (authBox) {
-        authBox.classList.remove('hidden');
-        authBox.style.display = 'flex';
-      }
-      if (nameEl) nameEl.textContent = 'Cloud User';
-      if (emailEl) emailEl.textContent = '';
-    }
-
-    if (typeof AccountManager !== 'undefined' && typeof AccountManager.renderAccountUI === 'function') {
-      AccountManager.renderAccountUI();
-    }
-  },
-
-  getSqlSchema() {
-    return `-- ==========================================
--- PIXELBEATS SUPABASE DATABASE SCHEMA
--- Run this in your Supabase SQL Editor:
--- ==========================================
-
-create table if not exists public.pixelbeats_users (
-  id uuid references auth.users on delete cascade not null primary key,
-  email text,
-  display_name text,
-  avatar_icon text default 'headphones',
-  playlists jsonb default '[]'::jsonb,
-  eq_custom_bands jsonb default '[0, 0, 0, 0, 0]'::jsonb,
-  eq_preset text default 'flat',
-  theme text default 'matcha',
-  sfx_enabled boolean default true,
-  volume float default 0.75,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table public.pixelbeats_users enable row level security;
-
-create policy "Users can view and edit own music profile"
-on public.pixelbeats_users for all
-using (auth.uid() = id)
-with check (auth.uid() = id);`;
-  },
-
-  init() {
-    this.renderCloudUI();
-    if (this.isLoggedIn()) {
-      this.pullCloudToLocal(false);
-    }
-  }
-};
-
-
 
 function updateFavoriteButtonState() {
   const currentSong = STATE.queue[STATE.currentIndex];
@@ -6458,16 +5974,11 @@ function setupEventListeners() {
   document.addEventListener('keydown', unlockAudioContext);
 
   // ================= ACCOUNTS & PROFILE MODAL LISTENERS =================
-  const openAccountsModal = (tabName) => {
+  const openAccountsModal = (tabName = 'profiles') => {
     playHapticSfx('click');
-    CloudDbManager.renderCloudUI();
     AccountManager.renderAccountUI();
     if (elements.modalAccounts) {
       elements.modalAccounts.classList.remove('hidden');
-    }
-
-    if (!tabName) {
-      tabName = CloudDbManager.isLoggedIn() ? 'cloud' : 'cloud';
     }
 
     if (tabName === 'create') {
@@ -6482,12 +5993,9 @@ function setupEventListeners() {
     } else if (tabName === 'backup') {
       const backupNav = document.getElementById('acc-nav-backup');
       if (backupNav) backupNav.click();
-    } else if (tabName === 'profiles') {
+    } else {
       const profNav = document.getElementById('acc-nav-profiles');
       if (profNav) profNav.click();
-    } else {
-      const cloudNav = document.getElementById('acc-nav-cloud');
-      if (cloudNav) cloudNav.click();
     }
   };
 
@@ -6499,11 +6007,11 @@ function setupEventListeners() {
   };
 
   if (elements.btnOpenAccountManager) {
-    elements.btnOpenAccountManager.addEventListener('click', () => openAccountsModal());
+    elements.btnOpenAccountManager.addEventListener('click', () => openAccountsModal('profiles'));
   }
 
   if (elements.btnLibAccount) {
-    elements.btnLibAccount.addEventListener('click', () => openAccountsModal());
+    elements.btnLibAccount.addEventListener('click', () => openAccountsModal('profiles'));
   }
 
   if (elements.btnCloseAccountsModal) {
@@ -6516,9 +6024,8 @@ function setupEventListeners() {
     });
   }
 
-  // Sub-Navigation Tabs inside Accounts Sheet (3 Clean Tabs)
+  // Sub-Navigation Tabs inside Accounts Sheet (2 Clean Offline Tabs: Profiles | Backup & Key)
   const accNavBtns = [
-    { nav: document.getElementById('acc-nav-cloud'), tab: document.getElementById('acc-tab-cloud') },
     { nav: document.getElementById('acc-nav-profiles'), tab: document.getElementById('acc-tab-profiles') },
     { nav: document.getElementById('acc-nav-backup'), tab: document.getElementById('acc-tab-backup') }
   ];
@@ -6537,8 +6044,6 @@ function setupEventListeners() {
         if (item.nav.id === 'acc-nav-backup') {
           const ta = document.getElementById('sync-key-textarea');
           if (ta) ta.value = AccountManager.generateSyncKey();
-        } else if (item.nav.id === 'acc-nav-cloud') {
-          CloudDbManager.renderCloudUI();
         }
       });
     }
@@ -6732,208 +6237,6 @@ function setupEventListeners() {
   }
 
 
-  // ================= CLOUD DATABASE LISTENERS =================
-  // Cloud Auth Mode Controller: 'signin' | 'signup'
-  let cloudAuthMode = 'signin';
-
-  const toggleCloudSignIn = document.getElementById('toggle-cloud-signin');
-  const toggleCloudSignUp = document.getElementById('toggle-cloud-signup');
-  const groupCloudName = document.getElementById('group-cloud-name');
-  const groupCloudEmail = document.getElementById('group-cloud-email');
-  const groupCloudPassword = document.getElementById('group-cloud-password');
-  const cloudAuthNotice = document.getElementById('cloud-auth-notice');
-  const textCloudSubmit = document.getElementById('text-cloud-submit');
-  const iconCloudSubmit = document.getElementById('icon-cloud-submit');
-  const inputCloudEmail = document.getElementById('input-cloud-email');
-  const inputCloudPass = document.getElementById('input-cloud-password');
-  const inputCloudName = document.getElementById('input-cloud-name');
-  const btnSubmitCloudAuth = document.getElementById('btn-submit-cloud-auth');
-
-  function showAuthNotice(html, isInfo = false) {
-    if (!cloudAuthNotice) return;
-    cloudAuthNotice.innerHTML = html;
-    cloudAuthNotice.className = isInfo ? 'cloud-auth-notice notice-info' : 'cloud-auth-notice';
-    cloudAuthNotice.classList.remove('hidden');
-    cloudAuthNotice.style.display = 'block';
-  }
-
-  function hideAuthNotice() {
-    if (!cloudAuthNotice) return;
-    cloudAuthNotice.innerHTML = '';
-    cloudAuthNotice.classList.add('hidden');
-    cloudAuthNotice.style.display = 'none';
-  }
-
-  function updateCloudAuthMode(mode) {
-    cloudAuthMode = mode;
-    hideAuthNotice();
-
-    if (toggleCloudSignIn) toggleCloudSignIn.classList.toggle('active', mode === 'signin');
-    if (toggleCloudSignUp) toggleCloudSignUp.classList.toggle('active', mode === 'signup');
-
-    if (groupCloudName) groupCloudName.style.display = mode === 'signup' ? 'flex' : 'none';
-    if (groupCloudEmail) groupCloudEmail.style.display = 'flex';
-    if (groupCloudPassword) groupCloudPassword.style.display = 'flex';
-
-    if (mode === 'signin') {
-      if (textCloudSubmit) textCloudSubmit.textContent = 'Sign In to Cloud';
-      if (iconCloudSubmit) iconCloudSubmit.textContent = 'login';
-    } else {
-      if (textCloudSubmit) textCloudSubmit.textContent = 'Create Cloud Account';
-      if (iconCloudSubmit) iconCloudSubmit.textContent = 'person_add';
-    }
-  }
-
-  if (toggleCloudSignIn) {
-    toggleCloudSignIn.addEventListener('click', () => {
-      updateCloudAuthMode('signin');
-      playHapticSfx('click');
-    });
-  }
-
-  if (toggleCloudSignUp) {
-    toggleCloudSignUp.addEventListener('click', () => {
-      updateCloudAuthMode('signup');
-      playHapticSfx('click');
-    });
-  }
-
-  // Submit Cloud Auth (Sign In or Sign Up with email & password)
-  if (btnSubmitCloudAuth) {
-    btnSubmitCloudAuth.addEventListener('click', async () => {
-      hideAuthNotice();
-      const email = inputCloudEmail ? inputCloudEmail.value.trim() : '';
-      const pass = inputCloudPass ? inputCloudPass.value : '';
-      const name = inputCloudName ? inputCloudName.value.trim() : '';
-
-      if (!email || !email.includes('@')) {
-        showAuthNotice('Please enter a valid email address.');
-        if (inputCloudEmail) inputCloudEmail.focus();
-        return;
-      }
-
-      if (!pass || pass.length < 6) {
-        showAuthNotice('Password must be at least 6 characters.');
-        if (inputCloudPass) inputCloudPass.focus();
-        return;
-      }
-
-      playHapticSfx('click');
-      btnSubmitCloudAuth.disabled = true;
-      const originalText = textCloudSubmit ? textCloudSubmit.textContent : '';
-      if (textCloudSubmit) textCloudSubmit.textContent = 'Connecting...';
-
-      try {
-        if (cloudAuthMode === 'signin') {
-          try {
-            await CloudDbManager.signIn(email, pass);
-            showToast(`Welcome back, ${email.split('@')[0]}!`, 'cloud_done');
-          } catch (signInErr) {
-            const msg = signInErr.message || '';
-            if (msg.toLowerCase().includes('email not confirmed')) {
-              showAuthNotice(`
-                <strong>⚠️ Email Not Confirmed Yet</strong><br>
-                Supabase is waiting for email confirmation.<br>
-                <div style="margin-top: 6px; font-size: 11px; line-height: 1.4;">
-                  <b>To log in instantly:</b> In your Supabase Dashboard, go to <b>Authentication ➔ Sign In / Providers ➔ Email</b>, and toggle <b>OFF</b> "Confirm email". Then tap Sign In again!
-                </div>
-              `);
-            } else {
-              showAuthNotice(`<strong>Login Failed:</strong> ${msg}`);
-            }
-          }
-        } else {
-          // Sign Up
-          try {
-            const res = await CloudDbManager.signUp(email, pass, name);
-            if (res && res.access_token) {
-              showToast(`Account created! Welcome, ${email.split('@')[0]}!`, 'cloud_done');
-            } else {
-              showAuthNotice(`
-                <strong>✅ Account Created!</strong><br>
-                If email confirmation is enabled in your Supabase project, check your inbox or click the confirmation link.<br>
-                <div style="margin-top: 6px; font-size: 11px; line-height: 1.4;">
-                  <b>Instant Login Tip:</b> Turn <b>OFF</b> "Confirm email" in Supabase (under <b>Authentication ➔ Providers ➔ Email</b>) to log in instantly with no email delays!
-                </div>
-              `, true);
-            }
-          } catch (signUpErr) {
-            showAuthNotice(`<strong>Sign Up Failed:</strong> ${signUpErr.message || 'Could not create account.'}`);
-          }
-        }
-      } catch (err) {
-        showAuthNotice(`<strong>Error:</strong> ${err.message || 'Operation failed.'}`);
-      } finally {
-        btnSubmitCloudAuth.disabled = false;
-        if (textCloudSubmit) {
-          textCloudSubmit.textContent = cloudAuthMode === 'signup' ? 'Create Cloud Account' : 'Sign In to Cloud';
-        }
-      }
-    });
-  }
-
-  // Cloud Session buttons
-  const btnCloudPushNow = document.getElementById('btn-cloud-push-now');
-  if (btnCloudPushNow) {
-    btnCloudPushNow.addEventListener('click', () => {
-      CloudDbManager.pushLocalToCloud(true);
-    });
-  }
-
-  const btnCloudPullNow = document.getElementById('btn-cloud-pull-now');
-  if (btnCloudPullNow) {
-    btnCloudPullNow.addEventListener('click', () => {
-      CloudDbManager.pullCloudToLocal(true);
-    });
-  }
-
-  const btnCloudSignout = document.getElementById('btn-cloud-signout');
-  if (btnCloudSignout) {
-    btnCloudSignout.addEventListener('click', async () => {
-      playHapticSfx('click');
-      await CloudDbManager.signOut();
-    });
-  }
-
-  // Save Supabase Keys
-  const btnSaveSupabaseConfig = document.getElementById('btn-save-supabase-config');
-  if (btnSaveSupabaseConfig) {
-    btnSaveSupabaseConfig.addEventListener('click', () => {
-      const urlInput = document.getElementById('input-supabase-url');
-      const keyInput = document.getElementById('input-supabase-key');
-      const url = urlInput ? urlInput.value.trim() : '';
-      const key = keyInput ? keyInput.value.trim() : '';
-      CloudDbManager.setUrl(url);
-      CloudDbManager.setAnonKey(key);
-      showToast('Database connection settings saved!', 'check_circle');
-      playHapticSfx('action');
-    });
-  }
-
-  // Copy SQL Schema
-  const btnCopySqlSchema = document.getElementById('btn-copy-sql-schema');
-  if (btnCopySqlSchema) {
-    btnCopySqlSchema.addEventListener('click', async () => {
-      const sql = CloudDbManager.getSqlSchema();
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          await navigator.clipboard.writeText(sql);
-        } else {
-          const tempTa = document.createElement('textarea');
-          tempTa.value = sql;
-          document.body.appendChild(tempTa);
-          tempTa.select();
-          document.execCommand('copy');
-          document.body.removeChild(tempTa);
-        }
-        showToast('SQL Schema copied to clipboard!', 'content_copy');
-        playHapticSfx('click');
-      } catch (e) {
-        prompt('Copy SQL schema below:', sql);
-      }
-    });
-  }
-
   // In-App Self Updater Event Listeners
   if (elements.btnCheckUpdates) {
     elements.btnCheckUpdates.addEventListener('click', () => {
@@ -7067,7 +6370,7 @@ function syncCreatorAvatarFromGitHub() {
 }
 
 // ================= IN-APP SELF UPDATER =================
-const APP_VERSION = '2.0.9';
+const APP_VERSION = '2.1.0';
 const GITHUB_REPO = 'prajoy-ux/PixelBeats';
 let pendingUpdateApkUrl = null;
 let isUpdating = false;
@@ -7241,8 +6544,7 @@ async function initApp() {
   // 7b. Initialize User Accounts & Profile Sync System
   try {
     AccountManager.init();
-    CloudDbManager.init();
-  } catch (accErr) {
+      } catch (accErr) {
     console.warn('[Init] AccountManager init warning:', accErr);
   }
 
