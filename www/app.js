@@ -3284,6 +3284,85 @@ const CloudDbManager = {
     return !!(s && s.access_token && s.user);
   },
 
+  async sendOtp(email) {
+    const url = this.getUrl();
+    const key = this.getAnonKey();
+    if (!url || !key) {
+      throw new Error('Please configure your Supabase Project URL and Anon Key in Database Connection settings first.');
+    }
+
+    const endpoint = `${url.replace(/\/+$/, '')}/auth/v1/otp`;
+    const resp = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'apikey': key,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email.trim(),
+        create_user: true
+      })
+    });
+
+    const data = await resp.json();
+    if (!resp.ok) {
+      throw new Error(data.error_description || data.msg || data.message || 'Failed to send OTP verification code.');
+    }
+    return data;
+  },
+
+  async verifyOtp(email, token, type = 'email') {
+    const url = this.getUrl();
+    const key = this.getAnonKey();
+    if (!url || !key) {
+      throw new Error('Please configure your Supabase Project URL and Anon Key in Database Connection settings first.');
+    }
+
+    const endpoint = `${url.replace(/\/+$/, '')}/auth/v1/verify`;
+    let resp = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'apikey': key,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        type: type,
+        email: email.trim(),
+        token: token.trim()
+      })
+    });
+
+    let data = await resp.json();
+    if (!resp.ok && (type === 'email' || type === 'signup')) {
+      const fallbackType = type === 'email' ? 'signup' : 'email';
+      resp = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'apikey': key,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          type: fallbackType,
+          email: email.trim(),
+          token: token.trim()
+        })
+      });
+      data = await resp.json();
+    }
+
+    if (!resp.ok) {
+      throw new Error(data.error_description || data.msg || data.message || 'Invalid or expired 6-digit OTP code.');
+    }
+
+    if (data.access_token && data.user) {
+      this.setSession(data);
+      await this.pullCloudToLocal(true);
+      this.renderCloudUI();
+      return data;
+    } else {
+      throw new Error('Verification was accepted by Supabase, but no session was returned.');
+    }
+  },
   async signUp(email, password, displayName) {
     const url = this.getUrl();
     const key = this.getAnonKey();
@@ -6605,54 +6684,110 @@ function setupEventListeners() {
 
   // ================= CLOUD DATABASE LISTENERS =================
   let isCloudSignUpMode = false;
+  // Cloud Auth Mode Controller: 'otp' | 'signin' | 'signup'
+  let cloudAuthMode = 'otp';
+  let isOtpSent = false;
+  let lastOtpEmail = '';
+
+  const toggleCloudOtp = document.getElementById('toggle-cloud-otp');
   const toggleCloudSignIn = document.getElementById('toggle-cloud-signin');
   const toggleCloudSignUp = document.getElementById('toggle-cloud-signup');
   const groupCloudName = document.getElementById('group-cloud-name');
+  const groupCloudEmail = document.getElementById('group-cloud-email');
+  const groupCloudPassword = document.getElementById('group-cloud-password');
+  const groupCloudOtp = document.getElementById('group-cloud-otp');
   const textCloudSubmit = document.getElementById('text-cloud-submit');
   const iconCloudSubmit = document.getElementById('icon-cloud-submit');
+  const btnCloudResendOtp = document.getElementById('btn-cloud-resend-otp');
+  const cloudOtpHint = document.getElementById('cloud-otp-hint');
+  const inputCloudEmail = document.getElementById('input-cloud-email');
+  const inputCloudOtp = document.getElementById('input-cloud-otp');
+  const inputCloudPass = document.getElementById('input-cloud-password');
+  const inputCloudName = document.getElementById('input-cloud-name');
+  const btnSubmitCloudAuth = document.getElementById('btn-submit-cloud-auth');
 
-  if (toggleCloudSignIn && toggleCloudSignUp) {
-    toggleCloudSignIn.addEventListener('click', () => {
-      isCloudSignUpMode = false;
-      toggleCloudSignIn.classList.add('active');
-      toggleCloudSignUp.classList.remove('active');
-      if (groupCloudName) groupCloudName.style.display = 'none';
-      if (textCloudSubmit) textCloudSubmit.textContent = 'Sign In to Cloud';
-      if (iconCloudSubmit) iconCloudSubmit.textContent = 'login';
-      playHapticSfx('click');
-    });
+  function updateCloudAuthMode(mode, preserveOtp = false) {
+    cloudAuthMode = mode;
+    if (!preserveOtp) {
+      isOtpSent = false;
+    }
 
-    toggleCloudSignUp.addEventListener('click', () => {
-      isCloudSignUpMode = true;
-      toggleCloudSignUp.classList.add('active');
-      toggleCloudSignIn.classList.remove('active');
-      if (groupCloudName) groupCloudName.style.display = 'flex';
-      if (textCloudSubmit) textCloudSubmit.textContent = 'Create Cloud Account';
-      if (iconCloudSubmit) iconCloudSubmit.textContent = 'person_add';
+    if (toggleCloudOtp) toggleCloudOtp.classList.toggle('active', mode === 'otp');
+    if (toggleCloudSignIn) toggleCloudSignIn.classList.toggle('active', mode === 'signin');
+    if (toggleCloudSignUp) toggleCloudSignUp.classList.toggle('active', mode === 'signup');
+
+    if (groupCloudName) groupCloudName.style.display = (mode === 'signup' && !isOtpSent) ? 'flex' : 'none';
+    if (groupCloudEmail) groupCloudEmail.style.display = 'flex';
+    if (groupCloudPassword) groupCloudPassword.style.display = (mode !== 'otp' && !isOtpSent) ? 'flex' : 'none';
+
+    if (isOtpSent) {
+      if (groupCloudOtp) groupCloudOtp.style.display = 'flex';
+      if (textCloudSubmit) textCloudSubmit.textContent = mode === 'signup' ? 'Verify Code & Activate' : 'Verify Code & Log In';
+      if (iconCloudSubmit) iconCloudSubmit.textContent = 'verified';
+    } else {
+      if (groupCloudOtp) groupCloudOtp.style.display = 'none';
+      if (mode === 'otp') {
+        if (textCloudSubmit) textCloudSubmit.textContent = 'Send 6-Digit OTP';
+        if (iconCloudSubmit) iconCloudSubmit.textContent = 'send';
+      } else if (mode === 'signin') {
+        if (textCloudSubmit) textCloudSubmit.textContent = 'Sign In to Cloud';
+        if (iconCloudSubmit) iconCloudSubmit.textContent = 'login';
+      } else if (mode === 'signup') {
+        if (textCloudSubmit) textCloudSubmit.textContent = 'Create Cloud Account';
+        if (iconCloudSubmit) iconCloudSubmit.textContent = 'person_add';
+      }
+    }
+  }
+
+  if (toggleCloudOtp) {
+    toggleCloudOtp.addEventListener('click', () => {
+      updateCloudAuthMode('otp');
       playHapticSfx('click');
     });
   }
 
-  // Submit Cloud Auth
-  const btnSubmitCloudAuth = document.getElementById('btn-submit-cloud-auth');
+  if (toggleCloudSignIn) {
+    toggleCloudSignIn.addEventListener('click', () => {
+      updateCloudAuthMode('signin');
+      playHapticSfx('click');
+    });
+  }
+
+  if (toggleCloudSignUp) {
+    toggleCloudSignUp.addEventListener('click', () => {
+      updateCloudAuthMode('signup');
+      playHapticSfx('click');
+    });
+  }
+
+  if (btnCloudResendOtp) {
+    btnCloudResendOtp.addEventListener('click', async () => {
+      const email = (lastOtpEmail || (inputCloudEmail ? inputCloudEmail.value.trim() : '')).trim();
+      if (!email || !email.includes('@')) {
+        alert('Please enter your email address first.');
+        return;
+      }
+      playHapticSfx('click');
+      try {
+        await CloudDbManager.sendOtp(email);
+        showToast(`New 6-digit OTP code sent to ${email}`, 'mark_email_read');
+      } catch (err) {
+        alert(err.message || 'Failed to resend code.');
+      }
+    });
+  }
+
+  // Submit Cloud Auth (handles OTP send, OTP verify, password signin, and signup)
   if (btnSubmitCloudAuth) {
     btnSubmitCloudAuth.addEventListener('click', async () => {
-      const emailInput = document.getElementById('input-cloud-email');
-      const passInput = document.getElementById('input-cloud-password');
-      const nameInput = document.getElementById('input-cloud-name');
-
-      const email = emailInput ? emailInput.value.trim() : '';
-      const pass = passInput ? passInput.value : '';
-      const name = nameInput ? nameInput.value.trim() : '';
+      const email = inputCloudEmail ? inputCloudEmail.value.trim() : '';
+      const pass = inputCloudPass ? inputCloudPass.value : '';
+      const name = inputCloudName ? inputCloudName.value.trim() : '';
+      const otp = inputCloudOtp ? inputCloudOtp.value.trim() : '';
 
       if (!email || !email.includes('@')) {
         alert('Please enter a valid email address.');
-        if (emailInput) emailInput.focus();
-        return;
-      }
-      if (!pass || pass.length < 6) {
-        alert('Password must be at least 6 characters.');
-        if (passInput) passInput.focus();
+        if (inputCloudEmail) inputCloudEmail.focus();
         return;
       }
 
@@ -6662,18 +6797,91 @@ function setupEventListeners() {
       if (textCloudSubmit) textCloudSubmit.textContent = 'Connecting...';
 
       try {
-        if (isCloudSignUpMode) {
+        if (isOtpSent) {
+          // STEP: VERIFY OTP
+          if (!otp || otp.length < 6) {
+            alert('Please enter the 6-digit verification code sent to your email.');
+            if (inputCloudOtp) inputCloudOtp.focus();
+            btnSubmitCloudAuth.disabled = false;
+            if (textCloudSubmit) textCloudSubmit.textContent = originalText;
+            return;
+          }
+
+          const verifyType = cloudAuthMode === 'signup' ? 'signup' : 'email';
+          await CloudDbManager.verifyOtp(email, otp, verifyType);
+          showToast(`Welcome, ${email.split('@')[0]}! Cloud Synced.`, 'cloud_done');
+          isOtpSent = false;
+        } else if (cloudAuthMode === 'otp') {
+          // STEP: SEND OTP
+          await CloudDbManager.sendOtp(email);
+          lastOtpEmail = email;
+          isOtpSent = true;
+          updateCloudAuthMode('otp', true);
+          if (cloudOtpHint) cloudOtpHint.textContent = `Enter the 6-digit code sent to ${email}`;
+          showToast(`6-digit code sent to ${email}!`, 'mark_email_read');
+          if (inputCloudOtp) {
+            inputCloudOtp.value = '';
+            setTimeout(() => inputCloudOtp.focus(), 200);
+          }
+        } else if (cloudAuthMode === 'signin') {
+          // STEP: PASSWORD SIGN IN
+          if (!pass || pass.length < 6) {
+            alert('Password must be at least 6 characters.');
+            if (inputCloudPass) inputCloudPass.focus();
+            btnSubmitCloudAuth.disabled = false;
+            if (textCloudSubmit) textCloudSubmit.textContent = originalText;
+            return;
+          }
+
+          try {
+            await CloudDbManager.signIn(email, pass);
+            showToast(`Welcome back, ${email.split('@')[0]}!`, 'cloud_done');
+          } catch (signInErr) {
+            const msg = signInErr.message || '';
+            if (msg.toLowerCase().includes('email not confirmed')) {
+              // Automatically switch to OTP verify step!
+              lastOtpEmail = email;
+              isOtpSent = true;
+              updateCloudAuthMode('signin', true);
+              if (cloudOtpHint) cloudOtpHint.textContent = `Your email needs confirmation. Enter the 6-digit code from your email (or tap Resend):`;
+              showToast('Email unverified: Enter 6-digit code or tap Resend', 'warning', 4000);
+              if (inputCloudOtp) setTimeout(() => inputCloudOtp.focus(), 200);
+            } else {
+              throw signInErr;
+            }
+          }
+        } else if (cloudAuthMode === 'signup') {
+          // STEP: SIGN UP
+          if (!pass || pass.length < 6) {
+            alert('Password must be at least 6 characters.');
+            if (inputCloudPass) inputCloudPass.focus();
+            btnSubmitCloudAuth.disabled = false;
+            if (textCloudSubmit) textCloudSubmit.textContent = originalText;
+            return;
+          }
+
           const res = await CloudDbManager.signUp(email, pass, name);
-          alert(res.message || 'Cloud account created successfully and playlists synced!');
-        } else {
-          await CloudDbManager.signIn(email, pass);
-          showToast(`Welcome back, ${email.split('@')[0]}!`, 'cloud_done');
+          if (res.access_token) {
+            showToast(`Account created! Welcome, ${email.split('@')[0]}!`, 'cloud_done');
+          } else {
+            // Confirmation required: switch to OTP verification view!
+            lastOtpEmail = email;
+            isOtpSent = true;
+            updateCloudAuthMode('signup', true);
+            if (cloudOtpHint) cloudOtpHint.textContent = `Account created! Enter the 6-digit confirmation code from your email to activate:`;
+            showToast(`Confirmation code sent to ${email}!`, 'mark_email_read', 4000);
+            if (inputCloudOtp) setTimeout(() => inputCloudOtp.focus(), 200);
+          }
         }
       } catch (err) {
-        alert(err.message || 'Cloud connection failed.');
+        alert(err.message || 'Operation failed.');
       } finally {
         btnSubmitCloudAuth.disabled = false;
-        if (textCloudSubmit) textCloudSubmit.textContent = originalText;
+        if (!isOtpSent && textCloudSubmit) {
+          updateCloudAuthMode(cloudAuthMode);
+        } else if (isOtpSent && textCloudSubmit) {
+          textCloudSubmit.textContent = cloudAuthMode === 'signup' ? 'Verify Code & Activate' : 'Verify Code & Log In';
+        }
       }
     });
   }
@@ -6874,7 +7082,7 @@ function syncCreatorAvatarFromGitHub() {
 }
 
 // ================= IN-APP SELF UPDATER =================
-const APP_VERSION = '2.0.7';
+const APP_VERSION = '2.0.8';
 const GITHUB_REPO = 'prajoy-ux/PixelBeats';
 let pendingUpdateApkUrl = null;
 let isUpdating = false;

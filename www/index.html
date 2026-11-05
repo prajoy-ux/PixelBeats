@@ -1707,7 +1707,7 @@
                   </span>
                   <div class="creator-link-text">
                     <span class="creator-link-title">Releases & Updates</span>
-                    <span id="creator-app-version" class="creator-link-handle">PixelBeats v2.0.7 APK</span>
+                    <span id="creator-app-version" class="creator-link-handle">PixelBeats v2.0.8 APK</span>
                   </div>
                 </div>
                 <span class="material-symbols-rounded creator-link-arrow">open_in_new</span>
@@ -1916,7 +1916,7 @@
               <span class="info-label">Interface:</span><span class="info-val">Material Design 3</span>
               <span class="info-label">Platform:</span><span id="cap-status" class="info-val">Web Mode</span>
               <span class="info-label">Storage:</span><span class="info-val">IndexedDB Offline Vault</span>
-              <span class="info-label">Version:</span><span id="system-app-version" class="info-val">v2.0.7</span>
+              <span class="info-label">Version:</span><span id="system-app-version" class="info-val">v2.0.8</span>
             </div>
             <div>
               <button type="button" id="btn-check-updates" class="m3-accent-pill-btn w-full" style="justify-content: center; gap: 8px;">
@@ -2185,32 +2185,46 @@
 
           <!-- Cloud Auth Forms (Shown when not logged in to cloud) -->
           <div id="cloud-auth-box" class="cloud-auth-box">
-            <!-- Mode Toggle: Sign In vs Sign Up -->
+            <!-- Mode Toggle: Email OTP vs Password vs Sign Up -->
             <div class="cloud-auth-toggle">
-              <button type="button" id="toggle-cloud-signin" class="cloud-toggle-btn active">Sign In</button>
-              <button type="button" id="toggle-cloud-signup" class="cloud-toggle-btn">Create Cloud Account</button>
+              <button type="button" id="toggle-cloud-otp" class="cloud-toggle-btn active">Email OTP</button>
+              <button type="button" id="toggle-cloud-signin" class="cloud-toggle-btn">Password</button>
+              <button type="button" id="toggle-cloud-signup" class="cloud-toggle-btn">Sign Up</button>
             </div>
 
             <form id="form-cloud-auth" class="create-account-form" onsubmit="return false;">
+              <!-- Display Name (for Sign Up) -->
               <div class="form-group-m3" id="group-cloud-name" style="display: none;">
                 <label class="form-label-m3">Display Name</label>
                 <input type="text" id="input-cloud-name" class="m3-text-input" placeholder="Your Name or Artist Tag" maxlength="32">
               </div>
 
-              <div class="form-group-m3">
+              <!-- Email Address -->
+              <div class="form-group-m3" id="group-cloud-email">
                 <label class="form-label-m3">Email Address</label>
                 <input type="email" id="input-cloud-email" class="m3-text-input" placeholder="name@domain.com" required autocomplete="email">
               </div>
 
-              <div class="form-group-m3">
+              <!-- Password (Hidden in OTP Mode) -->
+              <div class="form-group-m3" id="group-cloud-password" style="display: none;">
                 <label class="form-label-m3">Password</label>
-                <input type="password" id="input-cloud-password" class="m3-text-input" placeholder="••••••••" required minlength="6" autocomplete="current-password">
+                <input type="password" id="input-cloud-password" class="m3-text-input" placeholder="••••••••" minlength="6" autocomplete="current-password">
+              </div>
+
+              <!-- 6-Digit OTP Field -->
+              <div class="form-group-m3" id="group-cloud-otp" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <label class="form-label-m3" style="margin: 0;">6-Digit OTP Code</label>
+                  <button type="button" id="btn-cloud-resend-otp" class="link-btn-mini" style="background: none; border: none; color: #576028; font-size: 11px; font-weight: 700; cursor: pointer; text-decoration: underline;">Resend Code</button>
+                </div>
+                <input type="text" id="input-cloud-otp" class="m3-text-input" placeholder="••••••" maxlength="6" inputmode="numeric" style="font-size: 20px; font-weight: 800; letter-spacing: 8px; text-align: center; color: #363D17; background: #ffffff;">
+                <span class="field-hint" id="cloud-otp-hint">Enter the 6-digit code sent to your email to log in</span>
               </div>
 
               <div class="form-actions-row" style="margin-top: 6px;">
                 <button type="button" id="btn-submit-cloud-auth" class="m3-accent-pill-btn w-full" style="justify-content: center; height: 48px;">
-                  <span class="material-symbols-rounded" id="icon-cloud-submit">login</span>
-                  <span id="text-cloud-submit">Sign In to Cloud</span>
+                  <span class="material-symbols-rounded" id="icon-cloud-submit">send</span>
+                  <span id="text-cloud-submit">Send 6-Digit OTP</span>
                 </button>
               </div>
             </form>
@@ -2224,6 +2238,21 @@
                 <span>Database Connection & SQL Setup</span>
               </summary>
               <div class="cloud-drawer-body">
+                <!-- Supabase Email OTP Instructions Box -->
+                <div style="background: rgba(87, 96, 40, 0.08); border: 1px solid rgba(87, 96, 40, 0.15); border-radius: 14px; padding: 12px; margin-bottom: 12px;">
+                  <div style="display: flex; align-items: center; gap: 6px; font-weight: 800; color: #363D17; font-size: 12px;">
+                    <span class="material-symbols-rounded" style="font-size: 16px; color: #576028;">mark_email_read</span>
+                    <span>To receive 6-digit OTP codes in your emails:</span>
+                  </div>
+                  <p style="font-size: 11px; color: #576028; margin: 6px 0 6px 0; line-height: 1.4;">
+                    In Supabase Dashboard ➔ <b>Auth</b> ➔ <b>Email Templates</b> ➔ <b>Confirmation</b> (and <b>Magic Link</b>), replace the link with:
+                  </p>
+                  <code style="display: block; background: #ffffff; padding: 6px 8px; border-radius: 8px; font-size: 11px; color: #363D17; font-weight: 700; user-select: all;">Your 6-digit code is: {{ .Token }}</code>
+                  <p style="font-size: 10.5px; color: #576028; margin-top: 6px; margin-bottom: 0;">
+                    <i>Instant login tip:</i> In <b>Auth ➔ Providers ➔ Email</b>, turn off <b>"Confirm email"</b> for immediate password signups with zero emails required.
+                  </p>
+                </div>
+
                 <p class="field-hint" style="margin-bottom: 10px;">
                   Connect to your own free Supabase PostgreSQL database or paste your project keys:
                 </p>
