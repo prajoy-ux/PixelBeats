@@ -1,3 +1,16 @@
+function formatRelativeSyncTime(timestamp) {
+  if (!timestamp) return 'just now';
+  const diffMs = Date.now() - Number(timestamp);
+  if (isNaN(diffMs) || diffMs < 0) return 'just now';
+  const mins = Math.floor(diffMs / 60000);
+  if (mins <= 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
 /**
  * PIXELMUSIC // GOOGLE PIXEL "MATERIAL YOU" (MATERIAL DESIGN 3) AUDIO ENGINE
  * Authentic Android Monet Dynamic Theming, Bento Widgets, & Offline Vault
@@ -3149,7 +3162,7 @@ const AccountManager = {
       if (sheetBubbleIcon) sheetBubbleIcon.textContent = active.avatarIcon || 'headphones';
       if (sheetSyncEl) {
         const minutesAgo = Math.floor((Date.now() - (active.lastSyncedAt || Date.now())) / 60000);
-        sheetSyncEl.textContent = minutesAgo <= 1 ? 'Synced just now' : `Synced ${minutesAgo}m ago`;
+        sheetSyncEl.textContent = `Synced ${formatRelativeSyncTime(active.lastSyncedAt)}`;
       }
     }
 
@@ -3501,7 +3514,7 @@ const CloudDbManager = {
 
       if (syncLabel) {
         const lastSync = session.last_synced_at ? Math.floor((Date.now() - session.last_synced_at) / 60000) : 0;
-        syncLabel.textContent = lastSync <= 1 ? 'Live Synced' : `Synced ${lastSync}m ago`;
+        syncLabel.textContent = lastSync <= 1 ? 'Live Synced' : `Synced ${formatRelativeSyncTime(session.last_synced_at)}`;
       }
 
       // Synced metrics
@@ -6861,7 +6874,7 @@ function syncCreatorAvatarFromGitHub() {
 }
 
 // ================= IN-APP SELF UPDATER =================
-const APP_VERSION = '2.0.4';
+const APP_VERSION = '2.0.5';
 const GITHUB_REPO = 'prajoy-ux/PixelBeats';
 let pendingUpdateApkUrl = null;
 let isUpdating = false;

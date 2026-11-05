@@ -1655,65 +1655,10 @@
       <section id="tab-settings" data-view="config" class="tab-panel">
         <div class="settings-scroll-container">
           
-          <!-- User Account & Cloud Sync Card -->
-          <div class="m3-settings-card account-profile-card">
-            <div class="card-header-row">
-              <span class="material-symbols-rounded card-icon" style="color: #576028;">account_circle</span>
-              <h4>Account & Saved Data</h4>
-            </div>
-
-            <!-- Active Account Bento Box -->
-            <div class="account-badge-box" id="account-badge-box">
-              <div class="account-avatar-wrapper" id="account-avatar-wrapper">
-                <span class="material-symbols-rounded account-avatar-icon" id="account-avatar-icon">person</span>
-              </div>
-              <div class="account-info">
-                <div class="account-name-row">
-                  <span id="account-display-name" class="account-display-name">Guest Profile</span>
-                  <span id="account-status-pill" class="account-status-pill">Local</span>
-                </div>
-                <div id="account-handle" class="account-handle">@local • PixelBeats User</div>
-                <div id="account-stats-row" class="account-stats-row">
-                  <span class="account-stat-chip" id="stat-playlists-chip"><span class="material-symbols-rounded">playlist_play</span><span id="stat-playlists-count">1 Playlist</span></span>
-                  <span class="account-stat-chip" id="stat-favorites-chip"><span class="material-symbols-rounded">favorite</span><span id="stat-favorites-count">0 Saved</span></span>
-                  <span class="account-stat-chip" id="stat-eq-chip"><span class="material-symbols-rounded">tune</span><span id="stat-eq-preset">Flat EQ</span></span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Quick Action Buttons -->
-            <div class="account-actions-grid">
-              <button type="button" id="btn-open-account-manager" class="m3-accent-pill-btn flex-1" style="justify-content: center; gap: 8px;">
-                <span class="material-symbols-rounded">manage_accounts</span>
-                <span id="btn-account-main-text">Manage Accounts</span>
-              </button>
-              <button type="button" id="btn-account-sync-now" class="m3-tonal-pill-btn" title="Sync current playlists and settings now" style="gap: 6px;">
-                <span class="material-symbols-rounded">sync</span>
-                <span id="btn-account-sync-label">Sync</span>
-              </button>
-            </div>
-
-            <!-- Backup & Export Actions -->
-            <div class="account-backup-pills-row">
-              <button type="button" id="btn-quick-export" class="account-sub-action-pill" title="Export playlists & settings to JSON">
-                <span class="material-symbols-rounded">download</span>
-                <span>Export Backup</span>
-              </button>
-              <button type="button" id="btn-quick-import" class="account-sub-action-pill" title="Restore from backup file">
-                <span class="material-symbols-rounded">upload</span>
-                <span>Restore Backup</span>
-              </button>
-              <button type="button" id="btn-quick-sync-code" class="account-sub-action-pill" title="Copy or paste sync key">
-                <span class="material-symbols-rounded">key</span>
-                <span>Sync Key</span>
-              </button>
-            </div>
-          </div>
-
           <!-- Developer & Project Info Card -->
           <div class="m3-settings-card creator-profile-card">
             <div class="card-header-row">
-              <span class="material-symbols-rounded card-icon" style="color: var(--primary-pill, #C8D394);">person</span>
+              <span class="material-symbols-rounded card-icon" style="color: #576028;">person</span>
               <h4>About & Developer</h4>
             </div>
 
@@ -1776,7 +1721,62 @@
 
             <div class="app-version-badge-box">
               <span class="material-symbols-rounded" style="font-size: 16px; color: var(--primary-pill, #C8D394);">favorite</span>
-              <span>Made by Prajoy Sarkar • GNU GPL-3.0</span>
+              <span>Made with love by Prajoy Sarkar • GNU GPL-3.0</span>
+            </div>
+          </div>
+
+          <!-- User Account & Cloud Sync Card -->
+          <div class="m3-settings-card account-profile-card">
+            <div class="card-header-row">
+              <span class="material-symbols-rounded card-icon" style="color: #576028;">account_circle</span>
+              <h4>Account & Saved Data</h4>
+            </div>
+
+            <!-- Active Account Bento Box -->
+            <div class="account-badge-box" id="account-badge-box">
+              <div class="account-avatar-wrapper" id="account-avatar-wrapper">
+                <span class="material-symbols-rounded account-avatar-icon" id="account-avatar-icon">person</span>
+              </div>
+              <div class="account-info">
+                <div class="account-name-row">
+                  <span id="account-display-name" class="account-display-name">Guest Profile</span>
+                  <span id="account-status-pill" class="account-status-pill">Local</span>
+                </div>
+                <div id="account-handle" class="account-handle">@local • PixelBeats User</div>
+                <div id="account-stats-row" class="account-stats-row">
+                  <span class="account-stat-chip" id="stat-playlists-chip"><span class="material-symbols-rounded">playlist_play</span><span id="stat-playlists-count">1 Playlist</span></span>
+                  <span class="account-stat-chip" id="stat-favorites-chip"><span class="material-symbols-rounded">favorite</span><span id="stat-favorites-count">0 Saved</span></span>
+                  <span class="account-stat-chip" id="stat-eq-chip"><span class="material-symbols-rounded">tune</span><span id="stat-eq-preset">Flat EQ</span></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="account-actions-grid">
+              <button type="button" id="btn-open-account-manager" class="m3-accent-pill-btn flex-1" style="justify-content: center; gap: 8px;">
+                <span class="material-symbols-rounded">manage_accounts</span>
+                <span id="btn-account-main-text">Manage Accounts</span>
+              </button>
+              <button type="button" id="btn-account-sync-now" class="m3-tonal-pill-btn" title="Sync current playlists and settings now" style="gap: 6px;">
+                <span class="material-symbols-rounded">sync</span>
+                <span id="btn-account-sync-label">Sync</span>
+              </button>
+            </div>
+
+            <!-- Backup & Export Actions -->
+            <div class="account-backup-pills-row">
+              <button type="button" id="btn-quick-export" class="account-sub-action-pill" title="Export playlists & settings to JSON">
+                <span class="material-symbols-rounded">download</span>
+                <span>Export Backup</span>
+              </button>
+              <button type="button" id="btn-quick-import" class="account-sub-action-pill" title="Restore from backup file">
+                <span class="material-symbols-rounded">upload</span>
+                <span>Restore Backup</span>
+              </button>
+              <button type="button" id="btn-quick-sync-code" class="account-sub-action-pill" title="Copy or paste sync key">
+                <span class="material-symbols-rounded">key</span>
+                <span>Sync Key</span>
+              </button>
             </div>
           </div>
 
@@ -2373,7 +2373,7 @@
             <div class="backup-buttons-row">
               <button type="button" id="btn-backup-export-all" class="m3-accent-pill-btn flex-1" style="justify-content: center;">
                 <span class="material-symbols-rounded">download</span>
-                <span>Export Backup (.json)</span>
+                <span>Export Backup</span>
               </button>
               <button type="button" id="btn-backup-import-all" class="m3-tonal-pill-btn flex-1" style="justify-content: center;">
                 <span class="material-symbols-rounded">upload</span>
